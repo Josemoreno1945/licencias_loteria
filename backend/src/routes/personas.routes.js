@@ -1,4 +1,4 @@
-import { Router } from "express";
+/*import { Router } from "express";
 
 import {} from "../controllers/personas.controllers";
 
@@ -18,3 +18,4 @@ router.delete("/personas/:id");
 router.put("/personas/:id");
 
 export default router;
+*/

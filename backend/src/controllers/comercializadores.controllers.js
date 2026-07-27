@@ -1,4 +1,4 @@
-import {} from "../models/users.model.js";
+/*import {} from "../models/users.model.js";
 import comercializadores_schema from "../schemas/comercializadores.schemas";
 
 //import bcrypt from 'bcryptjs';

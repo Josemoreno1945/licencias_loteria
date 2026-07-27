@@ -5,21 +5,21 @@ import {
   get_c_usuarios_id,
   crear_c_usuario,
   actualizar_usuario,
-} from "../controllers/usuarios.controllers";
+} from "../controllers/usuarios.controllers.js";
 
 //import { verifyToken } from "../middlewares/auth.js";
 //import { isAdmin } from "../middlewares/roles.js";
 
 const router = Router();
 
-router.get("/usuarios");
+router.get("/usuarios", get_c_usuarios);
 
-router.get("/usuarios/:id");
+router.get("/usuarios/:id", get_c_usuarios_id);
 
-router.post("/usuarios");
+router.post("/usuarios", crear_c_usuario);
 
 //router.delete("/personas/:id");
 
-router.put("/usuarios/:id");
+router.put("/usuarios/:id", actualizar_usuario);
 
 export default router;

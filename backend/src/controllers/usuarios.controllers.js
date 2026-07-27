@@ -2,7 +2,6 @@ import {
   get_usuarios,
   get_usuarios_id,
   crear_usuario,
-  eliminar_usuario_id,
   actualizar_usuario_id,
   get_nombre_de_usuario,
   get_usuario_email,

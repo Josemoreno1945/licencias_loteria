@@ -23,7 +23,7 @@ export const get_usuarios_id = async (id) => {
 export const crear_usuario = async (data) => {
   const query = `
     INSERT INTO usuarios (nombre_usuario,email,password_hash,rol,estado)
-    VALUES ($1, $2, $3, $4, $5) RETURNING`;
+    VALUES ($1, $2, $3, $4, $5) RETURNING *`;
   const values = [
     data.nombre_usuario,
     data.email,

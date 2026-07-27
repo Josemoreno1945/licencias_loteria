@@ -1,4 +1,4 @@
-import {} from "../models/users.model.js";
+/*import {} from "../models/users.model.js";
 import persona_schema from "../schemas/personas.schemas.js";
 
 //import bcrypt from 'bcryptjs';
@@ -14,7 +14,7 @@ export const get_personas = async (req, res) => {
   }
 };
 //-----------------------------------------------------------------------------------
-/*
+
 export const getUserid = async (req, res, next) => {
   try {
     const id = req.params.id;

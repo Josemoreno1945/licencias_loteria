@@ -1,4 +1,4 @@
-import { Router } from "express";
+/*import { Router } from "express";
 
 import {} from "../controllers/comercializadores.controllers";
 
@@ -18,3 +18,4 @@ router.delete("/comercializadores/:id");
 router.put("/comercializadores/:id");
 
 export default router;
+*/

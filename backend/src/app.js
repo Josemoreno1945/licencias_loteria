@@ -2,8 +2,8 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 
-import personas_routes from "./routes/personas.routes.js";
-import comercializadores_routes from "./routes/comercializadores.routes.js";
+import usuarios_rutas from "./routes/usuarios.routes.js";
+
 import { errorHandler } from "./middlewares/errorHandler.js";
 
 const app = express();
@@ -14,8 +14,7 @@ app.use(morgan("dev"));
 app.use(express.json());
 
 // Rutas
-app.use(personas_routes);
-app.use(comercializadores_routes);
+app.use(usuarios_rutas);
 
 // Manejador de errores
 app.use(errorHandler);
