@@ -4,7 +4,7 @@ import { pool } from "../db.js";
 export const get_personas = async () => {
   const query = `
   SELECT ci_rif , razon_social , tipo_persona , direccion_fiscal , telefono , email
-  FROM persona`;
+  FROM personas`;
   const result = await pool.query(query);
   return result.rows;
 };
@@ -13,7 +13,7 @@ export const get_personas_id = async (id) => {
   const query = ` 
   SELECT ci_rif , razon_social , tipo_persona , direccion_fiscal , telefono , email
   FROM personas
-  WHERE id_persona = 1$
+  WHERE id_persona = $1
   `;
   const result = await pool.query(query, [id]);
   return result.rows;
@@ -37,12 +37,6 @@ export const crear_persona = async (data) => {
 };
 
 //delete---tiene que ser un borrado logico no real ---------------------------------
-/*export const eliminar_usuario_id = async (id) => {
-  const query = "DELETE FROM users WHERE id_users = $1";
-  const result = await pool.query(query, [id]);
-  return result.rows;
-};
-*/
 
 //put---------------------------------------------------
 export const actualizar_persona_id = async (id, data) => {
@@ -62,7 +56,7 @@ export const actualizar_persona_id = async (id, data) => {
   return result.rows;
 };
 
-//otros---------------------
+//otros----------------------------------------------------
 
 export const get_persona_email = async (email) => {
   const query = `
@@ -73,7 +67,7 @@ export const get_persona_email = async (email) => {
   return !!result.rows[0];
 };
 
-export const get_ci_rif = async (user_name) => {
+export const get_ci_rif = async (ci_rif) => {
   const query = `
   SELECT ci_rif , razon_social , tipo_persona , direccion_fiscal , telefono , email
   FROM personas

@@ -13,9 +13,19 @@ export const get_usuarios_id = async (id) => {
   const query = ` 
   SELECT nombre_usuario , email , rol , estado 
   FROM usuarios
-  WHERE id_usuario = 1$
+  WHERE id_usuario = $1
   `;
   const result = await pool.query(query, [id]);
+  return result.rows;
+};
+
+export const get_usuarios_activos = async () => {
+  const query = `
+    SELECT nombre_usuario, email, rol, estado
+    FROM usuarios
+    WHERE estado = 'activo'
+  `;
+  const result = await pool.query(query);
   return result.rows;
 };
 
@@ -35,13 +45,17 @@ export const crear_usuario = async (data) => {
   return result.rows;
 };
 
-//delete---tiene que ser un borrado logico no real ---------------------------------
-/*export const eliminar_usuario_id = async (id) => {
-  const query = "DELETE FROM users WHERE id_users = $1";
+// delete (borrado lógico) ---------------------------------
+export const eliminar_usuario_id = async (id) => {
+  const query = `
+    UPDATE usuarios 
+    SET estado = 'inactivo' 
+    WHERE id_usuario = $1 
+    RETURNING *
+  `;
   const result = await pool.query(query, [id]);
   return result.rows;
 };
-*/
 
 //put---------------------------------------------------
 export const actualizar_usuario_id = async (id, data) => {

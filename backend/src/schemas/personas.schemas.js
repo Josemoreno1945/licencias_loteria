@@ -1,12 +1,12 @@
 import { z } from "zod";
 
-const persona_schema = z.object({
-  cedula_rif: z
+export const persona_schema = z.object({
+  ci_rif: z
     .string()
     .min(1, "La cedula/rif no puede estar vacia")
     .max(30, "La cedula/rif no puede exceder los 30 caracteres"),
 
-  razon_social_nombre_completo: z
+  razon_social: z
     .string()
     .min(1, "El campo no puede estar vacio")
     .max(
@@ -14,7 +14,7 @@ const persona_schema = z.object({
       "La razon social/nombre completo no puede exceder los 100 caracteres",
     ),
 
-  tipo_de_persona: z.enum(["Natural", "Juridica"]),
+  tipo_persona: z.enum(["Natural", "Juridica"]),
 
   direccion_fiscal: z
     .string()
@@ -29,8 +29,3 @@ const persona_schema = z.object({
 
   email: z.string().email("Solo email valido"),
 });
-
-export default persona_schema;
-
-// status: z
-// .enum(["active", "inactive"]),

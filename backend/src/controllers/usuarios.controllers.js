@@ -1,7 +1,9 @@
 import {
   get_usuarios,
   get_usuarios_id,
+  get_usuarios_activos,
   crear_usuario,
+  eliminar_usuario_id,
   actualizar_usuario_id,
   get_nombre_de_usuario,
   get_usuario_email,
@@ -9,12 +11,17 @@ import {
 
 import bcrypt from "bcryptjs";
 import { errors, throwError } from "../utils/errors.js";
+import {
+  crear_usuario_schema,
+  actualizar_usuario_schema,
+} from "../schemas/usuarios.schemas.js";
 
-//import userSchema from "../schemas/users.schemas.js";
-//FALTA ESQUEMA DE USUARIOS
+// Regex para validar que el string tiene formato UUID
+const uuidRegex =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 //get----------------------------------------------------------
-export const get_c_usuarios = async (req, res) => {
+export const get_c_usuarios = async (req, res, next) => {
   try {
     const rows = await get_usuarios();
     res.json(rows);
@@ -26,7 +33,8 @@ export const get_c_usuarios = async (req, res) => {
 export const get_c_usuarios_id = async (req, res, next) => {
   try {
     const id = req.params.id;
-    if (isNaN(id) || id < 0) {
+
+    if (!uuidRegex.test(id)) {
       throwError(errors.invalidData);
     }
 
@@ -46,19 +54,19 @@ export const crear_c_usuario = async (req, res, next) => {
   try {
     const data = req.body;
 
-    /*const parseU = userSchema.safeParse(data);
+    const parseU = crear_usuario_schema.safeParse(data);
     if (!parseU.success) {
       return res.status(400).json({
         errors: parseU.error.errors,
       });
     }
-    */
+
     const emailExiste = await get_usuario_email(data.email);
     if (emailExiste) {
       throwError(errors.usuario_email_duplicado);
     }
 
-    const usernameExiste = await get_nombre_de_usuario(data.user_name);
+    const usernameExiste = await get_nombre_de_usuario(data.nombre_usuario);
     if (usernameExiste) {
       throwError(errors.usuario_duplicado);
     }
@@ -72,53 +80,71 @@ export const crear_c_usuario = async (req, res, next) => {
   }
 };
 
-//delete-------------------- parado
-/*
-export const deleteUsers = async (req, res, next) => {
+// delete (borrado lógico) --------------------------------------
+export const eliminar_c_usuario = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const rows = await deleteUserid(id);
+    if (!uuidRegex.test(id)) {
+      throwError(errors.invalidData);
+    }
+    const rows = await eliminar_usuario_id(id);
 
-    if (rows === 0) {
-      throwError(errors.userNotFound);
+    if (!rows || rows.length === 0) {
+      throwError(errors.usuario_no_encontrado);
     } else {
-      return res.json({ message: "User deleted successfully" });
+      return res.json({
+        message: "Usuario eliminado (inactivo) exitosamente",
+        user: rows[0],
+      });
     }
   } catch (error) {
     next(error);
   }
 };
-*/
 
 //put------------------------------------------------------
 export const actualizar_usuario = async (req, res, next) => {
   try {
     const id = req.params.id;
-    if (isNaN(id) || id < 0) {
+
+    if (!uuidRegex.test(id)) {
       throwError(errors.invalidData);
     }
-    const data = req.body;
 
-    /*
-    const parseU = userSchema.safeParse(data);
+    const data = req.body;
+    const parseU = actualizar_usuario_schema.safeParse(data);
+
     if (!parseU.success) {
       return res.status(400).json({
         errors: parseU.error.errors,
       });
     }
-    */
 
-    const emailExiste = await get_usuario_email(data.email);
-    if (emailExiste) {
-      throwError(errors.usuario_email_duplicado);
+    // OBTENEMOS EL USUARIO ACTUAL PRIMERO
+    const usuarioActualArray = await get_usuarios_id(id);
+    if (!usuarioActualArray || usuarioActualArray.length === 0) {
+      throwError(errors.usuario_no_encontrado);
+    }
+    const usuarioActual = usuarioActualArray[0];
+
+    // VERIFICAMOS DUPLICADOS SOLO SI EL CAMPO CAMBIÓ
+    if (data.email !== usuarioActual.email) {
+      const emailExiste = await get_usuario_email(data.email);
+      if (emailExiste) throwError(errors.usuario_email_duplicado);
     }
 
-    const usernameExiste = await get_nombre_de_usuario(data.user_name);
-    if (usernameExiste) {
-      throwError(errors.usuario_duplicado);
+    if (data.nombre_usuario !== usuarioActual.nombre_usuario) {
+      const usernameExiste = await get_nombre_de_usuario(data.nombre_usuario);
+      if (usernameExiste) throwError(errors.usuario_duplicado);
     }
 
-    const rows = await actualizar_usuario_id(id, data);
+    // HASHEAMOS LA CONTRASEÑA SI SE ENVÍO UNA NUEVA (o mantenemos la vieja)
+    let hashedPassword = usuarioActual.password_hash;
+    if (data.password) {
+      hashedPassword = await bcrypt.hash(data.password, 8);
+    }
+    const userData = { ...data, password_hash: hashedPassword };
+    const rows = await actualizar_usuario_id(id, userData);
     res.json(rows);
   } catch (error) {
     next(error);

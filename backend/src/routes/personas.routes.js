@@ -1,21 +1,23 @@
-/*import { Router } from "express";
+import { Router } from "express";
 
-import {} from "../controllers/personas.controllers";
+import {
+  get_c_personas,
+  get_c_personas_id,
+  crear_c_personas,
+  actualizar_personas,
+} from "../controllers/personas.controllers.js";
 
-//import { verifyToken } from "../middlewares/auth.js";
-//import { isAdmin } from "../middlewares/roles.js";
+// import { verifyToken } from "../middlewares/auth.js";
+// import { isAdmin } from "../middlewares/roles.js";
 
 const router = Router();
 
-router.get("/personas");
+router.get("/personas", get_c_personas);
 
-router.get("/personas/:id");
+router.get("/personas/:id", get_c_personas_id);
 
-router.post("/personas");
+router.post("/personas", crear_c_personas);
 
-router.delete("/personas/:id");
-
-router.put("/personas/:id");
+router.put("/personas/:id", actualizar_personas);
 
 export default router;
-*/

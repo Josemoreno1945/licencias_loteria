@@ -5,6 +5,7 @@ import {
   get_c_usuarios_id,
   crear_c_usuario,
   actualizar_usuario,
+  eliminar_c_usuario,
 } from "../controllers/usuarios.controllers.js";
 
 //import { verifyToken } from "../middlewares/auth.js";
@@ -18,7 +19,7 @@ router.get("/usuarios/:id", get_c_usuarios_id);
 
 router.post("/usuarios", crear_c_usuario);
 
-//router.delete("/personas/:id");
+router.delete("/usuarios/:id", eliminar_c_usuario);
 
 router.put("/usuarios/:id", actualizar_usuario);
 

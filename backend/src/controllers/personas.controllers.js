@@ -1,29 +1,42 @@
-/*import {} from "../models/users.model.js";
-import persona_schema from "../schemas/personas.schemas.js";
+import {
+  get_personas,
+  get_personas_id,
+  crear_persona,
+  actualizar_persona_id,
+  get_persona_email,
+  get_ci_rif,
+} from "../models/personas.models.js";
 
-//import bcrypt from 'bcryptjs';
+import bcrypt from "bcryptjs";
 import { errors, throwError } from "../utils/errors.js";
+import { persona_schema } from "../schemas/personas.schemas.js";
 
-//get
-export const get_personas = async (req, res) => {
+// Regex para validar que el string tiene formato UUID
+const uuidRegex =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+//get----------------------------------------------------------
+export const get_c_personas = async (req, res, next) => {
   try {
-    const rows = await getpersona();
+    const rows = await get_personas();
     res.json(rows);
   } catch (error) {
     next(error);
   }
 };
-//-----------------------------------------------------------------------------------
 
-export const getUserid = async (req, res, next) => {
+export const get_c_personas_id = async (req, res, next) => {
   try {
     const id = req.params.id;
-    if (isNaN(id) || id < 0) {
+
+    if (!uuidRegex.test(id)) {
       throwError(errors.invalidData);
     }
-    const rows = await getUser_id(id);
+
+    const rows = await get_personas_id(id);
+
     if (!rows || rows.length == 0) {
-      throwError(errors.userNotFound);
+      throwError(errors.persona_no_encontrada);
     }
     res.json(rows);
   } catch (error) {
@@ -31,79 +44,96 @@ export const getUserid = async (req, res, next) => {
   }
 };
 
-//post
-export const createUsers = async (req, res, next) => {
+//post---------------------------------------------------------
+export const crear_c_personas = async (req, res, next) => {
   try {
     const data = req.body;
-    const parseU = userSchema.safeParse(data);
+
+    const parseP = persona_schema.safeParse(data);
     if (!parseU.success) {
       return res.status(400).json({
         errors: parseU.error.errors,
       });
     }
-    const emailExiste = await getUserEmail(data.email);
+
+    const emailExiste = await get_persona_email(data.email);
     if (emailExiste) {
-      throwError(errors.User_emailDuplicated);
+      throwError(errors.persona_email_duplicado);
     }
-    const usernameExiste = await getUserName(data.user_name);
-    if (usernameExiste) {
-      throwError(errors.userDuplicated);
+
+    const ci_rifExiste = await get_ci_rif(data.ci_rif);
+    if (ci_rifExiste) {
+      throwError(errors.persona_cedula_rif_duplicado);
     }
-    const hashedPassword = await bcrypt.hash(data.password, 8);
-    const userData = { ...data, password: hashedPassword };
-    const rows = await createUser(userData);
+
+    const rows = await crear_persona(data);
     return res.json(rows);
   } catch (error) {
     next(error);
   }
 };
 
-//delete
-export const deleteUsers = async (req, res, next) => {
+// delete (borrado lógico) --------------------------------------
+/*export const eliminar_c_usuario = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const rows = await deleteUserid(id);
-    if (rows === 0) {
-      throwError(errors.userNotFound);
+    if (!uuidRegex.test(id)) {
+      throwError(errors.invalidData);
+    }
+    const rows = await eliminar_usuario_id(id);
+
+    if (!rows || rows.length === 0) {
+      throwError(errors.usuario_no_encontrado);
     } else {
-      return res.json({ message: "User deleted successfully" });
+      return res.json({
+        message: "Usuario eliminado (inactivo) exitosamente",
+        user: rows[0],
+      });
     }
   } catch (error) {
     next(error);
   }
 };
-
-//put
-export const updateUsers = async (req, res, next) => {
+*/
+//put------------------------------------------------------
+export const actualizar_personas = async (req, res, next) => {
   try {
     const id = req.params.id;
-    if (isNaN(id) || id < 0) {
+
+    if (!uuidRegex.test(id)) {
       throwError(errors.invalidData);
     }
-    const data = req.body;
 
-    const parseU = userSchema.safeParse(data);
+    const data = req.body;
+    const parseU = persona_schema.safeParse(data); //esquema ARREGLAR -----------------
+
     if (!parseU.success) {
       return res.status(400).json({
         errors: parseU.error.errors,
       });
     }
 
-    const emailExiste = await getUserEmail(data.email);
-    if (emailExiste) {
-      throwError(errors.User_emailDuplicated);
+    // OBTENEMOS LA PERSONA ACTUAL PRIMERO
+    const personaActualArray = await get_personas_id(id);
+    if (!personaActualArray || personaActualArray.length === 0) {
+      throwError(errors.persona_no_encontrado);
+    }
+    const personaActual = personaActualArray[0];
+
+    // VERIFICAMOS DUPLICADOS SOLO SI EL CAMPO CAMBIÓ
+    if (data.email !== personaActual.email) {
+      const emailExiste = await get_persona_email(data.email);
+      if (emailExiste) throwError(errors.persona_email_duplicado);
     }
 
-    const usernameExiste = await getUserName(data.user_name);
-    if (usernameExiste) {
-      throwError(errors.userDuplicated);
+    if (data.ci_rif !== personaActual.ci_rif) {
+      const ci_rifExiste = await get_ci_rif(data.ci_rif);
+      if (ci_rifExiste) throwError(errors.persona_cedula_rif_duplicado);
     }
 
-    const rows = await updateUserid(id, data);
+    const rows = await actualizar_persona_id(id, data);
     res.json(rows);
   } catch (error) {
     next(error);
   }
 };
-
-*/
