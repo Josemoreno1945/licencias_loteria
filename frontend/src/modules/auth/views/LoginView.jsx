@@ -5,90 +5,312 @@ import {
   CButton,
   CCard,
   CCardBody,
-  CCol,
-  CContainer,
+  CCardFooter,
   CForm,
   CFormInput,
+  CFormLabel,
   CInputGroup,
   CInputGroupText,
-  CRow,
+  CModal,
+  CModalBody,
+  CModalFooter,
+  CModalHeader,
+  CSpinner,
 } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import {
+  cilUser,
+  cilLockLocked,
+  cilEnvelopeClosed,
+  cilWarning,
+  cilCheckCircle,
+} from '@coreui/icons'
+import '../styles/auth.css'
 
+/* ------------------------------------------------------------------ */
+/*  LoginView — Lotería del Táchira                                    */
+/* ------------------------------------------------------------------ */
 const LoginView = () => {
   const { login } = useAuth()
   const navigate = useNavigate()
-  const [form, setForm] = useState({ email: '', password: '' })
-  const [error, setError] = useState(null)
-  const [loading, setLoading] = useState(false)
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
+  // --- Estado del formulario ---
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  })
+
+  // --- Estados de UI ---
+  const [loadingAction, setLoadingAction] = useState(false)
+  const [actionLabel, setActionLabel] = useState('')
+
+  const [mensajeError, setMensajeError] = useState('')
+  const [modalError, setModalError] = useState(false)
+
+  // --- Modal recuperar contraseña ---
+  const [modalRecuperar, setModalRecuperar] = useState(false)
+  const [emailRecuperar, setEmailRecuperar] = useState('')
+  const [mensajeRecuperar, setMensajeRecuperar] = useState('')
+  const [modalExito, setModalExito] = useState(false)
+
+  /* ---- Handlers ---- */
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
-    setError(null)
+
+    // Validación básica
+    if (!formData.email.trim() || !formData.password.trim()) {
+      setMensajeError('Por favor completa todos los campos.')
+      setModalError(true)
+      return
+    }
+
+    setLoadingAction(true)
+    setActionLabel('Iniciando sesión...')
     try {
-      await login(form)
+      await login(formData)
       navigate('/dashboard')
     } catch (err) {
-      setError(err.response?.data?.message || 'Credenciales inválidas')
+      const errData = err?.response?.data
+      if (errData?.error) {
+        setMensajeError(errData.error)
+      } else if (errData?.errors) {
+        const msgs = errData.errors.map((issue) => issue.message)
+        setMensajeError(msgs)
+      } else {
+        setMensajeError('Credenciales inválidas. Intenta de nuevo.')
+      }
+      setModalError(true)
     } finally {
-      setLoading(false)
+      setLoadingAction(false)
+      setActionLabel('')
     }
   }
 
+  const handleRecuperar = async () => {
+    if (!emailRecuperar.trim()) {
+      setMensajeError('Ingresa tu correo electrónico.')
+      setModalError(true)
+      return
+    }
+    setModalRecuperar(false)
+    setLoadingAction(true)
+    setActionLabel('Enviando correo...')
+    try {
+      // Simulación — reemplazar con llamada real: authService.forgotPassword(emailRecuperar)
+      await new Promise((r) => setTimeout(r, 1200))
+      setMensajeRecuperar(
+        'Se ha enviado un enlace de recuperación a tu correo electrónico.',
+      )
+      setModalExito(true)
+    } catch (err) {
+      setMensajeError(
+        err?.response?.data?.error || 'No se pudo enviar el correo de recuperación.',
+      )
+      setModalError(true)
+    } finally {
+      setLoadingAction(false)
+      setActionLabel('')
+      setEmailRecuperar('')
+    }
+  }
+
+  /* ---- Render ---- */
   return (
-    <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
-      <CContainer>
-        <CRow className="justify-content-center">
-          <CCol md={6} lg={5}>
-            <CCard className="p-4 shadow-sm">
-              <CCardBody>
-                <CForm onSubmit={handleSubmit}>
-                  <h1 className="mb-1">Iniciar Sesión</h1>
-                  <p className="text-body-secondary mb-4">Ingresa tus credenciales</p>
+    <div className="auth-page">
 
-                  {error && <div className="alert alert-danger">{error}</div>}
+      {/* ======== Modal: Cargando ======== */}
+      <CModal
+        visible={loadingAction}
+        backdrop="static"
+        keyboard={false}
+        alignment="center"
+        onClose={() => {}}
+      >
+        <CModalHeader className="auth-modal-header" closeButton={false}>
+          {actionLabel}
+        </CModalHeader>
+        <CModalBody className="d-flex align-items-center gap-3 py-4">
+          <CSpinner style={{ color: 'var(--lot-azul-med)' }} />
+          <span style={{ color: 'var(--lot-azul)', fontWeight: 500 }}>{actionLabel}</span>
+        </CModalBody>
+      </CModal>
 
-                  <CInputGroup className="mb-3">
-                    <CInputGroupText>@</CInputGroupText>
-                    <CFormInput
-                      type="email"
-                      name="email"
-                      placeholder="Correo electrónico"
-                      value={form.email}
-                      onChange={handleChange}
-                      required
-                    />
-                  </CInputGroup>
+      {/* ======== Modal: Error ======== */}
+      <CModal
+        visible={modalError}
+        backdrop="static"
+        keyboard={false}
+        onClose={() => setModalError(false)}
+        alignment="center"
+      >
+        <CModalHeader className="auth-modal-header">Error</CModalHeader>
+        <CModalBody className="py-3">
+          {Array.isArray(mensajeError) ? (
+            <ul className="mb-0 ps-3">
+              {mensajeError.map((msg, idx) => (
+                <li key={idx}>{msg}</li>
+              ))}
+            </ul>
+          ) : (
+            <div>{String(mensajeError)}</div>
+          )}
+        </CModalBody>
+        <CModalFooter>
+          <CButton className="btn-auth-cerrar" onClick={() => setModalError(false)}>
+            Cerrar
+          </CButton>
+        </CModalFooter>
+      </CModal>
 
-                  <CInputGroup className="mb-4">
-                    <CInputGroupText>🔒</CInputGroupText>
-                    <CFormInput
-                      type="password"
-                      name="password"
-                      placeholder="Contraseña"
-                      value={form.password}
-                      onChange={handleChange}
-                      required
-                    />
-                  </CInputGroup>
+      {/* ======== Modal: Éxito recuperación ======== */}
+      <CModal
+        visible={modalExito}
+        backdrop="static"
+        keyboard={false}
+        onClose={() => setModalExito(false)}
+        alignment="center"
+      >
+        <CModalHeader className="auth-modal-header">Mensaje</CModalHeader>
+        <CModalBody className="d-flex align-items-center gap-3 py-3">
+          <CIcon icon={cilCheckCircle} style={{ color: '#1b8a4e', fontSize: '1.4rem' }} />
+          <span>{String(mensajeRecuperar)}</span>
+        </CModalBody>
+        <CModalFooter>
+          <CButton
+            className="btn-auth-cerrar"
+            onClick={() => {
+              setModalExito(false)
+              setMensajeRecuperar('')
+            }}
+          >
+            Cerrar
+          </CButton>
+        </CModalFooter>
+      </CModal>
 
-                  <CRow>
-                    <CCol xs={6}>
-                      <CButton type="submit" color="primary" className="px-4" disabled={loading}>
-                        {loading ? 'Ingresando...' : 'Ingresar'}
-                      </CButton>
-                    </CCol>
-                  </CRow>
-                </CForm>
-              </CCardBody>
-            </CCard>
-          </CCol>
-        </CRow>
-      </CContainer>
+      {/* ======== Modal: Recuperar contraseña ======== */}
+      <CModal
+        visible={modalRecuperar}
+        backdrop="static"
+        keyboard={false}
+        alignment="center"
+        onClose={() => setModalRecuperar(false)}
+      >
+        <CModalHeader className="auth-modal-header">Recuperar contraseña</CModalHeader>
+        <CModalBody className="py-3">
+          <CFormLabel className="auth-label">Correo electrónico registrado</CFormLabel>
+          <CInputGroup>
+            <CInputGroupText style={{ background: 'var(--lot-azul)', borderColor: 'var(--lot-azul)', color: '#fff' }}>
+              <CIcon icon={cilEnvelopeClosed} />
+            </CInputGroupText>
+            <CFormInput
+              type="email"
+              placeholder="tucorreo@ejemplo.com"
+              value={emailRecuperar}
+              onChange={(e) => setEmailRecuperar(e.target.value)}
+            />
+          </CInputGroup>
+        </CModalBody>
+        <CModalFooter className="gap-2">
+          <CButton className="btn-auth-cerrar" onClick={() => setModalRecuperar(false)}>
+            Cancelar
+          </CButton>
+          <CButton className="btn-auth-dorado" onClick={handleRecuperar}>
+            Enviar enlace
+          </CButton>
+        </CModalFooter>
+      </CModal>
+
+      {/* ======== Card principal ======== */}
+      <CCard className="auth-card">
+
+        {/* --- Cabecera --- */}
+        <div className="auth-card__header">
+          <div className="auth-card__logo-wrap">
+            <div className="auth-card__logo-placeholder">🎰</div>
+          </div>
+          <h1 className="auth-card__title">Lotería del Táchira</h1>
+          <p className="auth-card__subtitle">Sistema de Gestión de Licencias</p>
+        </div>
+
+        {/* --- Cuerpo --- */}
+        <CCardBody className="auth-card__body">
+          <CForm onSubmit={handleSubmit} noValidate>
+
+            {/* Email */}
+            <div className="auth-input-group">
+              <CFormLabel className="auth-label">Correo electrónico</CFormLabel>
+              <CInputGroup>
+                <CInputGroupText>
+                  <CIcon icon={cilEnvelopeClosed} />
+                </CInputGroupText>
+                <CFormInput
+                  type="email"
+                  name="email"
+                  placeholder="usuario@loteria.gob.ve"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  autoComplete="email"
+                  required
+                />
+              </CInputGroup>
+            </div>
+
+            {/* Contraseña */}
+            <div className="auth-input-group">
+              <CFormLabel className="auth-label">Contraseña</CFormLabel>
+              <CInputGroup>
+                <CInputGroupText>
+                  <CIcon icon={cilLockLocked} />
+                </CInputGroupText>
+                <CFormInput
+                  type="password"
+                  name="password"
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  autoComplete="current-password"
+                  required
+                />
+              </CInputGroup>
+            </div>
+
+            {/* Acción principal */}
+            <CButton
+              type="submit"
+              className="btn-auth-primary mt-2"
+              disabled={loadingAction}
+            >
+              {loadingAction ? 'Ingresando...' : 'Iniciar Sesión'}
+            </CButton>
+          </CForm>
+        </CCardBody>
+
+        {/* --- Footer con links --- */}
+        <CCardFooter className="auth-card__footer">
+          <div className="auth-footer__links">
+            <button
+              type="button"
+              className="btn-auth-link"
+              onClick={() => navigate('/register')}
+            >
+              ¿No tienes cuenta? Regístrate
+            </button>
+          </div>
+          <button
+            type="button"
+            className="btn-auth-link"
+            onClick={() => setModalRecuperar(true)}
+          >
+            ¿Olvidaste tu contraseña?
+          </button>
+        </CCardFooter>
+      </CCard>
     </div>
   )
 }

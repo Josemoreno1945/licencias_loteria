@@ -1,12 +1,16 @@
 import { createContext, useContext, useState, useCallback } from 'react'
-import { login as loginService, logout as logoutService } from '../services/auth.service'
+import { login as loginService, logout as logoutService, register as registerService } from '../services/auth.service'
 
 const AuthContext = createContext(null)
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const stored = localStorage.getItem('user')
-    return stored ? JSON.parse(stored) : null
+    try {
+      return stored && stored !== 'undefined' ? JSON.parse(stored) : null
+    } catch (e) {
+      return null
+    }
   })
 
   const login = useCallback(async (credentials) => {
@@ -17,6 +21,11 @@ export const AuthProvider = ({ children }) => {
     return data
   }, [])
 
+  const register = useCallback(async (userData) => {
+    const data = await registerService(userData)
+    return data
+  }, [])
+
   const logout = useCallback(() => {
     logoutService()
     localStorage.removeItem('user')
@@ -24,7 +33,7 @@ export const AuthProvider = ({ children }) => {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, login, logout, register, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   )
