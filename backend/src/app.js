@@ -4,7 +4,9 @@ import morgan from "morgan";
 
 import usuarios_rutas from "./routes/usuarios.routes.js";
 import comercializadores_rutas from "./routes/comercializadores.routes.js";
-import personas_rutas from "./routes/personas.routes.js"
+import personas_rutas from "./routes/personas.routes.js";
+import bancos_rutas from "./routes/bancos.routes.js";
+import operadoras_rutas from "./routes/operadoras.routes.js";
 
 import { errorHandler } from "./middlewares/errorHandler.js";
 
@@ -19,6 +21,8 @@ app.use(express.json());
 app.use(usuarios_rutas);
 app.use(comercializadores_rutas);
 app.use(personas_rutas);
+app.use(bancos_rutas);
+app.use(operadoras_rutas);
 
 // Manejador de errores
 app.use(errorHandler);

@@ -47,6 +47,26 @@ export const errors = {
     message: "El email ya esta registrado",
   },
 
+  // Operadoras
+  operadora_no_encontrada: {
+    status: 404,
+    message: "Operadora no encontrada",
+  },
+  operadora_rif_duplicado: {
+    status: 409,
+    message: "El rif esta duplicado",
+  },
+
+  // bancos
+  bancos_no_encontrada: {
+    status: 404,
+    message: "Banco no encontrado",
+  },
+  bancos_nombre_duplicado: {
+    status: 409,
+    message: "El nombre esta duplicado",
+  },
+
   //login---------------------------------------------------
   InvalidPassword: {
     status: 401,
