@@ -1,4 +1,3 @@
-import { token } from "morgan";
 
 export function throwError(errorObj) {
   const error = new Error(errorObj.message);

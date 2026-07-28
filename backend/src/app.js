@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 
+import auth_rutas from "./routes/auth.routes.js";
 import usuarios_rutas from "./routes/usuarios.routes.js";
 import comercializadores_rutas from "./routes/comercializadores.routes.js";
 import personas_rutas from "./routes/personas.routes.js";
@@ -18,6 +19,7 @@ app.use(morgan("dev"));
 app.use(express.json());
 
 // Rutas
+app.use(auth_rutas);
 app.use(usuarios_rutas);
 app.use(comercializadores_rutas);
 app.use(personas_rutas);
