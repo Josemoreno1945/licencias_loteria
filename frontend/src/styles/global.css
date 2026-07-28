@@ -1,0 +1,29 @@
+/* CoreUI base */
+@import '@coreui/coreui/dist/css/coreui.min.css';
+
+/* Variables globales */
+:root {
+  --color-primary: #321fdb;
+  --color-secondary: #6c757d;
+  --color-success: #2eb85c;
+  --color-danger: #e55353;
+  --font-base: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  font-family: var(--font-base);
+  background-color: #f4f6f9;
+  margin: 0;
+}
+
+/* Utilidades rápidas */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
