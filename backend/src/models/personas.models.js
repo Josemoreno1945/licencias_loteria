@@ -72,6 +72,6 @@ export const get_ci_rif = async (ci_rif) => {
   SELECT ci_rif , razon_social , tipo_persona , direccion_fiscal , telefono , email
   FROM personas
   WHERE ci_rif = $1`;
-  const result = await pool.query(query, [user_name]);
+  const result = await pool.query(query, [ci_rif]);
   return !!result.rows[0];
 };

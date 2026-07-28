@@ -50,9 +50,9 @@ export const crear_c_personas = async (req, res, next) => {
     const data = req.body;
 
     const parseP = persona_schema.safeParse(data);
-    if (!parseU.success) {
+    if (!parseP.success) {
       return res.status(400).json({
-        errors: parseU.error.errors,
+        errors: parseP.error.errors,
       });
     }
 
@@ -105,11 +105,11 @@ export const actualizar_personas = async (req, res, next) => {
     }
 
     const data = req.body;
-    const parseU = persona_schema.safeParse(data); //esquema ARREGLAR -----------------
+    const parseP = persona_schema.safeParse(data); //esquema ARREGLAR -----------------
 
-    if (!parseU.success) {
+    if (!parseP.success) {
       return res.status(400).json({
-        errors: parseU.error.errors,
+        errors: parseP.error.errors,
       });
     }
 

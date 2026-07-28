@@ -102,7 +102,7 @@ export const eliminar_c_usuario = async (req, res, next) => {
   }
 };
 
-//put------------------------------------------------------
+//put------------------------------------------------------ARREGLARRRRRRRRRRRRRRRRRRRR
 export const actualizar_usuario = async (req, res, next) => {
   try {
     const id = req.params.id;

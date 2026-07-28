@@ -14,7 +14,7 @@ export const persona_schema = z.object({
       "La razon social/nombre completo no puede exceder los 100 caracteres",
     ),
 
-  tipo_persona: z.enum(["Natural", "Juridica"]),
+  tipo_persona: z.enum(["natural", "juridica"]),
 
   direccion_fiscal: z
     .string()
