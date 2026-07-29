@@ -45,6 +45,16 @@ export const errors = {
     status: 409,
     message: "El email ya esta registrado",
   },
+  
+  // Representantes
+  representante_no_encontrado: {
+    status: 404,
+    message: "Representante no encontrado",
+  },
+  representante_duplicado: {
+    status: 409,
+    message: "La persona ya es representante de este comercializador",
+  },
 
   // Operadoras
   operadora_no_encontrada: {
@@ -65,6 +75,17 @@ export const errors = {
     status: 409,
     message: "El nombre esta duplicado",
   },
+
+  // centros de apuestas
+  centros_apuesta_no_encontrada: {
+    status: 404,
+    message: "Centro de apuestas no encontrado",
+  },
+  centros_apuesta_nombre_duplicado: {
+    status: 409,
+    message: "El nombre esta duplicado",
+  },
+
 
   //login---------------------------------------------------
   InvalidPassword: {
