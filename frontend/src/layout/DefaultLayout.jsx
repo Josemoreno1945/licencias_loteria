@@ -1,57 +1,56 @@
-import { Outlet } from 'react-router-dom'
-import {
-  CContainer,
-  CSidebar,
-  CSidebarBrand,
-  CSidebarNav,
-  CNavItem,
-  CNavTitle,
-  CHeader,
-  CHeaderBrand,
-  CHeaderNav,
-  CHeaderToggler,
-} from '@coreui/react'
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../modules/auth/store/AuthContext'
+import { Outlet } from 'react-router-dom'
+import AppSidebar from './AppSidebar'
+import AppHeader from './AppHeader'
+import '../styles/layout.css'
 
+/**
+ * DefaultLayout — Hub principal del panel de administración.
+ *
+ * Layout con flexbox: sidebar + contenido en fila.
+ * El sidebar NO está en position:fixed, empuja el contenido lateralmente.
+ *
+ *   ┌──────────────────────────────────────────────────┐
+ *   │  AppHeader (sticky, cubre todo el ancho)         │
+ *   ├──────────────┬───────────────────────────────────┤
+ *   │  AppSidebar  │   <Outlet />                      │
+ *   │  (flex item) │   (contenido de cada ruta)        │
+ *   └──────────────┴───────────────────────────────────┘
+ */
 const DefaultLayout = () => {
-  const [sidebarVisible, setSidebarVisible] = useState(true)
-  const { logout, user } = useAuth()
-  const navigate = useNavigate()
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
+  const [sidebarShow, setSidebarShow] = useState(true)
 
   return (
-    <div className="wrapper d-flex flex-column min-vh-100">
-      <CHeader position="sticky" className="mb-4">
-        <CHeaderToggler onClick={() => setSidebarVisible(!sidebarVisible)} />
-        <CHeaderBrand>Proyecto Licencias</CHeaderBrand>
-        <CHeaderNav className="ms-auto">
-          <span className="me-3">Hola, {user?.nombre || 'Usuario'}</span>
-          <button className="btn btn-sm btn-outline-danger" onClick={handleLogout}>
-            Cerrar sesión
-          </button>
-        </CHeaderNav>
-      </CHeader>
+    <div className="admin-layout">
 
-      <div className="body flex-grow-1 px-3">
-        <CSidebar visible={sidebarVisible}>
-          <CSidebarBrand>Licencias</CSidebarBrand>
-          <CSidebarNav>
-            <CNavTitle>Menú</CNavTitle>
-            <CNavItem href="/dashboard">Dashboard</CNavItem>
-            <CNavItem href="/licencias">Licencias</CNavItem>
-            <CNavItem href="/operadoras">Operadoras</CNavItem>
-          </CSidebarNav>
-        </CSidebar>
+      {/* ── HEADER sticky arriba de todo ── */}
+      <AppHeader
+        sidebarShow={sidebarShow}
+        setSidebarShow={setSidebarShow}
+      />
 
-        <CContainer fluid>
-          <Outlet />
-        </CContainer>
+      {/* ── FILA: sidebar + contenido ── */}
+      <div className="admin-body">
+
+        {/* Sidebar colapsable */}
+        <AppSidebar
+          sidebarShow={sidebarShow}
+          setSidebarShow={setSidebarShow}
+        />
+
+        {/* Área central — vacía, lista para el contenido */}
+        <main className="admin-main">
+          {/*
+            ╔══════════════════════════════════════════════╗
+            ║  ÁREA CENTRAL — RESERVADA PARA VISTAS HIJAS  ║
+            ║  El buscador y contenido van aquí después.   ║
+            ╚══════════════════════════════════════════════╝
+          */}
+          <div className="admin-content">
+            <Outlet />
+          </div>
+        </main>
+
       </div>
     </div>
   )

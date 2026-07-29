@@ -1,19 +1,27 @@
+/* Google Fonts — Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 /* CoreUI base */
 @import '@coreui/coreui/dist/css/coreui.min.css';
 
+/* Layout estilos */
+@import './layout.css';
+
 /* Variables globales */
 :root {
-  --color-primary: #321fdb;
+  --color-primary: #6384ff;
   --color-secondary: #6c757d;
   --color-success: #2eb85c;
   --color-danger: #e55353;
-  --font-base: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-base: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
 body {
   font-family: var(--font-base);
   background-color: #f4f6f9;
   margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Utilidades rápidas */

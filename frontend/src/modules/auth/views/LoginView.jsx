@@ -73,6 +73,10 @@ const LoginView = () => {
     setActionLabel('Iniciando sesión...')
     try {
       await login(formData)
+      // Primero apagamos el spinner, LUEGO navegamos para evitar el
+      // crash aria-hidden de CoreUI al desmontar un CModal abierto.
+      setLoadingAction(false)
+      setActionLabel('')
       navigate('/dashboard')
     } catch (err) {
       const errData = err?.response?.data
@@ -123,22 +127,17 @@ const LoginView = () => {
   return (
     <div className="auth-page">
 
-      {/* ======== Modal: Cargando ======== */}
-      <CModal
-        visible={loadingAction}
-        backdrop="static"
-        keyboard={false}
-        alignment="center"
-        onClose={() => {}}
-      >
-        <CModalHeader className="auth-modal-header" closeButton={false}>
-          {actionLabel}
-        </CModalHeader>
-        <CModalBody className="d-flex align-items-center gap-3 py-4">
-          <CSpinner style={{ color: 'var(--lot-azul-med)' }} />
-          <span style={{ color: 'var(--lot-azul)', fontWeight: 500 }}>{actionLabel}</span>
-        </CModalBody>
-      </CModal>
+      {/* ======== Overlay: Cargando (sin CModal para evitar aria-hidden crash) ======== */}
+      {loadingAction && (
+        <div className="auth-loading-overlay">
+          <div className="auth-loading-box">
+            <CSpinner style={{ color: 'var(--lot-azul-med, #321fdb)' }} />
+            <span style={{ color: 'var(--lot-azul, #321fdb)', fontWeight: 500, marginTop: '0.75rem' }}>
+              {actionLabel}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* ======== Modal: Error ======== */}
       <CModal

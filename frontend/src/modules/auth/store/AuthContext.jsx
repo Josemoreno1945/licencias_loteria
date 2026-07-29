@@ -16,8 +16,10 @@ export const AuthProvider = ({ children }) => {
   const login = useCallback(async (credentials) => {
     const data = await loginService(credentials)
     localStorage.setItem('token', data.token)
-    localStorage.setItem('user', JSON.stringify(data.user))
-    setUser(data.user)
+    // El backend devuelve { token, usuario: {...} } — no "user"
+    const user = data.usuario ?? data.user
+    localStorage.setItem('user', JSON.stringify(user))
+    setUser(user)
     return data
   }, [])
 
