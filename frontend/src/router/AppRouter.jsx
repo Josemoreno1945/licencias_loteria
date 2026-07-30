@@ -15,6 +15,9 @@ import LicenciasView from '../modules/licencias/views/LicenciasView'
 // Operadoras
 import OperadorasView from '../modules/operadoras/views/OperadorasView'
 
+// Personas
+import PersonasView from '../modules/personas/views/personasView'
+
 const AppRouter = () => {
   return (
     <BrowserRouter>
@@ -36,6 +39,7 @@ const AppRouter = () => {
           <Route path="dashboard" element={<DashboardView />} />
           <Route path="licencias" element={<LicenciasView />} />
           <Route path="operadoras" element={<OperadorasView />} />
+          <Route path="personas" element={<PersonasView />} />
         </Route>
 
         {/* Fallback */}

@@ -1,11 +1,11 @@
 import {
-    get_centros_apuesta,
-    get_centros_apuesta_id,
-    get_centros_apuesta_activos,
-    crear_centros_apuesta,
-    eliminar_centros_apuesta_id,
-    actualizar_centros_apuesta_id,
-    get_centros_apuesta_nombre
+  get_centros_apuesta,
+  get_centros_apuesta_id,
+  get_centros_apuesta_activos,
+  crear_centros_apuesta,
+  eliminar_centros_apuesta_id,
+  actualizar_centros_apuesta_id,
+  get_centros_apuesta_nombre,
 } from "../models/centros_de_apuesta.models.js";
 
 import { errors, throwError } from "../utils/errors.js";
@@ -48,6 +48,14 @@ export const get_c_centros_apuesta_id = async (req, res, next) => {
   }
 };
 
+export const get_c_centros_apuesta_activos = async (req, res, next) => {
+  try {
+    const rows = await get_centros_apuesta_activos();
+    res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+};
 
 // post ---------------------------------------------------------
 export const crear_c_centros_apuesta = async (req, res, next) => {
