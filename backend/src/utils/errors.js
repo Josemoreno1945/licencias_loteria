@@ -1,4 +1,3 @@
-
 export function throwError(errorObj) {
   const error = new Error(errorObj.message);
   error.status = errorObj.status;
@@ -45,7 +44,7 @@ export const errors = {
     status: 409,
     message: "El email ya esta registrado",
   },
-  
+
   // Representantes
   representante_no_encontrado: {
     status: 404,
@@ -86,6 +85,15 @@ export const errors = {
     message: "El nombre esta duplicado",
   },
 
+  // Juegos
+  juegos_no_encontrados: {
+    status: 404,
+    message: "Juego no encontrado",
+  },
+  juegos_nombre_duplicado: {
+    status: 409,
+    message: "El nombre esta duplicado",
+  },
 
   //login---------------------------------------------------
   InvalidPassword: {

@@ -10,6 +10,7 @@ import bancos_rutas from "./routes/bancos.routes.js";
 import operadoras_rutas from "./routes/operadoras.routes.js";
 import comercializadores_representantes_rutas from "./routes/comercializadores_representantes.routes.js";
 import centros_apuesta_rutas from "./routes/centros_apuesta.routes.js";
+import juegos_rutas from "./routes/juegos.routes.js";
 
 import { errorHandler } from "./middlewares/errorHandler.js";
 
@@ -29,6 +30,7 @@ app.use(bancos_rutas);
 app.use(operadoras_rutas);
 app.use(comercializadores_representantes_rutas);
 app.use(centros_apuesta_rutas);
+app.use(juegos_rutas);
 
 // Manejador de errores
 app.use(errorHandler);
