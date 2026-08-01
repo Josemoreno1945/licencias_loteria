@@ -11,6 +11,14 @@ import operadoras_rutas from "./routes/operadoras.routes.js";
 import comercializadores_representantes_rutas from "./routes/comercializadores_representantes.routes.js";
 import centros_apuesta_rutas from "./routes/centros_apuesta.routes.js";
 import juegos_rutas from "./routes/juegos.routes.js";
+import permisos_juego_rutas from "./routes/permisos_juego.routes.js";
+import solicitudes_rutas from "./routes/solicitudes.routes.js";
+import documentos_emitidos_rutas from "./routes/documentos_emitidos.routes.js";
+import documento_juegos_rutas from "./routes/documento_juegos.routes.js";
+import licencias_rutas from "./routes/licencias.routes.js";
+import autorizaciones_especiales_rutas from "./routes/autorizaciones_especiales.routes.js";
+import participaciones_rutas from "./routes/participaciones.routes.js";
+import pagos_rutas from "./routes/pagos.routes.js";
 
 import { errorHandler } from "./middlewares/errorHandler.js";
 
@@ -31,6 +39,14 @@ app.use(operadoras_rutas);
 app.use(comercializadores_representantes_rutas);
 app.use(centros_apuesta_rutas);
 app.use(juegos_rutas);
+app.use(permisos_juego_rutas);
+app.use(solicitudes_rutas);
+app.use(documentos_emitidos_rutas);
+app.use(documento_juegos_rutas);
+app.use(licencias_rutas);
+app.use(autorizaciones_especiales_rutas);
+app.use(participaciones_rutas);
+app.use(pagos_rutas);
 
 // Manejador de errores
 app.use(errorHandler);

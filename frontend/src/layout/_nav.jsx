@@ -7,7 +7,6 @@ import {
   cilFactory,
   cilLocationPin,
   cilClipboard,
-  cilDescription,
   cilTask,
   cilPaperclip,
   cilBank,
@@ -18,14 +17,14 @@ import {
 } from '@coreui/icons'
 
 /**
- * Configuración de navegación del sidebar.
+ * Configuracion de navegacion del sidebar.
  * Cada objeto puede ser de tipo:
  *   - { component: CNavTitle, name }
  *   - { component: CNavItem, name, to, icon }
  *   - { component: CNavGroup, name, icon, items: [...] }
  */
 const _nav = [
-  // ─── INICIO ──────────────────────────────────────────────
+  // INICIO
   {
     component: CNavTitle,
     name: 'Principal',
@@ -37,104 +36,262 @@ const _nav = [
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
   },
 
-  // ─── ENTIDADES ───────────────────────────────────────────
+  // ENTIDADES
   {
     component: CNavTitle,
-    name: 'Gestión de Entidades',
+    name: 'Gestion de Entidades',
   },
   {
-    component: CNavItem,
+    component: CNavGroup,
     name: 'Personas',
-    to: '/personas',
     icon: <CIcon icon={cilPeople} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Lista',
+        to: '/personas/lista',
+        indent: true,
+      },
+      {
+        component: CNavItem,
+        name: 'Registro',
+        to: '/personas/registro',
+        indent: true,
+      },
+    ],
   },
   {
-    component: CNavItem,
+    component: CNavGroup,
     name: 'Operadoras',
-    to: '/operadoras',
     icon: <CIcon icon={cilFactory} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Lista',
+        to: '/operadoras/lista',
+        indent: true,
+      },
+      {
+        component: CNavItem,
+        name: 'Registro',
+        to: '/operadoras/registro',
+        indent: true,
+      },
+    ],
   },
   {
-    component: CNavItem,
+    component: CNavGroup,
     name: 'Comercializadores',
-    to: '/comercializadores',
     icon: <CIcon icon={cilBuilding} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Lista',
+        to: '/comercializadores/lista',
+        indent: true,
+      },
+      {
+        component: CNavItem,
+        name: 'Registro',
+        to: '/comercializadores/registro',
+        indent: true,
+      },
+    ],
   },
   {
-    component: CNavItem,
+    component: CNavGroup,
     name: 'Centros de Apuesta',
-    to: '/centros-apuesta',
     icon: <CIcon icon={cilLocationPin} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Lista',
+        to: '/centros-apuesta/lista',
+        indent: true,
+      },
+      {
+        component: CNavItem,
+        name: 'Registro',
+        to: '/centros-apuesta/registro',
+        indent: true,
+      },
+    ],
   },
 
-  // ─── TRÁMITES ────────────────────────────────────────────
+  // TRAMITES
   {
     component: CNavTitle,
-    name: 'Trámites y Documentos',
+    name: 'Tramites y Documentos',
   },
   {
-    component: CNavItem,
+    component: CNavGroup,
     name: 'Solicitudes',
-    to: '/solicitudes',
     icon: <CIcon icon={cilClipboard} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Lista',
+        to: '/solicitudes/lista',
+        indent: true,
+      },
+      {
+        component: CNavItem,
+        name: 'Registro',
+        to: '/solicitudes/registro',
+        indent: true,
+      },
+    ],
   },
+
+  // DOCUMENTOS EMITIDOS
   {
     component: CNavTitle,
     name: 'Documentos Emitidos',
   },
   {
-    component: CNavItem,
+    component: CNavGroup,
     name: 'Licencias',
-    to: '/licencias',
     icon: <CIcon icon={cilTask} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Lista',
+        to: '/licencias/lista',
+        indent: true,
+      },
+      {
+        component: CNavItem,
+        name: 'Registro',
+        to: '/licencias/registro',
+        indent: true,
+      },
+    ],
   },
   {
-    component: CNavItem,
+    component: CNavGroup,
     name: 'Participaciones',
-    to: '/participaciones',
     icon: <CIcon icon={cilPaperclip} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Lista',
+        to: '/participaciones/lista',
+        indent: true,
+      },
+      {
+        component: CNavItem,
+        name: 'Registro',
+        to: '/participaciones/registro',
+        indent: true,
+      },
+    ],
   },
   {
-    component: CNavItem,
+    component: CNavGroup,
     name: 'Autorizaciones Especiales',
-    to: '/autorizaciones',
     icon: <CIcon icon={cilShieldAlt} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Lista',
+        to: '/autorizaciones/lista',
+        indent: true,
+      },
+      {
+        component: CNavItem,
+        name: 'Registro',
+        to: '/autorizaciones/registro',
+        indent: true,
+      },
+    ],
   },
 
-  // ─── CATÁLOGOS ───────────────────────────────────────────
+  // CATALOGOS
   {
     component: CNavTitle,
-    name: 'Catálogos',
+    name: 'Catalogos',
   },
   {
-    component: CNavItem,
+    component: CNavGroup,
     name: 'Bancos',
-    to: '/bancos',
     icon: <CIcon icon={cilBank} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Lista',
+        to: '/bancos/lista',
+        indent: true,
+      },
+      {
+        component: CNavItem,
+        name: 'Registro',
+        to: '/bancos/registro',
+        indent: true,
+      },
+    ],
   },
   {
-    component: CNavItem,
+    component: CNavGroup,
     name: 'Juegos',
-    to: '/juegos',
     icon: <CIcon icon={cilGamepad} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Lista',
+        to: '/juegos/lista',
+        indent: true,
+      },
+      {
+        component: CNavItem,
+        name: 'Registro',
+        to: '/juegos/registro',
+        indent: true,
+      },
+    ],
   },
 
-  // ─── ADMINISTRACIÓN ──────────────────────────────────────
+  // ADMINISTRACION
   {
     component: CNavTitle,
-    name: 'Administración',
+    name: 'Administracion',
   },
   {
-    component: CNavItem,
+    component: CNavGroup,
     name: 'Usuarios',
-    to: '/usuarios',
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Lista',
+        to: '/usuarios/lista',
+        indent: true,
+      },
+      {
+        component: CNavItem,
+        name: 'Registro',
+        to: '/usuarios/registro',
+        indent: true,
+      },
+    ],
   },
   {
-    component: CNavItem,
+    component: CNavGroup,
     name: 'Pagos',
-    to: '/pagos',
     icon: <CIcon icon={cilCreditCard} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Lista',
+        to: '/pagos/lista',
+        indent: true,
+      },
+      {
+        component: CNavItem,
+        name: 'Registro',
+        to: '/pagos/registro',
+        indent: true,
+      },
+    ],
   },
 ]
 

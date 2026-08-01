@@ -95,6 +95,74 @@ export const errors = {
     message: "El nombre esta duplicado",
   },
 
+  // Permisos de juego
+  permiso_juego_no_encontrado: {
+    status: 404,
+    message: "Permiso de juego no encontrado",
+  },
+  permiso_juego_duplicado: {
+    status: 409,
+    message: "Ya existe un permiso para ese juego con ese nivel",
+  },
+
+  // Solicitudes
+  solicitud_no_encontrada: {
+    status: 404,
+    message: "Solicitud no encontrada",
+  },
+
+  // Documentos emitidos
+  documento_emitido_no_encontrado: {
+    status: 404,
+    message: "Documento emitido no encontrado",
+  },
+  documento_numero_duplicado: {
+    status: 409,
+    message: "El numero de documento ya esta registrado",
+  },
+  documento_papel_duplicado: {
+    status: 409,
+    message: "El papel de seguridad ya esta registrado",
+  },
+
+  // Documento juegos
+  documento_juego_no_encontrado: {
+    status: 404,
+    message: "Relacion documento-juego no encontrada",
+  },
+  documento_juego_duplicado: {
+    status: 409,
+    message: "El juego ya esta registrado en ese documento",
+  },
+
+  // Licencias
+  licencia_no_encontrada: {
+    status: 404,
+    message: "Licencia no encontrada",
+  },
+
+  // Autorizaciones especiales
+  autorizacion_no_encontrada: {
+    status: 404,
+    message: "Autorizacion especial no encontrada",
+  },
+
+  // Participaciones
+  participacion_no_encontrada: {
+    status: 404,
+    message: "Participacion no encontrada",
+  },
+
+  // Pagos
+  pago_no_encontrado: {
+    status: 404,
+    message: "Pago no encontrado",
+  },
+  pago_referencia_duplicada: {
+    status: 409,
+    message: "El numero de referencia ya esta registrado",
+  },
+
   //login---------------------------------------------------
   InvalidPassword: {
     status: 401,
