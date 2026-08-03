@@ -96,6 +96,25 @@ const UsuariosForm = ({ formData, handleInputChange, onSubmit }) => {
             </CFormSelect>
           </CInputGroup>
         </CCol>
+
+        {/* Estado */}
+        <CCol md={6} className="mb-3">
+          <CFormLabel>Estado</CFormLabel>
+          <CInputGroup>
+            <CInputGroupText>
+              <CIcon icon={cilUser} />
+            </CInputGroupText>
+            <CFormSelect
+              name="estado"
+              value={formData.estado}
+              onChange={handleInputChange}
+              required
+            >
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
+            </CFormSelect>
+          </CInputGroup>
+        </CCol>
       </CRow>
 
       <div className="d-flex justify-content-end mt-3">

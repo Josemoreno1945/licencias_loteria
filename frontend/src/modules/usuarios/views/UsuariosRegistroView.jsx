@@ -11,6 +11,7 @@ const UsuariosRegistroView = () => {
     email: '',
     password: '',
     rol: '',
+    estado: 'activo',
   })
 
   // Estados para los modales
@@ -54,6 +55,7 @@ const UsuariosRegistroView = () => {
         email: '',
         password: '',
         rol: '',
+        estado: 'activo',
       })
     } catch (err) {
       let errorMsg = 'Ocurrio un error inesperado al registrar el usuario.'

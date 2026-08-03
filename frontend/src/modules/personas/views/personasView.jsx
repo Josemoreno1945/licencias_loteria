@@ -53,8 +53,7 @@ const PersonasView = () => {
 
     try {
       const token = localStorage.getItem('token');
-      // Asegurarse de que la URL apunte al endpoint correcto en el backend
-      const response = await axios.post('http://localhost:4000/api/personas', formData, {
+      const response = await axios.post('http://localhost:4000/personas', formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

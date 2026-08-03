@@ -37,7 +37,7 @@ const BancosForm = ({ formData, handleInputChange, onSubmit }) => {
 
         {/* Codigo BCV */}
         <CCol md={4} className="mb-3">
-          <CFormLabel>Codigo BCV (Opcional)</CFormLabel>
+          <CFormLabel>Codigo BCV</CFormLabel>
           <CInputGroup>
             <CInputGroupText>
               <CIcon icon={cilCode} />

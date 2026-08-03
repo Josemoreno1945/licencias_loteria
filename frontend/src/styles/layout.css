@@ -180,9 +180,25 @@
   background-color: rgba(255, 255, 255, 0.25);
 }
 
-/* Fix overlap en grupos de navegación expandidos */
+.app-sidebar .nav-group-items {
+  overflow: hidden !important; /* Esto es clave: corta el texto que intenta sobresalir */
+  transition: height var(--transition-base), opacity var(--transition-base);
+}
+
+/* Estado: CERRADO */
+.app-sidebar .nav-group:not(.show) > .nav-group-items {
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0;
+  pointer-events: none; /* Evita que se puedan clickear botones invisibles */
+}
+
+/* Estado: ABIERTO */
 .app-sidebar .nav-group.show > .nav-group-items {
   height: auto !important;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* ── NAV TITLES ─────────────────────────────────────────────── */

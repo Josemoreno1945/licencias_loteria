@@ -39,7 +39,7 @@ export const crear_usuario = async (data) => {
     data.email,
     data.password_hash,
     data.rol,
-    data.estado,
+    data.estado ?? "activo",
   ];
   const result = await pool.query(query, values);
   return result.rows;

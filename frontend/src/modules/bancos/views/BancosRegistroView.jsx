@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { CCard, CCardBody, CCardHeader, CContainer } from '@coreui/react'
-import axiosInstance from '../../../api/axiosInstance'
+import axios from 'axios'
 import FeedbackModal from '../../personas/components/FeedbackModal'
 import BancosForm from '../components/BancosForm'
 
@@ -39,7 +39,12 @@ const BancosRegistroView = () => {
     })
 
     try {
-      const response = await axiosInstance.post('/bancos', formData)
+      const token = localStorage.getItem('token')
+      const response = await axios.post('http://localhost:4000/bancos', formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
 
       setModalState({
         visible: true,

@@ -67,7 +67,7 @@ const _nav = [
     items: [
       {
         component: CNavItem,
-        name: 'Lista',
+        name: 'lista',
         to: '/operadoras/lista',
         indent: true,
       },
