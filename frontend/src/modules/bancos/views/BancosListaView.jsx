@@ -17,9 +17,11 @@ import {
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
+import { useAuth } from '../../auth/store/AuthContext'
 
 const BancosListaView = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const { data: bancos, loading, error, refetch } = useFetch('/bancos')
 
   return (
@@ -32,13 +34,15 @@ const BancosListaView = () => {
               Catalogo de bancos registrados en el sistema.
             </p>
           </div>
-          <CButton
-            color="primary"
-            size="sm"
-            onClick={() => navigate('/bancos/registro')}
-          >
-            + Nuevo Banco
-          </CButton>
+          {user?.rol !== 'supervisor' && (
+            <CButton
+              color="primary"
+              size="sm"
+              onClick={() => navigate('/bancos/registro')}
+            >
+              + Nuevo Banco
+            </CButton>
+          )}
         </CCardHeader>
 
         <CCardBody>

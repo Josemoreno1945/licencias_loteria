@@ -34,3 +34,33 @@ export const isSuperAdmin = (req, res, next) => {
   }
   next();
 };
+
+/**
+ * Middleware de roles genérico.
+ * Uso: hasRole('superAdmin', 'gerente')
+ * Roles disponibles: superAdmin | gerente | gestor_de_tramites | supervisor
+ */
+export const hasRole = (...roles) => (req, res, next) => {
+  if (!roles.includes(req.user?.rol)) {
+    return next(Object.assign(new Error(errors.unauthorized.message), { status: errors.unauthorized.status }));
+  }
+  next();
+};
+
+/**
+ * Bloquea al rol 'gestor_de_tramites' del acceso a la gestión de usuarios.
+ * Roles permitidos: superAdmin y gerente.
+ */
+export const soloAdmins = hasRole('superAdmin', 'gerente');
+
+/**
+ * Bloquea a 'supervisor' de rutas de escritura (POST/PUT/DELETE).
+ * El supervisor sólo tiene lectura.
+ */
+export const noSupervisorWrite = (req, res, next) => {
+  const writeMethod = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method);
+  if (writeMethod && req.user?.rol === 'supervisor') {
+    return next(Object.assign(new Error(errors.unauthorized.message), { status: errors.unauthorized.status }));
+  }
+  next();
+};

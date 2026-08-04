@@ -29,6 +29,14 @@ import {
 import { useAuth } from '../modules/auth/store/AuthContext'
 import '../styles/layout.css'
 
+/** Traduce los nombres exactos de la tabla `rol` (bdd.sql) a etiquetas legibles. */
+const ROLE_LABELS = {
+  superAdmin:         'Super Administrador',
+  gerente:            'Gerente',
+  gestor_de_tramites: 'Gestor de Trámites',
+  supervisor:         'Supervisor',
+}
+
 /**
  * Header principal del panel de administración.
  *
@@ -117,7 +125,7 @@ const AppHeader = ({ sidebarShow, setSidebarShow }) => {
                   {user?.nombre_usuario || user?.nombre || 'Usuario'}
                 </span>
                 <span className="header-role text-muted">
-                  {user?.rol === 'admin' ? 'Administrador' : 'Empleado'}
+                  {ROLE_LABELS[user?.rol] ?? user?.rol ?? 'Usuario'}
                 </span>
               </div>
               {/* Ícono hamburguesa */}
@@ -135,7 +143,7 @@ const AppHeader = ({ sidebarShow, setSidebarShow }) => {
                       {user?.nombre_usuario || 'Usuario'}
                     </div>
                     <small className="text-muted">
-                      {user?.rol === 'admin' ? 'Administrador' : 'Empleado'}
+                      {ROLE_LABELS[user?.rol] ?? user?.rol ?? 'Usuario'}
                     </small>
                   </div>
                 </div>

@@ -17,9 +17,11 @@ import {
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
+import { useAuth } from '../../auth/store/AuthContext'
 
 const PersonasListaView = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const { data: personas, loading, error, refetch } = useFetch('/personas')
 
   return (
@@ -32,13 +34,15 @@ const PersonasListaView = () => {
               Personas naturales y juridicas registradas en el sistema.
             </p>
           </div>
-          <CButton
-            color="primary"
-            size="sm"
-            onClick={() => navigate('/personas/registro')}
-          >
-            + Nueva Persona
-          </CButton>
+          {user?.rol !== 'supervisor' && (
+            <CButton
+              color="primary"
+              size="sm"
+              onClick={() => navigate('/personas/registro')}
+            >
+              + Nueva Persona
+            </CButton>
+          )}
         </CCardHeader>
 
         <CCardBody>

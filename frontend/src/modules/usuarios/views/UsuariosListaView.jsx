@@ -17,9 +17,18 @@ import {
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
+import { useAuth } from '../../auth/store/AuthContext'
+
+const ROLE_LABELS = {
+  superAdmin: 'Super Administrador',
+  gerente: 'Gerente',
+  gestor_de_tramites: 'Gestor de Trámites',
+  supervisor: 'Supervisor',
+}
 
 const UsuariosListaView = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const { data: usuarios, loading, error, refetch } = useFetch('/usuarios')
 
   return (
@@ -32,13 +41,15 @@ const UsuariosListaView = () => {
               Usuarios registrados en el sistema con sus roles y estados.
             </p>
           </div>
-          <CButton
-            color="primary"
-            size="sm"
-            onClick={() => navigate('/usuarios/registro')}
-          >
-            + Nuevo Usuario
-          </CButton>
+          {(user?.rol === 'superAdmin' || user?.rol === 'gerente') && (
+            <CButton
+              color="primary"
+              size="sm"
+              onClick={() => navigate('/usuarios/registro')}
+            >
+              + Nuevo Usuario
+            </CButton>
+          )}
         </CCardHeader>
 
         <CCardBody>
@@ -87,8 +98,8 @@ const UsuariosListaView = () => {
                         </CTableDataCell>
                         <CTableDataCell>{usuario.email}</CTableDataCell>
                         <CTableDataCell>
-                          <CBadge color={usuario.rol === 'admin' ? 'danger' : 'secondary'}>
-                            {usuario.rol === 'admin' ? 'Admin' : 'Empleado'}
+                          <CBadge color={['superAdmin', 'gerente'].includes(usuario.rol) ? 'danger' : 'info'}>
+                            {ROLE_LABELS[usuario.rol] || usuario.rol}
                           </CBadge>
                         </CTableDataCell>
                         <CTableDataCell>

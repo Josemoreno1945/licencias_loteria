@@ -91,8 +91,10 @@ const UsuariosForm = ({ formData, handleInputChange, onSubmit }) => {
               required
             >
               <option value="">Seleccione...</option>
-              <option value="empleado">Empleado</option>
-              <option value="admin">Administrador</option>
+              <option value="superAdmin">Super Administrador</option>
+              <option value="gerente">Gerente</option>
+              <option value="gestor_de_tramites">Gestor de Trámites</option>
+              <option value="supervisor">Supervisor</option>
             </CFormSelect>
           </CInputGroup>
         </CCol>

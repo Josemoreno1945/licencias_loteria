@@ -27,6 +27,12 @@ import BancosRegistroView from '../modules/bancos/views/BancosRegistroView'
 // Licencias (placeholder)
 import LicenciasView from '../modules/licencias/views/LicenciasView'
 
+import RoleRoute from './RoleRoute'
+
+const ADMINS = ['superAdmin', 'gerente']
+const GESTORES = ['superAdmin', 'gerente', 'gestor_de_tramites']
+const TODOS = ['superAdmin', 'gerente', 'gestor_de_tramites', 'supervisor']
+
 const AppRouter = () => {
   return (
     <BrowserRouter>
@@ -51,26 +57,26 @@ const AppRouter = () => {
 
           {/* Personas */}
           <Route path="personas" element={<Navigate to="/personas/lista" replace />} />
-          <Route path="personas/lista" element={<PersonasListaView />} />
-          <Route path="personas/registro" element={<PersonasRegistroView />} />
+          <Route path="personas/lista" element={<RoleRoute allowedRoles={TODOS}><PersonasListaView /></RoleRoute>} />
+          <Route path="personas/registro" element={<RoleRoute allowedRoles={GESTORES}><PersonasRegistroView /></RoleRoute>} />
 
           {/* Operadoras */}
-          <Route path="operadoras" element={<OperadorasView />} />
+          <Route path="operadoras" element={<RoleRoute allowedRoles={TODOS}><OperadorasView /></RoleRoute>} />
 
           {/* Usuarios */}
           <Route path="usuarios" element={<Navigate to="/usuarios/lista" replace />} />
-          <Route path="usuarios/lista" element={<UsuariosListaView />} />
-          <Route path="usuarios/registro" element={<UsuariosRegistroView />} />
+          <Route path="usuarios/lista" element={<RoleRoute allowedRoles={ADMINS}><UsuariosListaView /></RoleRoute>} />
+          <Route path="usuarios/registro" element={<RoleRoute allowedRoles={ADMINS}><UsuariosRegistroView /></RoleRoute>} />
 
           {/* Bancos */}
           <Route path="bancos" element={<Navigate to="/bancos/lista" replace />} />
-          <Route path="bancos/lista" element={<BancosListaView />} />
-          <Route path="bancos/registro" element={<BancosRegistroView />} />
+          <Route path="bancos/lista" element={<RoleRoute allowedRoles={TODOS}><BancosListaView /></RoleRoute>} />
+          <Route path="bancos/registro" element={<RoleRoute allowedRoles={GESTORES}><BancosRegistroView /></RoleRoute>} />
 
           {/* Licencias (placeholder — pendiente de implementar) */}
           <Route path="licencias" element={<Navigate to="/licencias/lista" replace />} />
-          <Route path="licencias/lista" element={<LicenciasView />} />
-          <Route path="licencias/registro" element={<LicenciasView />} />
+          <Route path="licencias/lista" element={<RoleRoute allowedRoles={TODOS}><LicenciasView /></RoleRoute>} />
+          <Route path="licencias/registro" element={<RoleRoute allowedRoles={GESTORES}><LicenciasView /></RoleRoute>} />
 
           {/* Modulos pendientes — redirigen a dashboard hasta que se implementen */}
           <Route path="comercializadores/*" element={<Navigate to="/dashboard" replace />} />
