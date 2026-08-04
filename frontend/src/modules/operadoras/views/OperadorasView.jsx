@@ -1,12 +1,5 @@
-import { CContainer } from '@coreui/react'
+import { Navigate } from 'react-router-dom'
 
-const OperadorasView = () => {
-  return (
-    <CContainer fluid>
-      <h2 className="mb-4">Operadoras</h2>
-      <p className="text-body-secondary">Módulo de gestión de operadoras. Implementa aquí el listado y formularios.</p>
-    </CContainer>
-  )
-}
+const OperadorasView = () => <Navigate to="/operadoras/lista" replace />
 
 export default OperadorasView

@@ -15,6 +15,16 @@ import PersonasRegistroView from '../modules/personas/views/personasView'
 
 // Operadoras
 import OperadorasView from '../modules/operadoras/views/OperadorasView'
+import OperadorasListaView from '../modules/operadoras/views/OperadorasListaView'
+import OperadorasRegistroView from '../modules/operadoras/views/OperadorasRegistroView'
+
+// Comercializadores
+import ComercializadoresListaView from '../modules/comercializadores/views/ComercializadoresListaView'
+import ComercializadoresRegistroView from '../modules/comercializadores/views/ComercializadoresRegistroView'
+
+// Centros de Apuesta
+import CentrosApuestaListaView from '../modules/centros_apuesta/views/CentrosApuestaListaView'
+import CentrosApuestaRegistroView from '../modules/centros_apuesta/views/CentrosApuestaRegistroView'
 
 // Usuarios
 import UsuariosListaView from '../modules/usuarios/views/UsuariosListaView'
@@ -61,7 +71,9 @@ const AppRouter = () => {
           <Route path="personas/registro" element={<RoleRoute allowedRoles={GESTORES}><PersonasRegistroView /></RoleRoute>} />
 
           {/* Operadoras */}
-          <Route path="operadoras" element={<RoleRoute allowedRoles={TODOS}><OperadorasView /></RoleRoute>} />
+          <Route path="operadoras" element={<OperadorasView />} />
+          <Route path="operadoras/lista" element={<RoleRoute allowedRoles={TODOS}><OperadorasListaView /></RoleRoute>} />
+          <Route path="operadoras/registro" element={<RoleRoute allowedRoles={GESTORES}><OperadorasRegistroView /></RoleRoute>} />
 
           {/* Usuarios */}
           <Route path="usuarios" element={<Navigate to="/usuarios/lista" replace />} />
@@ -78,9 +90,17 @@ const AppRouter = () => {
           <Route path="licencias/lista" element={<RoleRoute allowedRoles={TODOS}><LicenciasView /></RoleRoute>} />
           <Route path="licencias/registro" element={<RoleRoute allowedRoles={GESTORES}><LicenciasView /></RoleRoute>} />
 
+          {/* Comercializadores */}
+          <Route path="comercializadores" element={<Navigate to="/comercializadores/lista" replace />} />
+          <Route path="comercializadores/lista" element={<RoleRoute allowedRoles={TODOS}><ComercializadoresListaView /></RoleRoute>} />
+          <Route path="comercializadores/registro" element={<RoleRoute allowedRoles={GESTORES}><ComercializadoresRegistroView /></RoleRoute>} />
+
+          {/* Centros de Apuesta */}
+          <Route path="centros-apuesta" element={<Navigate to="/centros-apuesta/lista" replace />} />
+          <Route path="centros-apuesta/lista" element={<RoleRoute allowedRoles={TODOS}><CentrosApuestaListaView /></RoleRoute>} />
+          <Route path="centros-apuesta/registro" element={<RoleRoute allowedRoles={GESTORES}><CentrosApuestaRegistroView /></RoleRoute>} />
+
           {/* Modulos pendientes — redirigen a dashboard hasta que se implementen */}
-          <Route path="comercializadores/*" element={<Navigate to="/dashboard" replace />} />
-          <Route path="centros-apuesta/*" element={<Navigate to="/dashboard" replace />} />
           <Route path="solicitudes/*" element={<Navigate to="/dashboard" replace />} />
           <Route path="participaciones/*" element={<Navigate to="/dashboard" replace />} />
           <Route path="autorizaciones/*" element={<Navigate to="/dashboard" replace />} />

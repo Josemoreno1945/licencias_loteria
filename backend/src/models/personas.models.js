@@ -3,7 +3,7 @@ import { pool } from "../db.js";
 //get--------------------------------------------------------------------
 export const get_personas = async () => {
   const query = `
-  SELECT ci_rif , razon_social , tipo_persona , direccion_fiscal , telefono , email
+  SELECT id_persona, ci_rif , razon_social , tipo_persona , direccion_fiscal , telefono , email
   FROM personas`;
   const result = await pool.query(query);
   return result.rows;
@@ -11,7 +11,7 @@ export const get_personas = async () => {
 
 export const get_personas_id = async (id) => {
   const query = ` 
-  SELECT ci_rif , razon_social , tipo_persona , direccion_fiscal , telefono , email
+  SELECT id_persona, ci_rif , razon_social , tipo_persona , direccion_fiscal , telefono , email
   FROM personas
   WHERE id_persona = $1
   `;
@@ -60,7 +60,7 @@ export const actualizar_persona_id = async (id, data) => {
 
 export const get_persona_email = async (email) => {
   const query = `
-  SELECT ci_rif , razon_social , tipo_persona , direccion_fiscal , telefono , email
+  SELECT id_persona, ci_rif , razon_social , tipo_persona , direccion_fiscal , telefono , email
   FROM personas
   WHERE email = $1`;
   const result = await pool.query(query, [email]);
@@ -69,7 +69,7 @@ export const get_persona_email = async (email) => {
 
 export const get_ci_rif = async (ci_rif) => {
   const query = `
-  SELECT ci_rif , razon_social , tipo_persona , direccion_fiscal , telefono , email
+  SELECT id_persona, ci_rif , razon_social , tipo_persona , direccion_fiscal , telefono , email
   FROM personas
   WHERE ci_rif = $1`;
   const result = await pool.query(query, [ci_rif]);

@@ -3,7 +3,7 @@ import { pool } from "../db.js";
 //get--------------------------------------------------------------------
 export const get_centros_apuesta = async () => {
   const query = `
-  SELECT c.razon_social ,p.ci_rif,p.razon_social, ca.nombre_agencia, ca.direccion,ca.estado
+  SELECT ca.id_centro, c.razon_social AS comercializador_razon_social, p.ci_rif AS persona_ci_rif, p.razon_social AS persona_razon_social, ca.nombre_agencia, ca.direccion, ca.estado
   FROM centros_apuesta AS ca
   JOIN comercializadores AS c ON ca.id_comercializador = c.id_comercializadores
   JOIN personas AS p ON ca.id_persona = p.id_persona`;
@@ -13,7 +13,7 @@ export const get_centros_apuesta = async () => {
 
 export const get_centros_apuesta_id = async (id) => {
   const query = ` 
-  SELECT c.razon_social ,p.ci_rif,p.razon_social, ca.nombre_agencia, ca.direccion,ca.estado
+  SELECT ca.id_centro, c.razon_social AS comercializador_razon_social, p.ci_rif AS persona_ci_rif, p.razon_social AS persona_razon_social, ca.nombre_agencia, ca.direccion, ca.estado
   FROM centros_apuesta AS ca
   JOIN comercializadores AS c ON ca.id_comercializador = c.id_comercializadores
   JOIN personas AS p ON ca.id_persona = p.id_persona
@@ -25,7 +25,7 @@ export const get_centros_apuesta_id = async (id) => {
 
 export const get_centros_apuesta_activos = async () => {
   const query = `
-  SELECT c.razon_social ,p.ci_rif,p.razon_social, ca.nombre_agencia, ca.direccion,ca.estado
+  SELECT ca.id_centro, c.razon_social AS comercializador_razon_social, p.ci_rif AS persona_ci_rif, p.razon_social AS persona_razon_social, ca.nombre_agencia, ca.direccion, ca.estado
   FROM centros_apuesta AS ca
   JOIN comercializadores AS c ON ca.id_comercializador = c.id_comercializadores
   JOIN personas AS p ON ca.id_persona = p.id_persona
@@ -84,7 +84,7 @@ export const actualizar_centros_apuesta_id = async (id, data) => {
 
 export const get_centros_apuesta_nombre = async (email) => {
   const query = `
-  SELECT c.razon_social ,p.ci_rif,p.razon_social, ca.nombre_agencia, ca.direccion,ca.estado
+  SELECT ca.id_centro, c.razon_social AS comercializador_razon_social, p.ci_rif AS persona_ci_rif, p.razon_social AS persona_razon_social, ca.nombre_agencia, ca.direccion, ca.estado
   FROM centros_apuesta AS ca
   JOIN comercializadores AS c ON ca.id_comercializador = c.id_comercializadores
   JOIN personas AS p ON ca.id_persona = p.id_persona

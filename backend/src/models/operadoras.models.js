@@ -3,7 +3,7 @@ import { pool } from "../db.js";
 //get--------------------------------------------------------------------
 export const get_operadoras = async () => {
   const query = `
-  SELECT rif , razon_social , direccion_fiscal , estado
+  SELECT id_operadora, rif , razon_social , direccion_fiscal , estado
   FROM operadoras`;
   const result = await pool.query(query);
   return result.rows;
@@ -11,7 +11,7 @@ export const get_operadoras = async () => {
 
 export const get_operadoras_id = async (id) => {
   const query = ` 
-  SELECT rif , razon_social , direccion_fiscal , estado
+  SELECT id_operadora, rif , razon_social , direccion_fiscal , estado
   FROM operadoras
   WHERE id_operadora = $1
   `;
@@ -21,7 +21,7 @@ export const get_operadoras_id = async (id) => {
 
 export const get_operadoras_activas = async () => {
   const query = `
-    SELECT rif , razon_social , direccion_fiscal , estado
+    SELECT id_operadora, rif , razon_social , direccion_fiscal , estado
     FROM operadoras
     WHERE estado = 'activo'
   `;
@@ -76,7 +76,7 @@ export const actualizar_operadora_id = async (id, data) => {
 
 export const get_operadora_rif = async (rif) => {
   const query = `
-  SELECT rif , razon_social , direccion_fiscal , estado
+  SELECT id_operadora, rif , razon_social , direccion_fiscal , estado
   FROM operadoras
   WHERE rif = $1`;
   const result = await pool.query(query, [rif]);

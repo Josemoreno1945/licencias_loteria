@@ -11,9 +11,15 @@ import {
   CCol,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilAddressBook, cilBuilding, cilHome } from '@coreui/icons'
+import {
+  cilAddressBook,
+  cilBuilding,
+  cilPhone,
+  cilEnvelopeClosed,
+  cilHome,
+} from '@coreui/icons'
 
-const OperadorasForm = ({ formData, handleInputChange, onSubmit }) => {
+const ComercializadoresForm = ({ formData, handleInputChange, onSubmit }) => {
   return (
     <CForm onSubmit={onSubmit}>
       <CRow className="mb-4">
@@ -63,7 +69,7 @@ const OperadorasForm = ({ formData, handleInputChange, onSubmit }) => {
             <CFormInput
               type="text"
               name="razon_social"
-              placeholder="Nombre de la empresa operadora"
+              placeholder="Nombre de la empresa comercializadora"
               value={formData.razon_social}
               onChange={handleInputChange}
               required
@@ -91,13 +97,49 @@ const OperadorasForm = ({ formData, handleInputChange, onSubmit }) => {
         </CCol>
       </CRow>
 
+      <CRow className="mb-4">
+        {/* Teléfono */}
+        <CCol md={6} className="mb-3">
+          <CFormLabel>Teléfono (Opcional)</CFormLabel>
+          <CInputGroup>
+            <CInputGroupText>
+              <CIcon icon={cilPhone} />
+            </CInputGroupText>
+            <CFormInput
+              type="text"
+              name="telefono"
+              placeholder="Ej: 0414-1234567"
+              value={formData.telefono}
+              onChange={handleInputChange}
+            />
+          </CInputGroup>
+        </CCol>
+
+        {/* Email */}
+        <CCol md={6} className="mb-3">
+          <CFormLabel>Correo Electrónico (Opcional)</CFormLabel>
+          <CInputGroup>
+            <CInputGroupText>
+              <CIcon icon={cilEnvelopeClosed} />
+            </CInputGroupText>
+            <CFormInput
+              type="email"
+              name="email"
+              placeholder="ejemplo@correo.com"
+              value={formData.email}
+              onChange={handleInputChange}
+            />
+          </CInputGroup>
+        </CCol>
+      </CRow>
+
       <div className="d-flex justify-content-end mt-3">
         <CButton type="submit" color="primary" size="lg">
-          Registrar Operadora
+          Registrar Comercializador
         </CButton>
       </div>
     </CForm>
   )
 }
 
-export default OperadorasForm
+export default ComercializadoresForm
