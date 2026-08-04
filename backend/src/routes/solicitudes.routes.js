@@ -14,7 +14,7 @@ import {
 } from "../controllers/solicitudes.controllers.js";
 
 // import { verifyToken } from "../middlewares/auth.js";
-// import { isAdmin } from "../middlewares/roles.js";
+// import { isGerente } from "../middlewares/roles.js";
 
 const router = Router();
 

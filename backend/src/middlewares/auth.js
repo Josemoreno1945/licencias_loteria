@@ -21,8 +21,15 @@ export const verifyToken = (req, res, next) => {
 };
 
 
-export const isAdmin = (req, res, next) => {
-  if (req.user?.rol !== "admin") {
+export const isGerente = (req, res, next) => {
+  if (req.user?.rol !== "gerente" && req.user?.rol !== "superAdmin") {
+    return next(Object.assign(new Error(errors.unauthorized.message), { status: errors.unauthorized.status }));
+  }
+  next();
+};
+
+export const isSuperAdmin = (req, res, next) => {
+  if (req.user?.rol !== "superAdmin") {
     return next(Object.assign(new Error(errors.unauthorized.message), { status: errors.unauthorized.status }));
   }
   next();

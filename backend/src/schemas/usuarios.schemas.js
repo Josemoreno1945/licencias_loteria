@@ -10,7 +10,7 @@ const base_usuario_schema = z.object({
     .string({ required_error: "El email es requerido" })
     .email("Solo email valido"),
 
-  rol: z.enum(["admin", "empleado"]).default("empleado"),
+  rol: z.enum(["superAdmin", "gerente", "gestor_de_tramites", "supervisor"]).default("gestor_de_tramites"),
 
   estado: z.enum(["activo", "inactivo"]).default("activo"),
 });

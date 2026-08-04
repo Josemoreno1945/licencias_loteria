@@ -57,10 +57,7 @@ CREATE TYPE tipo_emision_enum AS ENUM (
     'Renovacion'
 );
 
-CREATE TYPE rol_usuario_enum AS ENUM (
-    'admin',
-    'empleado'
-);
+
 
 CREATE TYPE nivel_permiso_juego_enum AS ENUM (
     'comercializador',
@@ -72,18 +69,38 @@ CREATE TYPE nivel_permiso_juego_enum AS ENUM (
 -- USUARIOS
 -- ============================================================
 
+CREATE TABLE rol (
+    nombre      VARCHAR(50) PRIMARY KEY,
+    descripcion TEXT,
+    created_at  TIMESTAMP DEFAULT now(),
+    updated_at  TIMESTAMP DEFAULT now()
+);
+
+COMMENT ON TABLE rol IS 'Roles permitidos para los usuarios del sistema.';
+
+INSERT INTO rol (nombre, descripcion) VALUES 
+('superAdmin', 'Administrador supremo del sistema (Desarrollador/Soporte).'),
+('gerente', 'Acceso total y administración del sistema.'),
+('gestor_de_tramites', 'Encargado de la gestión y procesamiento de trámites y solicitudes.'),
+('supervisor', 'Encargado de la revisión y supervisión de los procesos y trámites.');
+
+
 CREATE TABLE usuarios (
     id_usuario     UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     nombre_usuario VARCHAR(50)  NOT NULL,
     email          CITEXT       NOT NULL,
     password_hash  VARCHAR(255) NOT NULL,
-    rol            rol_usuario_enum NOT NULL DEFAULT 'empleado',
-    estado         estado           NOT NULL DEFAULT 'activo',
+    rol            VARCHAR(50)  NOT NULL DEFAULT 'gestor_de_tramites',
+    estado         estado       NOT NULL DEFAULT 'activo',
     created_at     TIMESTAMP    DEFAULT now(),
     updated_at     TIMESTAMP    DEFAULT now(),
 
     CONSTRAINT uq_usuarios_nombre_usuario UNIQUE (nombre_usuario),
-    CONSTRAINT uq_usuarios_email          UNIQUE (email)
+    CONSTRAINT uq_usuarios_email          UNIQUE (email),
+    CONSTRAINT fk_usuarios_rol
+        FOREIGN KEY (rol)
+        REFERENCES rol (nombre)
+        ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 COMMENT ON TABLE  usuarios               IS 'Usuarios del sistema (empleados y administradores).';
