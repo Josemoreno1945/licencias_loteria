@@ -3,6 +3,7 @@ import { CCard, CCardBody, CCardHeader, CContainer } from '@coreui/react'
 import axiosInstance from '../../../api/axiosInstance'
 import FeedbackModal from '../../personas/components/FeedbackModal'
 import UsuariosForm from '../components/UsuariosForm'
+import { extractErrorMessage } from '../../../utils/errorHandler'
 
 const UsuariosRegistroView = () => {
   // Estado del formulario
@@ -58,13 +59,7 @@ const UsuariosRegistroView = () => {
         estado: 'activo',
       })
     } catch (err) {
-      let errorMsg = 'Ocurrio un error inesperado al registrar el usuario.'
-
-      if (err.response?.data?.error) {
-        errorMsg = err.response.data.error
-      } else if (err.response?.data?.errors) {
-        errorMsg = err.response.data.errors.map((issue) => issue.message || issue)
-      }
+      const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al registrar el usuario.');
 
       setModalState({
         visible: true,

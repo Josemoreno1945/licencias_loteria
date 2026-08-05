@@ -3,6 +3,7 @@ import { CCard, CCardBody, CCardHeader, CContainer } from '@coreui/react'
 import axiosInstance from '../../../api/axiosInstance'
 import FeedbackModal from '../../personas/components/FeedbackModal'
 import OperadorasForm from '../components/OperadorasForm'
+import { extractErrorMessage } from '../../../utils/errorHandler'
 
 const OperadorasRegistroView = () => {
   // Estado del formulario
@@ -56,13 +57,7 @@ const OperadorasRegistroView = () => {
         estado: 'activo',
       })
     } catch (err) {
-      let errorMsg = 'Ocurrió un error inesperado al registrar la operadora.'
-
-      if (err.response?.data?.error) {
-        errorMsg = err.response.data.error
-      } else if (err.response?.data?.errors) {
-        errorMsg = err.response.data.errors.map((issue) => issue.message || issue)
-      }
+      const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al registrar la operadora.');
 
       setModalState({
         visible: true,

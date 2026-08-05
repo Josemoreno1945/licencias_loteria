@@ -1,19 +1,23 @@
 import React, { useState } from 'react';
 import { CCard, CCardBody, CCardHeader, CContainer } from '@coreui/react';
-import axios from 'axios';
-import FeedbackModal from '../components/FeedbackModal';
-import PersonasForm from '../components/PersonasForm';
+import axiosInstance from '../../../api/axiosInstance';
+import FeedbackModal from '../../personas/components/FeedbackModal';
+import SolicitudesForm from '../components/SolicitudesForm';
+import { useAuth } from '../../auth/store/AuthContext';
 import { extractErrorMessage } from '../../../utils/errorHandler';
 
-const PersonasView = () => {
+const SolicitudesRegistroView = () => {
+  const { user } = useAuth();
+  
   // Estado del formulario
   const [formData, setFormData] = useState({
-    tipo_persona: '',
-    ci_rif: '',
-    razon_social: '',
-    direccion_fiscal: '',
-    telefono: '',
-    email: '',
+    id_persona: '',
+    id_comercializador: null,
+    id_operadora: null,
+    tipo_tramite: '',
+    categoria_licencia: null,
+    descripcion_tramite: '',
+    observaciones: '',
   });
 
   // Estados para los modales
@@ -28,56 +32,48 @@ const PersonasView = () => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
-      [name]: value,
+      [name]: value || null, // convert empty strings to null for optional FKs
     }));
   };
 
   // Enviar el formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validar tipo de persona
-    if (!formData.tipo_persona) {
-      setModalState({
-        visible: true,
-        type: 'error',
-        message: 'Debe seleccionar el tipo de persona.',
-      });
-      return;
-    }
 
     setModalState({
       visible: true,
       type: 'loading',
-      message: 'Registrando persona...',
+      message: 'Registrando solicitud...',
     });
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:4000/personas', formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Send the user ID as 'registrado_por'
+      const payload = {
+        ...formData,
+        registrado_por: user?.id_usuario // Assuming the auth context provides id_usuario
+      };
+
+      const response = await axiosInstance.post('/solicitudes', payload);
 
       setModalState({
         visible: true,
         type: 'success',
-        message: response.data.message || 'Persona registrada exitosamente.',
+        message: response.data.message || 'Solicitud registrada exitosamente.',
       });
 
       // Limpiar formulario tras éxito
       setFormData({
-        tipo_persona: '',
-        ci_rif: '',
-        razon_social: '',
-        direccion_fiscal: '',
-        telefono: '',
-        email: '',
+        id_persona: '',
+        id_comercializador: null,
+        id_operadora: null,
+        tipo_tramite: '',
+        categoria_licencia: null,
+        descripcion_tramite: '',
+        observaciones: '',
       });
 
     } catch (err) {
-      const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al registrar la persona.');
+      const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al registrar la solicitud.');
 
       setModalState({
         visible: true,
@@ -98,13 +94,13 @@ const PersonasView = () => {
 
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
         <CCardHeader className="bg-white pb-0">
-          <h4 className="mb-3 text-primary">Registro de Personas</h4>
+          <h4 className="mb-3 text-primary">Registro de Solicitud</h4>
           <p className="text-muted small">
-            Ingrese los datos de la persona natural o jurídica para registrarla en el sistema.
+            Ingrese los datos para iniciar un nuevo trámite (Licencia, Participación, etc.).
           </p>
         </CCardHeader>
         <CCardBody>
-          <PersonasForm
+          <SolicitudesForm
             formData={formData}
             handleInputChange={handleInputChange}
             onSubmit={handleSubmit}
@@ -115,4 +111,4 @@ const PersonasView = () => {
   );
 };
 
-export default PersonasView;
+export default SolicitudesRegistroView;

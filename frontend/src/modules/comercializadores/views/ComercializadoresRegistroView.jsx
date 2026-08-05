@@ -3,6 +3,7 @@ import { CCard, CCardBody, CCardHeader, CContainer } from '@coreui/react'
 import axiosInstance from '../../../api/axiosInstance'
 import FeedbackModal from '../../personas/components/FeedbackModal'
 import ComercializadoresForm from '../components/ComercializadoresForm'
+import { extractErrorMessage } from '../../../utils/errorHandler'
 
 const ComercializadoresRegistroView = () => {
   // Estado del formulario
@@ -60,13 +61,7 @@ const ComercializadoresRegistroView = () => {
         estado: 'activo',
       })
     } catch (err) {
-      let errorMsg = 'Ocurrió un error inesperado al registrar el comercializador.'
-
-      if (err.response?.data?.error) {
-        errorMsg = err.response.data.error
-      } else if (err.response?.data?.errors) {
-        errorMsg = err.response.data.errors.map((issue) => issue.message || issue)
-      }
+      const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al registrar el comercializador.');
 
       setModalState({
         visible: true,

@@ -37,6 +37,14 @@ import BancosRegistroView from '../modules/bancos/views/BancosRegistroView'
 // Licencias (placeholder)
 import LicenciasView from '../modules/licencias/views/LicenciasView'
 
+// Juegos
+import JuegosListaView from '../modules/juegos/views/JuegosListaView'
+import JuegosRegistroView from '../modules/juegos/views/JuegosRegistroView'
+
+// Solicitudes
+import SolicitudesListaView from '../modules/solicitudes/views/SolicitudesListaView'
+import SolicitudesRegistroView from '../modules/solicitudes/views/SolicitudesRegistroView'
+
 import RoleRoute from './RoleRoute'
 
 const ADMINS = ['superAdmin', 'gerente']
@@ -100,11 +108,19 @@ const AppRouter = () => {
           <Route path="centros-apuesta/lista" element={<RoleRoute allowedRoles={TODOS}><CentrosApuestaListaView /></RoleRoute>} />
           <Route path="centros-apuesta/registro" element={<RoleRoute allowedRoles={GESTORES}><CentrosApuestaRegistroView /></RoleRoute>} />
 
+          {/* Juegos */}
+          <Route path="juegos" element={<Navigate to="/juegos/lista" replace />} />
+          <Route path="juegos/lista" element={<RoleRoute allowedRoles={TODOS}><JuegosListaView /></RoleRoute>} />
+          <Route path="juegos/registro" element={<RoleRoute allowedRoles={GESTORES}><JuegosRegistroView /></RoleRoute>} />
+
+          {/* Solicitudes */}
+          <Route path="solicitudes" element={<Navigate to="/solicitudes/lista" replace />} />
+          <Route path="solicitudes/lista" element={<RoleRoute allowedRoles={TODOS}><SolicitudesListaView /></RoleRoute>} />
+          <Route path="solicitudes/registro" element={<RoleRoute allowedRoles={GESTORES}><SolicitudesRegistroView /></RoleRoute>} />
+
           {/* Modulos pendientes — redirigen a dashboard hasta que se implementen */}
-          <Route path="solicitudes/*" element={<Navigate to="/dashboard" replace />} />
           <Route path="participaciones/*" element={<Navigate to="/dashboard" replace />} />
           <Route path="autorizaciones/*" element={<Navigate to="/dashboard" replace />} />
-          <Route path="juegos/*" element={<Navigate to="/dashboard" replace />} />
           <Route path="pagos/*" element={<Navigate to="/dashboard" replace />} />
         </Route>
 

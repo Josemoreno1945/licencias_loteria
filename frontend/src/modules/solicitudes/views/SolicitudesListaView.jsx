@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import {
   CContainer,
   CCard,
@@ -14,47 +14,57 @@ import {
   CSpinner,
   CAlert,
   CButton,
-} from '@coreui/react'
-import { useNavigate } from 'react-router-dom'
-import useFetch from '../../../hooks/useFetch'
-import { useAuth } from '../../auth/store/AuthContext'
+} from '@coreui/react';
+import { useNavigate } from 'react-router-dom';
+import useFetch from '../../../hooks/useFetch';
+import { useAuth } from '../../auth/store/AuthContext';
 
-const PersonasListaView = () => {
-  const navigate = useNavigate()
-  const { user } = useAuth()
-  const { data: personas, loading, error, refetch } = useFetch('/personas')
+const SolicitudesListaView = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { data: solicitudes, loading, error, refetch } = useFetch('/solicitudes');
+
+  const getEstadoBadge = (estado) => {
+    switch (estado) {
+      case 'Aprobado':
+        return 'success';
+      case 'Rechazada':
+        return 'danger';
+      case 'Pendiente':
+      default:
+        return 'warning';
+    }
+  };
 
   return (
     <CContainer fluid>
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
         <CCardHeader className="bg-white d-flex justify-content-between align-items-center pb-0">
           <div>
-            <h4 className="mb-1 text-primary">Lista de Personas</h4>
+            <h4 className="mb-1 text-primary">Lista de Solicitudes</h4>
             <p className="text-muted small mb-3">
-              Personas naturales y juridicas registradas en el sistema.
+              Trámites iniciados por personas o comercializadores.
             </p>
           </div>
           {user?.rol !== 'supervisor' && (
             <CButton
               color="primary"
               size="sm"
-              onClick={() => navigate('/personas/registro')}
+              onClick={() => navigate('/solicitudes/registro')}
             >
-              + Nueva Persona
+              + Nueva Solicitud
             </CButton>
           )}
         </CCardHeader>
 
         <CCardBody>
-          {/* Estado de carga */}
           {loading && (
             <div className="d-flex justify-content-center align-items-center py-5">
               <CSpinner color="primary" />
-              <span className="ms-3 text-muted">Cargando personas...</span>
+              <span className="ms-3 text-muted">Cargando solicitudes...</span>
             </div>
           )}
 
-          {/* Error */}
           {error && !loading && (
             <CAlert color="danger" className="d-flex align-items-center gap-2">
               <span>{error}</span>
@@ -64,45 +74,44 @@ const PersonasListaView = () => {
             </CAlert>
           )}
 
-          {/* Tabla */}
           {!loading && !error && (
             <>
-              {personas && personas.length === 0 ? (
-                <CAlert color="info">No hay personas registradas aun.</CAlert>
+              {solicitudes && solicitudes.length === 0 ? (
+                <CAlert color="info">No hay solicitudes registradas aún.</CAlert>
               ) : (
                 <CTable hover responsive striped align="middle" className="mb-0">
                   <CTableHead>
                     <CTableRow>
                       <CTableHeaderCell>#</CTableHeaderCell>
-                      <CTableHeaderCell>CI / RIF</CTableHeaderCell>
-                      <CTableHeaderCell>Nombre / Razon Social</CTableHeaderCell>
-                      <CTableHeaderCell>Tipo</CTableHeaderCell>
-                      <CTableHeaderCell>Telefono</CTableHeaderCell>
-                      <CTableHeaderCell>Email</CTableHeaderCell>
+                      <CTableHeaderCell>Solicitante</CTableHeaderCell>
+                      <CTableHeaderCell>Tipo de Trámite</CTableHeaderCell>
+                      <CTableHeaderCell>Categoría</CTableHeaderCell>
+                      <CTableHeaderCell>Fecha</CTableHeaderCell>
+                      <CTableHeaderCell>Estado</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {personas && personas.map((persona, index) => (
-                      <CTableRow key={persona.ci_rif}>
+                    {solicitudes && solicitudes.map((sol, index) => (
+                      <CTableRow key={sol.id_solicitudes}>
                         <CTableDataCell className="text-muted small">
                           {index + 1}
                         </CTableDataCell>
                         <CTableDataCell className="fw-semibold">
-                          {persona.ci_rif}
+                          {sol.persona_razon_social || sol.id_persona}
                         </CTableDataCell>
-                        <CTableDataCell>{persona.razon_social}</CTableDataCell>
                         <CTableDataCell>
-                          <CBadge
-                            color={persona.tipo_persona === 'natural' ? 'info' : 'warning'}
-                          >
-                            {persona.tipo_persona === 'natural' ? 'Natural' : 'Juridica'}
+                          {sol.tipo_tramite}
+                        </CTableDataCell>
+                        <CTableDataCell>
+                          {sol.categoria_licencia || <span className="text-muted">—</span>}
+                        </CTableDataCell>
+                        <CTableDataCell>
+                          {new Date(sol.created_at).toLocaleDateString()}
+                        </CTableDataCell>
+                        <CTableDataCell>
+                          <CBadge color={getEstadoBadge(sol.estado)}>
+                            {sol.estado}
                           </CBadge>
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          {persona.telefono || <span className="text-muted">—</span>}
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          {persona.email || <span className="text-muted">—</span>}
                         </CTableDataCell>
                       </CTableRow>
                     ))}
@@ -114,7 +123,7 @@ const PersonasListaView = () => {
         </CCardBody>
       </CCard>
     </CContainer>
-  )
-}
+  );
+};
 
-export default PersonasListaView
+export default SolicitudesListaView;

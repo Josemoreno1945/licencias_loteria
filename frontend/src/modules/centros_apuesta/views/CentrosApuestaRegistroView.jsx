@@ -3,6 +3,7 @@ import { CCard, CCardBody, CCardHeader, CContainer, CAlert } from '@coreui/react
 import axiosInstance from '../../../api/axiosInstance'
 import FeedbackModal from '../../personas/components/FeedbackModal'
 import CentrosApuestaForm from '../components/CentrosApuestaForm'
+import { extractErrorMessage } from '../../../utils/errorHandler'
 
 const CentrosApuestaRegistroView = () => {
   // Estado del formulario
@@ -86,13 +87,7 @@ const CentrosApuestaRegistroView = () => {
         estado: 'activo',
       })
     } catch (err) {
-      let errorMsg = 'Ocurrió un error inesperado al registrar el centro de apuesta.'
-
-      if (err.response?.data?.error) {
-        errorMsg = err.response.data.error
-      } else if (err.response?.data?.errors) {
-        errorMsg = err.response.data.errors.map((issue) => issue.message || issue)
-      }
+      const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al registrar el centro de apuesta.');
 
       setModalState({
         visible: true,

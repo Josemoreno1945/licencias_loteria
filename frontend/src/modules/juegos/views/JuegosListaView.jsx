@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import {
   CContainer,
   CCard,
@@ -14,47 +14,45 @@ import {
   CSpinner,
   CAlert,
   CButton,
-} from '@coreui/react'
-import { useNavigate } from 'react-router-dom'
-import useFetch from '../../../hooks/useFetch'
-import { useAuth } from '../../auth/store/AuthContext'
+} from '@coreui/react';
+import { useNavigate } from 'react-router-dom';
+import useFetch from '../../../hooks/useFetch';
+import { useAuth } from '../../auth/store/AuthContext';
 
-const PersonasListaView = () => {
-  const navigate = useNavigate()
-  const { user } = useAuth()
-  const { data: personas, loading, error, refetch } = useFetch('/personas')
+const JuegosListaView = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { data: juegos, loading, error, refetch } = useFetch('/juegos');
 
   return (
     <CContainer fluid>
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
         <CCardHeader className="bg-white d-flex justify-content-between align-items-center pb-0">
           <div>
-            <h4 className="mb-1 text-primary">Lista de Personas</h4>
+            <h4 className="mb-1 text-primary">Lista de Juegos</h4>
             <p className="text-muted small mb-3">
-              Personas naturales y juridicas registradas en el sistema.
+              Catálogo de juegos de azar asociados a sus respectivas operadoras.
             </p>
           </div>
           {user?.rol !== 'supervisor' && (
             <CButton
               color="primary"
               size="sm"
-              onClick={() => navigate('/personas/registro')}
+              onClick={() => navigate('/juegos/registro')}
             >
-              + Nueva Persona
+              + Nuevo Juego
             </CButton>
           )}
         </CCardHeader>
 
         <CCardBody>
-          {/* Estado de carga */}
           {loading && (
             <div className="d-flex justify-content-center align-items-center py-5">
               <CSpinner color="primary" />
-              <span className="ms-3 text-muted">Cargando personas...</span>
+              <span className="ms-3 text-muted">Cargando juegos...</span>
             </div>
           )}
 
-          {/* Error */}
           {error && !loading && (
             <CAlert color="danger" className="d-flex align-items-center gap-2">
               <span>{error}</span>
@@ -64,45 +62,36 @@ const PersonasListaView = () => {
             </CAlert>
           )}
 
-          {/* Tabla */}
           {!loading && !error && (
             <>
-              {personas && personas.length === 0 ? (
-                <CAlert color="info">No hay personas registradas aun.</CAlert>
+              {juegos && juegos.length === 0 ? (
+                <CAlert color="info">No hay juegos registrados aún.</CAlert>
               ) : (
                 <CTable hover responsive striped align="middle" className="mb-0">
                   <CTableHead>
                     <CTableRow>
                       <CTableHeaderCell>#</CTableHeaderCell>
-                      <CTableHeaderCell>CI / RIF</CTableHeaderCell>
-                      <CTableHeaderCell>Nombre / Razon Social</CTableHeaderCell>
-                      <CTableHeaderCell>Tipo</CTableHeaderCell>
-                      <CTableHeaderCell>Telefono</CTableHeaderCell>
-                      <CTableHeaderCell>Email</CTableHeaderCell>
+                      <CTableHeaderCell>Nombre del Juego</CTableHeaderCell>
+                      <CTableHeaderCell>Operadora (Propietaria)</CTableHeaderCell>
+                      <CTableHeaderCell>Estado</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {personas && personas.map((persona, index) => (
-                      <CTableRow key={persona.ci_rif}>
+                    {juegos && juegos.map((juego, index) => (
+                      <CTableRow key={juego.id_juego}>
                         <CTableDataCell className="text-muted small">
                           {index + 1}
                         </CTableDataCell>
                         <CTableDataCell className="fw-semibold">
-                          {persona.ci_rif}
+                          {juego.nombre}
                         </CTableDataCell>
-                        <CTableDataCell>{persona.razon_social}</CTableDataCell>
                         <CTableDataCell>
-                          <CBadge
-                            color={persona.tipo_persona === 'natural' ? 'info' : 'warning'}
-                          >
-                            {persona.tipo_persona === 'natural' ? 'Natural' : 'Juridica'}
+                          {juego.operadora_razon_social || juego.id_operadora}
+                        </CTableDataCell>
+                        <CTableDataCell>
+                          <CBadge color={juego.estado === 'activo' ? 'success' : 'secondary'}>
+                            {juego.estado === 'activo' ? 'Activo' : 'Inactivo'}
                           </CBadge>
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          {persona.telefono || <span className="text-muted">—</span>}
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          {persona.email || <span className="text-muted">—</span>}
                         </CTableDataCell>
                       </CTableRow>
                     ))}
@@ -114,7 +103,7 @@ const PersonasListaView = () => {
         </CCardBody>
       </CCard>
     </CContainer>
-  )
-}
+  );
+};
 
-export default PersonasListaView
+export default JuegosListaView;
