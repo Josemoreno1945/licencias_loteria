@@ -2,6 +2,12 @@ import { z } from "zod";
 
 const uuidSchema = z.string().uuid("Debe ser un UUID válido");
 
+const dateStringSchema = z
+  .string({ required_error: "La fecha es requerida" })
+  .refine((value) => !Number.isNaN(Date.parse(value)), {
+    message: "Formato de fecha inválido (YYYY-MM-DD)",
+  });
+
 const base_pago_schema = z.object({
   id_banco: uuidSchema,
 
@@ -10,9 +16,7 @@ const base_pago_schema = z.object({
     .min(1, "El numero de referencia no puede estar vacio")
     .max(50, "El numero de referencia no puede exceder los 50 caracteres"),
 
-  fecha_pago: z
-    .string({ required_error: "La fecha de pago es requerida" })
-    .date("Formato de fecha inválido (YYYY-MM-DD)"),
+  fecha_pago: dateStringSchema,
 
   monto: z
     .number({ required_error: "El monto es requerido" })
@@ -34,11 +38,17 @@ const base_pago_schema = z.object({
 
   id_participacion: uuidSchema.optional().nullable(),
 
-  observaciones: z.string().min(1, "Las observaciones no pueden estar vacias").optional().nullable(),
+  observaciones: z
+    .string()
+    .min(1, "Las observaciones no pueden estar vacias")
+    .optional()
+    .nullable(),
 
   registrado_por: uuidSchema,
 });
 
 export const crear_pago_schema = base_pago_schema;
 
-export const actualizar_pago_schema = base_pago_schema.omit({ registrado_por: true });
+export const actualizar_pago_schema = base_pago_schema.omit({
+  registrado_por: true,
+});

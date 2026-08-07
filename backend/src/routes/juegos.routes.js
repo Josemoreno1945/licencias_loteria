@@ -3,8 +3,8 @@ import { Router } from "express";
 import {
   get_c_juegos,
   get_c_juegos_activas,
-  get_c_juegos_id,
   get_c_juegos_inactivos,
+  get_c_juegos_id,
   crear_c_juegos,
   actualizar_juegos,
   eliminar_c_juegos,
@@ -17,7 +17,10 @@ const router = Router();
 
 router.get("/juegos", get_c_juegos);
 
+// Rutas con path fijo SIEMPRE antes de /:id para evitar conflictos
 router.get("/juegos/activas", get_c_juegos_activas);
+router.get("/juegos/activos", get_c_juegos_activas);    // alias semántico
+router.get("/juegos/inactivos", get_c_juegos_inactivos); // BUG #3 — ruta faltante agregada
 
 router.get("/juegos/:id", get_c_juegos_id);
 

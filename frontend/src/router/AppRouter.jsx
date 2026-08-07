@@ -34,16 +34,24 @@ import UsuariosRegistroView from '../modules/usuarios/views/UsuariosRegistroView
 import BancosListaView from '../modules/bancos/views/BancosListaView'
 import BancosRegistroView from '../modules/bancos/views/BancosRegistroView'
 
-// Licencias (placeholder)
-import LicenciasView from '../modules/licencias/views/LicenciasView'
+// Licencias
+import LicenciasListaView from '../modules/licencias/views/LicenciasListaView'
+import LicenciasRegistroView from '../modules/licencias/views/LicenciasRegistroView'
 
 // Juegos
 import JuegosListaView from '../modules/juegos/views/JuegosListaView'
 import JuegosRegistroView from '../modules/juegos/views/JuegosRegistroView'
 
+// Pagos
+import PagosListaView from '../modules/pagos/views/PagosListaView'
+import PagosRegistroView from '../modules/pagos/views/PagosRegistroView'
+
 // Solicitudes
 import SolicitudesListaView from '../modules/solicitudes/views/SolicitudesListaView'
 import SolicitudesRegistroView from '../modules/solicitudes/views/SolicitudesRegistroView'
+
+// Buscador
+import BuscadorView from '../modules/buscador/views/BuscadorView'
 
 import RoleRoute from './RoleRoute'
 
@@ -93,10 +101,15 @@ const AppRouter = () => {
           <Route path="bancos/lista" element={<RoleRoute allowedRoles={TODOS}><BancosListaView /></RoleRoute>} />
           <Route path="bancos/registro" element={<RoleRoute allowedRoles={GESTORES}><BancosRegistroView /></RoleRoute>} />
 
-          {/* Licencias (placeholder — pendiente de implementar) */}
+          {/* Licencias */}
           <Route path="licencias" element={<Navigate to="/licencias/lista" replace />} />
-          <Route path="licencias/lista" element={<RoleRoute allowedRoles={TODOS}><LicenciasView /></RoleRoute>} />
-          <Route path="licencias/registro" element={<RoleRoute allowedRoles={GESTORES}><LicenciasView /></RoleRoute>} />
+          <Route path="licencias/lista" element={<RoleRoute allowedRoles={TODOS}><LicenciasListaView /></RoleRoute>} />
+          <Route path="licencias/registro" element={<RoleRoute allowedRoles={GESTORES}><LicenciasRegistroView /></RoleRoute>} />
+
+          {/* Pagos */}
+          <Route path="pagos" element={<Navigate to="/pagos/lista" replace />} />
+          <Route path="pagos/lista" element={<RoleRoute allowedRoles={GESTORES}><PagosListaView /></RoleRoute>} />
+          <Route path="pagos/registro" element={<RoleRoute allowedRoles={GESTORES}><PagosRegistroView /></RoleRoute>} />
 
           {/* Comercializadores */}
           <Route path="comercializadores" element={<Navigate to="/comercializadores/lista" replace />} />
@@ -118,10 +131,13 @@ const AppRouter = () => {
           <Route path="solicitudes/lista" element={<RoleRoute allowedRoles={TODOS}><SolicitudesListaView /></RoleRoute>} />
           <Route path="solicitudes/registro" element={<RoleRoute allowedRoles={GESTORES}><SolicitudesRegistroView /></RoleRoute>} />
 
-          {/* Modulos pendientes — redirigen a dashboard hasta que se implementen */}
+          {/* Módulos pendientes — redirigen a dashboard hasta que se implementen */}
           <Route path="participaciones/*" element={<Navigate to="/dashboard" replace />} />
           <Route path="autorizaciones/*" element={<Navigate to="/dashboard" replace />} />
           <Route path="pagos/*" element={<Navigate to="/dashboard" replace />} />
+
+          {/* Buscador / Consultor */}
+          <Route path="buscador" element={<RoleRoute allowedRoles={TODOS}><BuscadorView /></RoleRoute>} />
         </Route>
 
         {/* Fallback */}

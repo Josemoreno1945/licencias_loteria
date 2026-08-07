@@ -66,9 +66,12 @@ export const crear_c_solicitud = async (req, res, next) => {
 
     const parseS = crear_solicitud_schema.safeParse(data);
     if (!parseS.success) {
-      return res.status(400).json({
-        errors: parseS.error.errors,
-      });
+      const issues = parseS.error.issues.map((it) => ({
+        path: Array.isArray(it.path) ? it.path.join(".") : String(it.path || ""),
+        message: it.message || "Validation error",
+        code: it.code || null,
+      }));
+      return next({ name: "ZodError", errors: issues });
     }
 
     const rows = await crear_solicitud(data);
@@ -91,9 +94,12 @@ export const actualizar_solicitud = async (req, res, next) => {
     const parseS = actualizar_solicitud_schema.safeParse(data);
 
     if (!parseS.success) {
-      return res.status(400).json({
-        errors: parseS.error.errors,
-      });
+      const issues = parseS.error.issues.map((it) => ({
+        path: Array.isArray(it.path) ? it.path.join(".") : String(it.path || ""),
+        message: it.message || "Validation error",
+        code: it.code || null,
+      }));
+      return next({ name: "ZodError", errors: issues });
     }
 
     // OBTENEMOS LA SOLICITUD ACTUAL PRIMERO

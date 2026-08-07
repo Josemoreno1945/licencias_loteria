@@ -15,14 +15,25 @@ import {
   CAlert,
   CButton,
 } from '@coreui/react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import useFetch from '../../../hooks/useFetch';
 import { useAuth } from '../../auth/store/AuthContext';
+import SolicitudDetalleModal from '../components/SolicitudDetalleModal';
 
 const SolicitudesListaView = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: solicitudes, loading, error, refetch } = useFetch('/solicitudes');
+  
+  const location = useLocation();
+  const [modalDataId, setModalDataId] = React.useState(null);
+
+  React.useEffect(() => {
+    if (location.state?.openModalId) {
+      setModalDataId(location.state.openModalId);
+      window.history.replaceState({}, '');
+    }
+  }, [location.state]);
 
   const getEstadoBadge = (estado) => {
     switch (estado) {
@@ -38,6 +49,10 @@ const SolicitudesListaView = () => {
 
   return (
     <CContainer fluid>
+      <SolicitudDetalleModal 
+        idSolicitud={modalDataId} 
+        onClose={() => setModalDataId(null)} 
+      />
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
         <CCardHeader className="bg-white d-flex justify-content-between align-items-center pb-0">
           <div>
@@ -84,10 +99,13 @@ const SolicitudesListaView = () => {
                     <CTableRow>
                       <CTableHeaderCell>#</CTableHeaderCell>
                       <CTableHeaderCell>Solicitante</CTableHeaderCell>
+                      <CTableHeaderCell>Comercializador</CTableHeaderCell>
+                      <CTableHeaderCell>Operadora</CTableHeaderCell>
                       <CTableHeaderCell>Tipo de Trámite</CTableHeaderCell>
                       <CTableHeaderCell>Categoría</CTableHeaderCell>
                       <CTableHeaderCell>Fecha</CTableHeaderCell>
                       <CTableHeaderCell>Estado</CTableHeaderCell>
+                      <CTableHeaderCell>Acciones</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
@@ -97,7 +115,13 @@ const SolicitudesListaView = () => {
                           {index + 1}
                         </CTableDataCell>
                         <CTableDataCell className="fw-semibold">
-                          {sol.persona_razon_social || sol.id_persona}
+                          {sol.persona ? `${sol.ci_rif} — ${sol.persona}` : sol.id_persona || '—'}
+                        </CTableDataCell>
+                        <CTableDataCell>
+                          {sol.comercializador || <span className="text-muted">—</span>}
+                        </CTableDataCell>
+                        <CTableDataCell>
+                          {sol.operadora || <span className="text-muted">—</span>}
                         </CTableDataCell>
                         <CTableDataCell>
                           {sol.tipo_tramite}
@@ -112,6 +136,16 @@ const SolicitudesListaView = () => {
                           <CBadge color={getEstadoBadge(sol.estado)}>
                             {sol.estado}
                           </CBadge>
+                        </CTableDataCell>
+                        <CTableDataCell>
+                          <CButton
+                            size="sm"
+                            color="primary"
+                            variant="outline"
+                            onClick={() => setModalDataId(sol.id_solicitudes)}
+                          >
+                            Ver
+                          </CButton>
                         </CTableDataCell>
                       </CTableRow>
                     ))}

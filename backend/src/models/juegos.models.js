@@ -3,18 +3,28 @@ import { pool } from "../db.js";
 //get--------------------------------------------------------------------
 export const get_juegos = async () => {
   const query = `
-  SELECT op.razon_social , op.rif , j.nombre, j.estado
+  SELECT j.id_juego,
+         j.id_operadora,
+         op.razon_social AS operadora_razon_social,
+         op.rif AS operadora_rif,
+         j.nombre,
+         j.estado
   FROM juegos AS j
-  JOIN operadoras AS op on  j.id_operadora = op.id_operadora`;
+  JOIN operadoras AS op ON j.id_operadora = op.id_operadora`;
   const result = await pool.query(query);
   return result.rows;
 };
 
 export const get_juegos_id = async (id) => {
-  const query = ` 
-  SELECT op.razon_social , op.rif , j.nombre, j.estado
+  const query = `
+  SELECT j.id_juego,
+         j.id_operadora,
+         op.razon_social AS operadora_razon_social,
+         op.rif AS operadora_rif,
+         j.nombre,
+         j.estado
   FROM juegos AS j
-  JOIN operadoras AS op on  j.id_operadora = op.id_operadora
+  JOIN operadoras AS op ON j.id_operadora = op.id_operadora
   WHERE j.id_juego = $1
   `;
   const result = await pool.query(query, [id]);
@@ -46,8 +56,10 @@ export const eliminar_juegos_id = async (id) => {
 //put---------------------------------------------------
 export const actualizar_juegos_id = async (id, data) => {
   const query = `
-      UPDATE juegos SET nombre = $1, estado = $2
-      WHERE id_juego = $3 RETURNING *`;
+      UPDATE juegos
+      SET id_operadora = $1, nombre = $2, estado = $3
+      WHERE id_juego = $4
+      RETURNING *`;
   const values = [data.id_operadora, data.nombre, data.estado, id];
   const result = await pool.query(query, values);
   return result.rows;
@@ -65,22 +77,22 @@ export const get_juegos_nombre = async (nombre) => {
   return !!result.rows[0];
 };
 
-export const get_juegos_estado_activo = async (estado) => {
+export const get_juegos_estado_activo = async () => {
   const query = `
-  SELECT op.razon_social , op.rif , j.nombre, j.estado
+  SELECT op.razon_social , op.rif , j.nombre, j.estado, j.id_juego, j.id_operadora
   FROM juegos AS j
   JOIN operadoras AS op on  j.id_operadora = op.id_operadora
-  WHERE j.estado ='activo'`;
-  const result = await pool.query(query, [estado]);
-  return !!result.rows[0];
+  WHERE j.estado = 'activo'`;
+  const result = await pool.query(query);
+  return result.rows;
 };
 
-export const get_juegos_estado_inactivo = async (estado) => {
+export const get_juegos_estado_inactivo = async () => {
   const query = `
-  SELECT op.razon_social , op.rif , j.nombre, j.estado
+  SELECT op.razon_social , op.rif , j.nombre, j.estado, j.id_juego, j.id_operadora
   FROM juegos AS j
   JOIN operadoras AS op on  j.id_operadora = op.id_operadora
-  WHERE j.estado ='inactivo'`;
-  const result = await pool.query(query, [estado]);
-  return !!result.rows[0];
+  WHERE j.estado = 'inactivo'`;
+  const result = await pool.query(query);
+  return result.rows;
 };

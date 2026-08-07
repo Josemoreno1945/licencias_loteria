@@ -11,9 +11,11 @@ import {
   buscar_licencias_proximas_a_vencer,
 } from "../models/licencias.models.js";
 
+import { crear_licencia_completa } from "../services/licencias.service.js";
 import { errors, throwError } from "../utils/errors.js";
 import {
   crear_licencia_schema,
+  crear_licencia_completa_schema,
   actualizar_licencia_schema,
 } from "../schemas/licencias.schemas.js";
 
@@ -66,13 +68,45 @@ export const crear_c_licencia = async (req, res, next) => {
 
     const parseL = crear_licencia_schema.safeParse(data);
     if (!parseL.success) {
-      return res.status(400).json({
-        errors: parseL.error.errors,
-      });
+      const raw = parseL.error?.issues || parseL.error?.errors || [];
+      const issues = (raw || []).map((it) => ({
+        path: Array.isArray(it.path)
+          ? it.path.join(".")
+          : String(it.path || ""),
+        message: it.message || "Validation error",
+        code: it.code || null,
+      }));
+      const zErr = { name: "ZodError", errors: issues };
+      return next(zErr);
     }
 
     const rows = await crear_licencia(data);
     return res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const crear_c_licencia_completa = async (req, res, next) => {
+  try {
+    const data = req.body;
+
+    const parseL = crear_licencia_completa_schema.safeParse(data);
+    if (!parseL.success) {
+      const raw = parseL.error?.issues || parseL.error?.errors || [];
+      const issues = (raw || []).map((it) => ({
+        path: Array.isArray(it.path)
+          ? it.path.join(".")
+          : String(it.path || ""),
+        message: it.message || "Validation error",
+        code: it.code || null,
+      }));
+      const zErr = { name: "ZodError", errors: issues };
+      return next(zErr);
+    }
+
+    const result = await crear_licencia_completa(data);
+    return res.json(result);
   } catch (error) {
     next(error);
   }
@@ -89,11 +123,17 @@ export const actualizar_licencia = async (req, res, next) => {
 
     const data = req.body;
     const parseL = actualizar_licencia_schema.safeParse(data);
-
     if (!parseL.success) {
-      return res.status(400).json({
-        errors: parseL.error.errors,
-      });
+      const raw = parseL.error?.issues || parseL.error?.errors || [];
+      const issues = (raw || []).map((it) => ({
+        path: Array.isArray(it.path)
+          ? it.path.join(".")
+          : String(it.path || ""),
+        message: it.message || "Validation error",
+        code: it.code || null,
+      }));
+      const zErr = { name: "ZodError", errors: issues };
+      return next(zErr);
     }
 
     // OBTENEMOS LA LICENCIA ACTUAL PRIMERO
@@ -142,7 +182,11 @@ export const buscar_c_licencias_por_categoria = async (req, res, next) => {
   }
 };
 
-export const buscar_c_licencias_por_comercializador = async (req, res, next) => {
+export const buscar_c_licencias_por_comercializador = async (
+  req,
+  res,
+  next,
+) => {
   try {
     const id = req.params.id;
     if (!uuidRegex.test(id)) {

@@ -15,17 +15,33 @@ import {
   CAlert,
   CButton,
 } from '@coreui/react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
 import { useAuth } from '../../auth/store/AuthContext'
+import PersonaDetalleModal from '../components/PersonaDetalleModal'
 
 const PersonasListaView = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { data: personas, loading, error, refetch } = useFetch('/personas')
+  
+  const location = useLocation()
+  const [modalDataId, setModalDataId] = React.useState(null)
+
+  React.useEffect(() => {
+    if (location.state?.openModalId) {
+      setModalDataId(location.state.openModalId)
+      // Limpiar el state para que no se reabra al recargar
+      window.history.replaceState({}, '')
+    }
+  }, [location.state])
 
   return (
     <CContainer fluid>
+      <PersonaDetalleModal 
+        idPersona={modalDataId} 
+        onClose={() => setModalDataId(null)} 
+      />
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
         <CCardHeader className="bg-white d-flex justify-content-between align-items-center pb-0">
           <div>
@@ -79,6 +95,7 @@ const PersonasListaView = () => {
                       <CTableHeaderCell>Tipo</CTableHeaderCell>
                       <CTableHeaderCell>Telefono</CTableHeaderCell>
                       <CTableHeaderCell>Email</CTableHeaderCell>
+                      <CTableHeaderCell>Acciones</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
@@ -103,6 +120,16 @@ const PersonasListaView = () => {
                         </CTableDataCell>
                         <CTableDataCell>
                           {persona.email || <span className="text-muted">—</span>}
+                        </CTableDataCell>
+                        <CTableDataCell>
+                          <CButton
+                            size="sm"
+                            color="primary"
+                            variant="outline"
+                            onClick={() => setModalDataId(persona.id_persona)}
+                          >
+                            Ver
+                          </CButton>
                         </CTableDataCell>
                       </CTableRow>
                     ))}

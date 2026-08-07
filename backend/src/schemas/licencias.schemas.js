@@ -1,8 +1,45 @@
 import { z } from "zod";
 
 const uuidSchema = z.string().uuid("Debe ser un UUID válido");
+const dateStringSchema = z
+  .string()
+  .min(1, "La fecha es requerida")
+  .refine((value) => !Number.isNaN(Date.parse(value)), {
+    message: "Formato de fecha inválido (YYYY-MM-DD)",
+  });
 
-const base_licencia_schema = z.object({
+/**
+ * optionalStringField — Zod v3 compatible.
+ * Convierte "", null o undefined → undefined ANTES de validar el schema interno,
+ * y declara el campo como opcional/nullable en el nivel externo.
+ * El inner schema recibe el valor ya transformado (nunca "").
+ */
+const optionalStringField = (schema) =>
+  z.preprocess(
+    (value) =>
+      value === "" || value === null || value === undefined ? undefined : value,
+    schema.optional().nullable(), // ← .optional() en el inner schema (Zod v3)
+  );
+
+/**
+ * optionalDateField — igual patrón: convierte vacíos a undefined antes de validar.
+ */
+const optionalDateField = z.preprocess(
+  (value) =>
+    value === "" || value === null || value === undefined ? undefined : value,
+  dateStringSchema.optional().nullable(), // ← corrección Zod v3
+);
+
+/**
+ * optionalUuidField — igual patrón para UUIDs opcionales.
+ */
+const optionalUuidField = z.preprocess(
+  (value) =>
+    value === "" || value === null || value === undefined ? undefined : value,
+  uuidSchema.optional().nullable(), // ← corrección Zod v3
+);
+
+const simple_licencia_schema = z.object({
   id_documento: uuidSchema,
 
   id_persona: uuidSchema,
@@ -16,7 +53,7 @@ const base_licencia_schema = z.object({
       "Centro_de_apuesta",
       "Responsable_de_programa_informatico",
     ],
-    { required_error: "La categoria es requerida" }
+    { required_error: "La categoria es requerida" },
   ),
 
   numero_lot: z
@@ -26,6 +63,66 @@ const base_licencia_schema = z.object({
     .nullable(),
 });
 
-export const crear_licencia_schema = base_licencia_schema;
+const emitir_licencia_schema = z.object({
+  id_solicitud: uuidSchema,
 
-export const actualizar_licencia_schema = base_licencia_schema.omit({ id_documento: true });
+  emitido_por: uuidSchema,
+
+  tipo_emision: z
+    .enum(["Inscripcion", "Renovacion"])
+    .optional()
+    .default("Inscripcion"),
+
+  id_documento_anterior: optionalUuidField,
+
+  numero_documento: z
+    .string({ required_error: "El numero de documento es requerido" })
+    .min(1, "El numero de documento no puede estar vacio")
+    .max(30, "El numero de documento no puede exceder los 30 caracteres"),
+
+  papel_seguridad: z
+    .string({ required_error: "El papel de seguridad es requerido" })
+    .min(1, "El papel de seguridad no puede estar vacio")
+    .max(30, "El papel de seguridad no puede exceder los 30 caracteres"),
+
+  estado_documento: z
+    .enum(["vigente", "vencido", "anulado", "suspendido"])
+    .optional()
+    .default("vigente"),
+
+  fecha_expedicion: dateStringSchema,
+
+  fecha_vencimiento: optionalDateField,
+
+  fecha_emision: dateStringSchema,
+
+  fecha_entrega: optionalDateField,
+
+  direccion_establecimiento: optionalStringField(
+    z.string().min(1, "La direccion no puede estar vacia"),
+  ),
+
+  detalles_extra: optionalStringField(
+    z
+      .string()
+      .max(500, "Las observaciones no pueden exceder los 500 caracteres"),
+  ),
+
+  numero_lot: optionalStringField(
+    z.string().max(30, "El numero_lot no puede exceder los 30 caracteres"),
+  ),
+
+  // Array de UUIDs de juegos autorizados. Cada elemento debe ser un UUID válido.
+  // El array completo es opcional: null/undefined = sin juegos.
+  juegos: z
+    .array(z.string().uuid("Cada ID de juego debe ser un UUID válido"))
+    .optional()
+    .nullable(),
+});
+
+export const crear_licencia_schema = simple_licencia_schema;
+export const crear_licencia_completa_schema = emitir_licencia_schema;
+
+export const actualizar_licencia_schema = simple_licencia_schema.omit({
+  id_documento: true,
+});

@@ -14,6 +14,7 @@ import {
   cilShieldAlt,
   cilUser,
   cilCreditCard,
+  cilMagnifyingGlass,
 } from '@coreui/icons'
 
 // ─── Grupos de roles (nombres exactos de la tabla `rol` en bdd.sql) ──────────
@@ -36,6 +37,13 @@ const _navBase = [
     name: 'Dashboard',
     to: '/dashboard',
     icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+    roles: TODOS,
+  },
+  {
+    component: CNavItem,
+    name: 'Buscador',
+    to: '/buscador',
+    icon: <CIcon icon={cilMagnifyingGlass} customClassName="nav-icon" />,
     roles: TODOS,
   },
 

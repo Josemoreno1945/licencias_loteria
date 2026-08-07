@@ -71,15 +71,19 @@ export const crear_c_juegos = async (req, res, next) => {
 
     const parseJ = juegos_schema.safeParse(data);
     if (!parseJ.success) {
-      return res.status(400).json({
-        errors: parseJ.error.errors,
-      });
+      const issues = parseJ.error.issues.map((it) => ({
+        path: Array.isArray(it.path) ? it.path.join(".") : String(it.path || ""),
+        message: it.message || "Validation error",
+        code: it.code || null,
+      }));
+      return next({ name: "ZodError", errors: issues });
     }
-    const nombreExiste = await get_juegos_nombre(data.rif);
+    const parsedData = parseJ.data;
+    const nombreExiste = await get_juegos_nombre(parsedData.nombre);
     if (nombreExiste) {
       throwError(errors.juegos_nombre_duplicado);
     }
-    const rows = await crear_operadora(data);
+    const rows = await crear_juegos(parsedData);
     return res.json(rows);
   } catch (error) {
     next(error);
@@ -121,9 +125,12 @@ export const actualizar_juegos = async (req, res, next) => {
     const parseJ = juegos_schema.safeParse(data);
 
     if (!parseJ.success) {
-      return res.status(400).json({
-        errors: parseJ.error.errors,
-      });
+      const issues = parseJ.error.issues.map((it) => ({
+        path: Array.isArray(it.path) ? it.path.join(".") : String(it.path || ""),
+        message: it.message || "Validation error",
+        code: it.code || null,
+      }));
+      return next({ name: "ZodError", errors: issues });
     }
 
     // OBTENEMOS EL JUEGO ACTUAL PRIMERO

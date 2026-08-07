@@ -1,6 +1,12 @@
 export function throwError(errorObj) {
   const error = new Error(errorObj.message);
   error.status = errorObj.status;
+  // Attach a consistent `errors` array for clients (useful for 400s)
+  if (errorObj.errors && Array.isArray(errorObj.errors)) {
+    error.errors = errorObj.errors;
+  } else if (errorObj.status === 400) {
+    error.errors = [{ message: errorObj.message }];
+  }
   throw error;
 }
 
@@ -140,6 +146,22 @@ export const errors = {
     status: 404,
     message: "Licencia no encontrada",
   },
+  solicitud_no_es_licencia: {
+    status: 400,
+    message: "La solicitud no corresponde a un tramite de Licencia",
+  },
+  solicitud_rechazada: {
+    status: 400,
+    message: "No se puede emitir una licencia para una solicitud rechazada",
+  },
+  solicitud_sin_categoria_licencia: {
+    status: 400,
+    message: "La solicitud de licencia debe tener una categoria de licencia",
+  },
+  solicitud_con_documento_emitido: {
+    status: 409,
+    message: "La solicitud ya tiene un documento emitido asociado",
+  },
 
   // Autorizaciones especiales
   autorizacion_no_encontrada: {
@@ -218,6 +240,6 @@ export const errors = {
   },
   invalidData: {
     status: 400,
-    message: "invalid id",
+    message: "Invalid data or id",
   },
 };
