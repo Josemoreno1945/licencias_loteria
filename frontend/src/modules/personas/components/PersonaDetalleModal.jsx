@@ -11,6 +11,8 @@ import {
   CAlert,
   CRow,
   CCol,
+  CFormInput,
+  CFormLabel,
 } from '@coreui/react'
 import axiosInstance from '../../../api/axiosInstance'
 
@@ -51,34 +53,45 @@ const PersonaDetalleModal = ({ idPersona, onClose }) => {
         )}
         {error && !loading && <CAlert color="danger">{error}</CAlert>}
         {!loading && !error && data && (
-          <CRow className="gy-3">
-            <CCol md={6}>
-              <p className="mb-1 text-muted small fw-semibold">CI / RIF</p>
-              <p className="fw-bold">{data.ci_rif}</p>
-            </CCol>
-            <CCol md={6}>
-              <p className="mb-1 text-muted small fw-semibold">Nombre / Razón Social</p>
-              <p className="fw-bold">{data.razon_social}</p>
-            </CCol>
-            <CCol md={6}>
-              <p className="mb-1 text-muted small fw-semibold">Tipo de Persona</p>
-              <CBadge color={data.tipo_persona === 'natural' ? 'info' : 'warning'}>
-                {data.tipo_persona === 'natural' ? 'Natural' : 'Jurídica'}
-              </CBadge>
-            </CCol>
-            <CCol md={6}>
-              <p className="mb-1 text-muted small fw-semibold">Teléfono</p>
-              <p>{data.telefono || '—'}</p>
-            </CCol>
-            <CCol md={6}>
-              <p className="mb-1 text-muted small fw-semibold">Email</p>
-              <p>{data.email || '—'}</p>
-            </CCol>
-            <CCol md={12}>
-              <p className="mb-1 text-muted small fw-semibold">Dirección Fiscal</p>
-              <p className="mb-0">{data.direccion_fiscal || '—'}</p>
-            </CCol>
-          </CRow>
+          <div className="px-2">
+            <h5 className="text-primary fw-semibold mb-3">Información Principal</h5>
+            <CRow className="gy-3 mb-4">
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">CI / RIF</CFormLabel>
+                <CFormInput type="text" value={data.ci_rif || ''} readOnly className="bg-light" />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Nombre / Razón Social</CFormLabel>
+                <CFormInput type="text" value={data.razon_social || ''} readOnly className="bg-light fw-semibold" />
+              </CCol>
+              <CCol md={12}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Tipo de Persona</CFormLabel>
+                <div>
+                  <CBadge color={data.tipo_persona === 'natural' ? 'info' : 'warning'} className="fs-6 px-3 py-2">
+                    {data.tipo_persona === 'natural' ? 'Persona Natural' : 'Persona Jurídica'}
+                  </CBadge>
+                </div>
+              </CCol>
+            </CRow>
+
+            <hr className="text-muted opacity-25 my-4" />
+
+            <h5 className="text-primary fw-semibold mb-3">Datos de Contacto</h5>
+            <CRow className="gy-3 mb-2">
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Teléfono</CFormLabel>
+                <CFormInput type="text" value={data.telefono || 'No registrado'} readOnly className="bg-light" />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Email</CFormLabel>
+                <CFormInput type="text" value={data.email || 'No registrado'} readOnly className="bg-light" />
+              </CCol>
+              <CCol md={12}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Dirección Fiscal</CFormLabel>
+                <CFormInput type="text" value={data.direccion_fiscal || 'No registrada'} readOnly className="bg-light" />
+              </CCol>
+            </CRow>
+          </div>
         )}
       </CModalBody>
       <CModalFooter>

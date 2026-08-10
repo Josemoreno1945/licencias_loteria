@@ -11,6 +11,8 @@ import {
   CAlert,
   CRow,
   CCol,
+  CFormInput,
+  CFormLabel,
 } from '@coreui/react'
 import axiosInstance from '../../../api/axiosInstance'
 
@@ -61,66 +63,74 @@ const LicenciaDetalleModal = ({ idLicencia, onClose }) => {
         )}
         {error && !loading && <CAlert color="danger">{error}</CAlert>}
         {!loading && !error && data && (
-          <CRow className="gy-3">
-            <CCol md={6}>
-              <p className="mb-1 text-muted small fw-semibold">Número de Documento</p>
-              <p className="fw-bold fs-5">{data.numero_documento}</p>
-            </CCol>
-            <CCol md={6}>
-              <p className="mb-1 text-muted small fw-semibold">Estado</p>
-              <CBadge color={getEstadoDocColor(data.estado_documento)}>
-                {data.estado_documento}
-              </CBadge>
-            </CCol>
-
-            <CCol md={6}>
-              <p className="mb-1 text-muted small fw-semibold">Categoría</p>
-              <p>{data.categoria}</p>
-            </CCol>
-            <CCol md={6}>
-              <p className="mb-1 text-muted small fw-semibold">Tipo de Emisión</p>
-              <p>{data.tipo_emision}</p>
-            </CCol>
-
-            <CCol md={12}>
-              <p className="mb-1 text-muted small fw-semibold">Persona Titular</p>
-              <p className="mb-0 fw-bold">{data.ci_rif} — {data.persona}</p>
-            </CCol>
-            
-            <CCol md={12}>
-              <p className="mb-1 text-muted small fw-semibold">Comercializador Asociado</p>
-              <p className="mb-0">{data.comercializador || '—'}</p>
-            </CCol>
-
-            <CCol md={4}>
-              <p className="mb-1 text-muted small fw-semibold">Fecha Emisión</p>
-              <p>{data.fecha_emision ? new Date(data.fecha_emision).toLocaleDateString() : '—'}</p>
-            </CCol>
-            <CCol md={4}>
-              <p className="mb-1 text-muted small fw-semibold">Expedición</p>
-              <p>{data.fecha_expedicion ? new Date(data.fecha_expedicion).toLocaleDateString() : '—'}</p>
-            </CCol>
-            <CCol md={4}>
-              <p className="mb-1 text-muted small fw-semibold">Vencimiento</p>
-              <p className="fw-bold">{data.fecha_vencimiento ? new Date(data.fecha_vencimiento).toLocaleDateString() : '—'}</p>
-            </CCol>
-
-            <CCol md={6}>
-              <p className="mb-1 text-muted small fw-semibold">Papel de Seguridad</p>
-              <p>{data.papel_seguridad}</p>
-            </CCol>
-            <CCol md={6}>
-              <p className="mb-1 text-muted small fw-semibold">Emitido Por (Usuario)</p>
-              <p>{data.emitido_por}</p>
-            </CCol>
-            
-            {data.direccion_establecimiento && (
-              <CCol md={12}>
-                <p className="mb-1 text-muted small fw-semibold">Dirección del Establecimiento</p>
-                <p className="mb-0">{data.direccion_establecimiento}</p>
+          <div className="px-2">
+            <h5 className="text-primary fw-semibold mb-3">Información del Documento</h5>
+            <CRow className="gy-3 mb-4">
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Nº de Documento</CFormLabel>
+                <CFormInput type="text" value={data.numero_documento || ''} readOnly className="bg-light fw-bold" />
               </CCol>
-            )}
-          </CRow>
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Estado</CFormLabel>
+                <div>
+                  <CBadge color={getEstadoDocColor(data.estado_documento)} className="fs-6 px-3 py-2">
+                    {data.estado_documento}
+                  </CBadge>
+                </div>
+              </CCol>
+              
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Categoría</CFormLabel>
+                <CFormInput type="text" value={data.categoria || '—'} readOnly className="bg-light" />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Tipo de Emisión</CFormLabel>
+                <CFormInput type="text" value={data.tipo_emision || '—'} readOnly className="bg-light" />
+              </CCol>
+              
+              <CCol md={4}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Fecha Emisión</CFormLabel>
+                <CFormInput type="text" value={data.fecha_emision ? new Date(data.fecha_emision).toLocaleDateString() : '—'} readOnly className="bg-light" />
+              </CCol>
+              <CCol md={4}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Expedición</CFormLabel>
+                <CFormInput type="text" value={data.fecha_expedicion ? new Date(data.fecha_expedicion).toLocaleDateString() : '—'} readOnly className="bg-light" />
+              </CCol>
+              <CCol md={4}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Vencimiento</CFormLabel>
+                <CFormInput type="text" value={data.fecha_vencimiento ? new Date(data.fecha_vencimiento).toLocaleDateString() : '—'} readOnly className="bg-light fw-bold" />
+              </CCol>
+
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Papel de Seguridad</CFormLabel>
+                <CFormInput type="text" value={data.papel_seguridad || '—'} readOnly className="bg-light" />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Emitido Por (Usuario)</CFormLabel>
+                <CFormInput type="text" value={data.emitido_por || '—'} readOnly className="bg-light" />
+              </CCol>
+            </CRow>
+
+            <hr className="text-muted opacity-25 my-4" />
+
+            <h5 className="text-primary fw-semibold mb-3">Asignaciones & Dirección</h5>
+            <CRow className="gy-3 mb-2">
+              <CCol md={12}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Persona Titular</CFormLabel>
+                <CFormInput type="text" value={`${data.ci_rif} — ${data.persona}`} readOnly className="bg-light fw-semibold" />
+              </CCol>
+              
+              <CCol md={12}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Comercializador Asociado</CFormLabel>
+                <CFormInput type="text" value={data.comercializador || 'Ninguno'} readOnly className="bg-light" />
+              </CCol>
+              
+              <CCol md={12}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Dirección del Establecimiento</CFormLabel>
+                <CFormInput type="text" value={data.direccion_establecimiento || 'No registrada'} readOnly className="bg-light" />
+              </CCol>
+            </CRow>
+          </div>
         )}
       </CModalBody>
       <CModalFooter>

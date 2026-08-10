@@ -11,6 +11,8 @@ import {
   CAlert,
   CRow,
   CCol,
+  CFormInput,
+  CFormLabel,
 } from '@coreui/react'
 import axiosInstance from '../../../api/axiosInstance'
 
@@ -60,64 +62,74 @@ const SolicitudDetalleModal = ({ idSolicitud, onClose }) => {
         )}
         {error && !loading && <CAlert color="danger">{error}</CAlert>}
         {!loading && !error && data && (
-          <CRow className="gy-3">
-            <CCol md={6}>
-              <p className="mb-1 text-muted small fw-semibold">Tipo de Trámite</p>
-              <p className="fw-bold fs-5">{data.tipo_tramite}</p>
-            </CCol>
-            <CCol md={6}>
-              <p className="mb-1 text-muted small fw-semibold">Estado</p>
-              <CBadge color={getEstadoBadge(data.estado)}>
-                {data.estado}
-              </CBadge>
-            </CCol>
-
-            <CCol md={6}>
-              <p className="mb-1 text-muted small fw-semibold">Categoría (si aplica)</p>
-              <p>{data.categoria_licencia || '—'}</p>
-            </CCol>
-            <CCol md={6}>
-              <p className="mb-1 text-muted small fw-semibold">Fecha de Creación</p>
-              <p>{data.created_at ? new Date(data.created_at).toLocaleString() : '—'}</p>
-            </CCol>
-
-            <CCol md={12}>
-              <p className="mb-1 text-muted small fw-semibold">Persona Titular</p>
-              <p className="mb-0 fw-bold">{data.ci_rif} — {data.persona}</p>
-            </CCol>
-            
-            <CCol md={6}>
-              <p className="mb-1 text-muted small fw-semibold">Comercializador Asociado</p>
-              <p className="mb-0">{data.comercializador || '—'}</p>
-            </CCol>
-            <CCol md={6}>
-              <p className="mb-1 text-muted small fw-semibold">Operadora Asociada</p>
-              <p className="mb-0">{data.operadora || '—'}</p>
-            </CCol>
-
-            <CCol md={12}>
-              <p className="mb-1 text-muted small fw-semibold">Descripción del Trámite</p>
-              <p className="mb-0">{data.descripcion_tramite || '—'}</p>
-            </CCol>
-
-            {data.estado === 'Rechazada' && data.justificacion_no_logrado && (
-              <CCol md={12}>
-                <CAlert color="danger" className="mb-0 py-2">
-                  <strong>Motivo del rechazo:</strong> {data.justificacion_no_logrado}
-                </CAlert>
+          <div className="px-2">
+            <h5 className="text-primary fw-semibold mb-3">Información del Trámite</h5>
+            <CRow className="gy-3 mb-4">
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Tipo de Trámite</CFormLabel>
+                <CFormInput type="text" value={data.tipo_tramite || ''} readOnly className="bg-light fw-bold" />
               </CCol>
-            )}
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Estado</CFormLabel>
+                <div>
+                  <CBadge color={getEstadoBadge(data.estado)} className="fs-6 px-3 py-2">
+                    {data.estado}
+                  </CBadge>
+                </div>
+              </CCol>
 
-            <CCol md={12}>
-              <p className="mb-1 text-muted small fw-semibold">Observaciones Internas</p>
-              <p className="mb-0">{data.observaciones || '—'}</p>
-            </CCol>
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Categoría (si aplica)</CFormLabel>
+                <CFormInput type="text" value={data.categoria_licencia || '—'} readOnly className="bg-light" />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Fecha de Creación</CFormLabel>
+                <CFormInput type="text" value={data.created_at ? new Date(data.created_at).toLocaleString() : '—'} readOnly className="bg-light" />
+              </CCol>
 
-            <CCol md={12}>
-              <p className="mb-1 text-muted small fw-semibold mt-2">Registrado Por</p>
-              <p className="mb-0">{data.registrado_por}</p>
-            </CCol>
-          </CRow>
+              <CCol md={12}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Descripción del Trámite</CFormLabel>
+                <CFormInput type="text" value={data.descripcion_tramite || '—'} readOnly className="bg-light" />
+              </CCol>
+            </CRow>
+
+            <hr className="text-muted opacity-25 my-4" />
+
+            <h5 className="text-primary fw-semibold mb-3">Asignaciones & Observaciones</h5>
+            <CRow className="gy-3 mb-2">
+              <CCol md={12}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Persona Titular</CFormLabel>
+                <CFormInput type="text" value={`${data.ci_rif} — ${data.persona}`} readOnly className="bg-light fw-semibold" />
+              </CCol>
+              
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Comercializador Asociado</CFormLabel>
+                <CFormInput type="text" value={data.comercializador || 'Ninguno'} readOnly className="bg-light" />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Operadora Asociada</CFormLabel>
+                <CFormInput type="text" value={data.operadora || 'Ninguna'} readOnly className="bg-light" />
+              </CCol>
+
+              {data.estado === 'Rechazada' && data.justificacion_no_logrado && (
+                <CCol md={12}>
+                  <CAlert color="danger" className="mb-0 py-2">
+                    <strong>Motivo del rechazo:</strong> {data.justificacion_no_logrado}
+                  </CAlert>
+                </CCol>
+              )}
+
+              <CCol md={12}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Observaciones Internas</CFormLabel>
+                <CFormInput type="text" value={data.observaciones || 'Sin observaciones'} readOnly className="bg-light" />
+              </CCol>
+
+              <CCol md={12}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Registrado Por</CFormLabel>
+                <CFormInput type="text" value={data.registrado_por || '—'} readOnly className="bg-light" />
+              </CCol>
+            </CRow>
+          </div>
         )}
       </CModalBody>
       <CModalFooter>
