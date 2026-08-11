@@ -4,7 +4,7 @@ import { useAuth } from '../../auth/store/AuthContext'
 import LicenciasForm from '../components/LicenciasForm'
 import FeedbackModal from '../../../components/FeedbackModal'
 import { extractErrorMessage } from '../../../utils/errorHandler'
-import { emitirLicencia, getSolicitudesLicencia, getJuegosActivos } from '../services/licencias.service'
+import { emitirLicencia, getSolicitudesLicencia, getJuegosActivos, getBancos, getCentrosApuestaActivos, getRepresentantes } from '../services/licencias.service'
 
 const LicenciasRegistroView = () => {
   const { user } = useAuth()
@@ -16,15 +16,25 @@ const LicenciasRegistroView = () => {
     id_documento_anterior: '',
     fecha_expedicion: '',
     fecha_vencimiento: '',
-    fecha_emision: '',
-    fecha_entrega: '',
     direccion_establecimiento: '',
     detalles_extra: '',
     numero_lot: '',
-    juegos: '', // Cambiado de [] a '' para manejo simple
+    juegos: '',
+    id_centro: '',
+    id_representante: '',
+    id_banco: '',
+    num_referencia: '',
+    monto: '',
+    tasa_dia: '',
+    fecha_pago: '',
+    responsable_texto: '',
+    observaciones_pago: '',
   })
   const [solicitudes, setSolicitudes] = useState([])
   const [juegos, setJuegos] = useState([])
+  const [bancos, setBancos] = useState([])
+  const [centrosApuesta, setCentrosApuesta] = useState([])
+  const [representantes, setRepresentantes] = useState([])
   const [loadingDeps, setLoadingDeps] = useState(false)
   const [modalState, setModalState] = useState({ visible: false, type: '', message: '' })
   const [error, setError] = useState(null)
@@ -33,14 +43,21 @@ const LicenciasRegistroView = () => {
     const loadDependencies = async () => {
       setLoadingDeps(true)
       try {
-        const [solicitudesData, juegosData] = await Promise.all([
-          getSolicitudesLicencia(),
-          getJuegosActivos(),
+        const [solicitudesData, juegosData, bancosData, centrosData, representantesData] = await Promise.all([
+          getSolicitudesLicencia().catch(err => { console.error('Error cargando solicitudes:', err); throw err }),
+          getJuegosActivos().catch(err => { console.error('Error cargando juegos:', err); throw err }),
+          getBancos().catch(err => { console.error('Error cargando bancos:', err); throw err }),
+          getCentrosApuestaActivos().catch(err => { console.error('Error cargando centros de apuesta:', err); throw err }),
+          getRepresentantes().catch(err => { console.error('Error cargando representantes:', err); throw err }),
         ])
         setSolicitudes(solicitudesData || [])
         setJuegos(juegosData || [])
+        setBancos(bancosData || [])
+        setCentrosApuesta(centrosData || [])
+        setRepresentantes(representantesData || [])
       } catch (err) {
-        setError('No se pudieron cargar las solicitudes o los juegos. Intente de nuevo.')
+        console.error('Error general cargando dependencias:', err)
+        setError('No se pudieron cargar las dependencias. Verifica la consola para más detalles.')
       } finally {
         setLoadingDeps(false)
       }
@@ -64,7 +81,7 @@ const LicenciasRegistroView = () => {
         setModalState({ visible: true, type: 'error', message: 'Debe iniciar sesión antes de emitir una licencia.' })
         return
       }
-      const requiredFields = ['id_solicitud', 'numero_documento', 'papel_seguridad', 'fecha_expedicion', 'fecha_emision']
+      const requiredFields = ['id_solicitud', 'numero_documento', 'papel_seguridad', 'fecha_expedicion']
       for (const f of requiredFields) {
         if (!formData[f] || formData[f].toString().trim() === '') {
           setModalState({ visible: true, type: 'error', message: 'Complete todos los campos obligatorios antes de emitir.' })
@@ -85,8 +102,23 @@ const LicenciasRegistroView = () => {
         return
       }
 
+      // Validar que los campos de pago esten completos
+      const requiredPagoFields = ['id_banco', 'num_referencia', 'monto', 'tasa_dia', 'fecha_pago']
+      const missingPagoFields = requiredPagoFields.filter(f => !formData[f] || formData[f].toString().trim() === '')
+      if (missingPagoFields.length > 0) {
+        const labels = {
+          id_banco: 'Banco',
+          num_referencia: 'Número de Referencia',
+          monto: 'Monto',
+          tasa_dia: 'Tasa del Día',
+          fecha_pago: 'Fecha de Pago'
+        }
+        const missingLabels = missingPagoFields.map(f => labels[f] || f).join(', ')
+        setModalState({ visible: true, type: 'error', message: `Complete los campos obligatorios del pago: ${missingLabels}` })
+        return
+      }
+
       // Construimos el payload explícitamente: solo incluimos campos opcionales
-      // cuando tienen un valor real (evita enviar strings vacíos al backen      // Construimos el payload explícitamente: solo incluimos campos opcionales
       // cuando tienen un valor real (evita enviar strings vacíos al backend).
       const payload = {
         id_solicitud: formData.id_solicitud,
@@ -95,16 +127,14 @@ const LicenciasRegistroView = () => {
         papel_seguridad: formData.papel_seguridad,
         tipo_emision: formData.tipo_emision || 'Inscripcion',
         fecha_expedicion: formData.fecha_expedicion,
-        fecha_emision: formData.fecha_emision,
+        id_centro: formData.id_centro || undefined,
+        id_representante: formData.id_representante || undefined,
         // Opcionales: solo se incluyen si tienen valor
         ...(formData.id_documento_anterior?.trim()
           ? { id_documento_anterior: formData.id_documento_anterior }
           : {}),
         ...(formData.fecha_vencimiento
           ? { fecha_vencimiento: formData.fecha_vencimiento }
-          : {}),
-        ...(formData.fecha_entrega
-          ? { fecha_entrega: formData.fecha_entrega }
           : {}),
         ...(formData.direccion_establecimiento?.trim()
           ? { direccion_establecimiento: formData.direccion_establecimiento }
@@ -118,7 +148,22 @@ const LicenciasRegistroView = () => {
         ...(formData.juegos?.trim()
           ? { juegos: [formData.juegos] }
           : {}),
+        pago: {
+          id_banco: formData.id_banco,
+          num_referencia: formData.num_referencia,
+          monto: parseFloat(formData.monto),
+          tasa_dia: parseFloat(formData.tasa_dia),
+          fecha_pago: formData.fecha_pago,
+          ...(formData.responsable_texto?.trim()
+            ? { responsable_texto: formData.responsable_texto }
+            : {}),
+          ...(formData.observaciones_pago?.trim()
+            ? { observaciones: formData.observaciones_pago }
+            : {}),
+        },
       }
+
+      console.log('Payload licencia:', JSON.stringify(payload, null, 2))
       await emitirLicencia(payload)
       setModalState({ visible: true, type: 'success', message: 'Licencia emitida correctamente.' })
       setFormData({
@@ -129,15 +174,30 @@ const LicenciasRegistroView = () => {
         id_documento_anterior: '',
         fecha_expedicion: '',
         fecha_vencimiento: '',
-        fecha_emision: '',
-        fecha_entrega: '',
         direccion_establecimiento: '',
         detalles_extra: '',
         numero_lot: '',
         juegos: '',
+        id_centro: '',
+        id_representante: '',
+        id_banco: '',
+        num_referencia: '',
+        monto: '',
+        tasa_dia: '',
+        fecha_pago: '',
+        responsable_texto: '',
+        observaciones_pago: '',
       })
     } catch (err) {
-      const errorMsg = extractErrorMessage(err, 'Ocurrió un error al emitir la licencia.')
+      console.error('Error emitir licencia:', err)
+      let errorMsg = 'Ocurrió un error al emitir la licencia.'
+      if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
+        errorMsg = err.response.data.errors.map(e => e.path ? `${e.path}: ${e.message}` : e.message).join(' | ')
+      } else if (err.response?.data?.error) {
+        errorMsg = err.response.data.error
+      } else if (err.message) {
+        errorMsg = err.message
+      }
       setModalState({ visible: true, type: 'error', message: errorMsg })
     }
   }
@@ -166,6 +226,9 @@ const LicenciasRegistroView = () => {
             onSubmit={handleSubmit}
             solicitudes={solicitudes}
             juegos={juegos}
+            bancos={bancos}
+            centrosApuesta={centrosApuesta}
+            representantes={representantes}
             loadingDeps={loadingDeps}
           />
           {loadingDeps && (

@@ -41,9 +41,8 @@ import LicenciasRegistroView from '../modules/licencias/views/LicenciasRegistroV
 import JuegosListaView from '../modules/juegos/views/JuegosListaView'
 import JuegosRegistroView from '../modules/juegos/views/JuegosRegistroView'
 
-// Pagos
+// Pagos (solo historial/consulta)
 import PagosListaView from '../modules/pagos/views/PagosListaView'
-import PagosRegistroView from '../modules/pagos/views/PagosRegistroView'
 
 // Solicitudes
 import SolicitudesListaView from '../modules/solicitudes/views/SolicitudesListaView'
@@ -108,7 +107,6 @@ const AppRouter = () => {
           {/* Pagos */}
           <Route path="pagos" element={<Navigate to="/pagos/lista" replace />} />
           <Route path="pagos/lista" element={<RoleRoute allowedRoles={GESTORES}><PagosListaView /></RoleRoute>} />
-          <Route path="pagos/registro" element={<RoleRoute allowedRoles={GESTORES}><PagosRegistroView /></RoleRoute>} />
 
           {/* Comercializadores */}
           <Route path="comercializadores" element={<Navigate to="/comercializadores/lista" replace />} />

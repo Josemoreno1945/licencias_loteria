@@ -11,8 +11,6 @@ export const get_licencias = async () => {
     de.estado_documento,
     de.fecha_expedicion,
     de.fecha_vencimiento,
-    de.fecha_emision,
-    de.fecha_entrega,
     de.direccion_establecimiento,
     p.ci_rif,
     p.razon_social      AS persona,
@@ -20,6 +18,8 @@ export const get_licencias = async () => {
     c.razon_social      AS comercializador,
     l.categoria,
     l.numero_lot,
+    l.id_centro,
+    l.id_representante,
     u.nombre_usuario    AS emitido_por,
     de.created_at,
     de.updated_at
@@ -43,23 +43,37 @@ export const get_licencias_id = async (id) => {
     de.estado_documento,
     de.fecha_expedicion,
     de.fecha_vencimiento,
-    de.fecha_emision,
-    de.fecha_entrega,
     de.direccion_establecimiento,
     p.ci_rif,
     p.razon_social      AS persona,
     p.tipo_persona,
     c.razon_social      AS comercializador,
+    ca.nombre_agencia    AS centro_apuesta,
+    rep.razon_social     AS representante_legal,
     l.categoria,
     l.numero_lot,
+    l.id_centro,
+    l.id_representante,
     u.nombre_usuario    AS emitido_por,
     de.created_at,
-    de.updated_at
+    de.updated_at,
+    pag.id_pago,
+    pag.num_referencia  AS pago_numero_referencia,
+    pag.fecha_pago      AS pago_fecha_pago,
+    pag.monto           AS pago_monto,
+    pag.tasa_dia        AS pago_tasa_dia,
+    pag.responsable_texto AS pago_responsable,
+    pag.observaciones   AS pago_observaciones,
+    b.nombre            AS pago_banco
   FROM licencias AS l
   JOIN documentos_emitidos AS de ON l.id_documento       = de.id_documento
   JOIN personas            AS p  ON l.id_persona         = p.id_persona
   JOIN usuarios            AS u  ON de.emitido_por       = u.id_usuario
   LEFT JOIN comercializadores AS c ON l.id_comercializador = c.id_comercializadores
+  LEFT JOIN centros_apuesta AS ca ON l.id_centro = ca.id_centro
+  LEFT JOIN personas AS rep ON l.id_representante = rep.id_persona
+  LEFT JOIN pagos AS pag ON pag.id_licencia = l.id_documento
+  LEFT JOIN bancos AS b ON pag.id_banco = b.id_banco
   WHERE l.id_documento = $1
   `;
   const result = await pool.query(query, [id]);
@@ -78,7 +92,9 @@ export const get_licencias_vigentes = async () => {
     p.razon_social      AS persona,
     c.razon_social      AS comercializador,
     l.categoria,
-    l.numero_lot
+    l.numero_lot,
+    l.id_centro,
+    l.id_representante
   FROM licencias AS l
   JOIN documentos_emitidos AS de ON l.id_documento       = de.id_documento
   JOIN personas            AS p  ON l.id_persona         = p.id_persona
@@ -93,12 +109,14 @@ export const get_licencias_vigentes = async () => {
 //post------------------------------------------------------------
 export const crear_licencia = async (data) => {
   const query = `
-    INSERT INTO licencias (id_documento, id_persona, id_comercializador, categoria, numero_lot)
-    VALUES ($1, $2, $3, $4, $5) RETURNING *`;
+    INSERT INTO licencias (id_documento, id_persona, id_comercializador, id_centro, id_representante, categoria, numero_lot)
+    VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`;
   const values = [
     data.id_documento,
     data.id_persona,
     data.id_comercializador ?? null,
+    data.id_centro ?? null,
+    data.id_representante ?? null,
     data.categoria,
     data.numero_lot ?? null,
   ];
@@ -110,11 +128,13 @@ export const crear_licencia = async (data) => {
 export const actualizar_licencia_id = async (id, data) => {
   const query = `
     UPDATE licencias
-    SET id_persona = $1, id_comercializador = $2, categoria = $3, numero_lot = $4
-    WHERE id_documento = $5 RETURNING *`;
+    SET id_persona = $1, id_comercializador = $2, id_centro = $3, id_representante = $4, categoria = $5, numero_lot = $6
+    WHERE id_documento = $7 RETURNING *`;
   const values = [
     data.id_persona,
     data.id_comercializador ?? null,
+    data.id_centro ?? null,
+    data.id_representante ?? null,
     data.categoria,
     data.numero_lot ?? null,
     id,
@@ -137,7 +157,9 @@ export const buscar_licencias_por_persona = async (id_persona) => {
     p.razon_social      AS persona,
     c.razon_social      AS comercializador,
     l.categoria,
-    l.numero_lot
+    l.numero_lot,
+    l.id_centro,
+    l.id_representante
   FROM licencias AS l
   JOIN documentos_emitidos AS de ON l.id_documento       = de.id_documento
   JOIN personas            AS p  ON l.id_persona         = p.id_persona
@@ -161,7 +183,9 @@ export const buscar_licencias_por_categoria = async (categoria) => {
     p.razon_social      AS persona,
     c.razon_social      AS comercializador,
     l.categoria,
-    l.numero_lot
+    l.numero_lot,
+    l.id_centro,
+    l.id_representante
   FROM licencias AS l
   JOIN documentos_emitidos AS de ON l.id_documento       = de.id_documento
   JOIN personas            AS p  ON l.id_persona         = p.id_persona
@@ -185,7 +209,9 @@ export const buscar_licencias_por_comercializador = async (id_comercializador) =
     p.razon_social      AS persona,
     c.razon_social      AS comercializador,
     l.categoria,
-    l.numero_lot
+    l.numero_lot,
+    l.id_centro,
+    l.id_representante
   FROM licencias AS l
   JOIN documentos_emitidos AS de ON l.id_documento         = de.id_documento
   JOIN personas            AS p  ON l.id_persona           = p.id_persona
@@ -208,7 +234,9 @@ export const buscar_licencias_por_numero_lot = async (numero_lot) => {
     p.ci_rif,
     p.razon_social      AS persona,
     l.categoria,
-    l.numero_lot
+    l.numero_lot,
+    l.id_centro,
+    l.id_representante
   FROM licencias AS l
   JOIN documentos_emitidos AS de ON l.id_documento = de.id_documento
   JOIN personas            AS p  ON l.id_persona   = p.id_persona
@@ -229,7 +257,9 @@ export const buscar_licencias_proximas_a_vencer = async () => {
     p.razon_social      AS persona,
     c.razon_social      AS comercializador,
     l.categoria,
-    l.numero_lot
+    l.numero_lot,
+    l.id_centro,
+    l.id_representante
   FROM licencias AS l
   JOIN documentos_emitidos AS de ON l.id_documento       = de.id_documento
   JOIN personas            AS p  ON l.id_persona         = p.id_persona

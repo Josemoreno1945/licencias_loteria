@@ -1,8 +1,6 @@
 import axiosInstance from "../../../api/axiosInstance";
 
 export const emitirLicencia = async (payload) => {
-  // Hacemos que la petición resuelva incluso en 4xx para leer el body,
-  // y normalizamos el error para que el caller tenga access a response.data
   const resp = await axiosInstance.post("/licencias/emitir", payload, {
     validateStatus: () => true,
   });
@@ -23,5 +21,20 @@ export const getSolicitudesLicencia = async () => {
 
 export const getJuegosActivos = async () => {
   const { data } = await axiosInstance.get("/juegos/activas");
+  return data;
+};
+
+export const getBancos = async () => {
+  const { data } = await axiosInstance.get("/bancos");
+  return data;
+};
+
+export const getCentrosApuestaActivos = async () => {
+  const { data } = await axiosInstance.get("/centros_apuesta/activos");
+  return data;
+};
+
+export const getRepresentantes = async () => {
+  const { data } = await axiosInstance.get("/representantes");
   return data;
 };

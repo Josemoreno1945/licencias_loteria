@@ -3,7 +3,7 @@ import { pool } from "../db.js";
 //get--------------------------------------------------------------------
 export const get_bancos = async () => {
   const query = `
-  SELECT nombre , codigo , estado
+  SELECT id_banco, nombre , codigo , estado
   FROM bancos`;
   const result = await pool.query(query);
   return result.rows;
@@ -11,7 +11,7 @@ export const get_bancos = async () => {
 
 export const get_bancos_id = async (id) => {
   const query = ` 
-  SELECT nombre , codigo , estado 
+  SELECT id_banco, nombre , codigo , estado 
   FROM bancos
   WHERE id_banco = $1
   `;
@@ -21,7 +21,7 @@ export const get_bancos_id = async (id) => {
 
 export const get_bancos_activos = async () => {
   const query = `
-    SELECT nombre , codigo , estado
+    SELECT id_banco, nombre , codigo , estado
     FROM bancos
     WHERE estado = 'activo'
   `;

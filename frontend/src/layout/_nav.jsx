@@ -160,21 +160,6 @@ const _navBase = [
   },
 
   // ── ADMINISTRACIÓN ────────────────────────────────────────────────────────
-  // El título de Administración solo aparece para admins (por la sección Usuarios).
-  // Pagos es accesible para GESTORES, pero al vivir bajo el mismo título se mueve
-  // a un bloque propio para no ocultar Pagos a gestores_de_tramites.
-  { component: CNavTitle, name: 'Pagos', roles: GESTORES },
-  {
-    component: CNavGroup,
-    name: 'Pagos',
-    icon: <CIcon icon={cilCreditCard} customClassName="nav-icon" />,
-    roles: GESTORES,
-    items: [
-      { component: CNavItem, name: 'Lista',    to: '/pagos/lista',    indent: true, roles: GESTORES },
-      { component: CNavItem, name: 'Registro', to: '/pagos/registro', indent: true, roles: GESTORES },
-    ],
-  },
-
   { component: CNavTitle, name: 'Administracion', roles: ADMINS },
   {
     component: CNavGroup,
@@ -184,6 +169,18 @@ const _navBase = [
     items: [
       { component: CNavItem, name: 'Lista',    to: '/usuarios/lista',    indent: true, roles: ADMINS },
       { component: CNavItem, name: 'Registro', to: '/usuarios/registro', indent: true, roles: ADMINS },
+    ],
+  },
+
+  // ── HISTORIAL DE PAGOS (solo consulta) ────────────────────────────────────
+  { component: CNavTitle, name: 'Auditoria y Tesoreria', roles: GESTORES },
+  {
+    component: CNavGroup,
+    name: 'Pagos',
+    icon: <CIcon icon={cilCreditCard} customClassName="nav-icon" />,
+    roles: GESTORES,
+    items: [
+      { component: CNavItem, name: 'Lista / Historial', to: '/pagos/lista', indent: true, roles: GESTORES },
     ],
   },
 ]

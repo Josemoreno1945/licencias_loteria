@@ -383,8 +383,6 @@ CREATE TABLE documentos_emitidos (
     estado_documento      estado_documento_enum NOT NULL DEFAULT 'vigente',
     fecha_expedicion      DATE                  NOT NULL,
     fecha_vencimiento     DATE                  NOT NULL,
-    fecha_emision         DATE                  NOT NULL,
-    fecha_entrega         DATE,
     direccion_establecimiento TEXT,
     detalles_extra        JSONB,
     emitido_por           UUID                  NOT NULL,
@@ -475,6 +473,8 @@ CREATE TABLE licencias (
     id_documento       UUID                    PRIMARY KEY,
     id_persona         UUID                    NOT NULL,
     id_comercializador UUID,
+    id_centro          UUID,
+    id_representante   UUID,
     categoria          categoria_licencia_enum NOT NULL,
     numero_lot         VARCHAR(30),
 
@@ -491,6 +491,16 @@ CREATE TABLE licencias (
     CONSTRAINT fk_lic_comercializador
         FOREIGN KEY (id_comercializador)
         REFERENCES comercializadores (id_comercializadores)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+
+    CONSTRAINT fk_lic_centro
+        FOREIGN KEY (id_centro)
+        REFERENCES centros_apuesta (id_centro)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+
+    CONSTRAINT fk_lic_representante
+        FOREIGN KEY (id_representante)
+        REFERENCES personas (id_persona)
         ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
@@ -498,9 +508,15 @@ COMMENT ON TABLE  licencias IS
     'Detalle de documentos de tipo ''Licencia''. PK = FK 1:1 con documentos_emitidos.';
 COMMENT ON COLUMN licencias.id_comercializador IS
     'Nullable: no toda licencia pertenece a un comercializador.';
+COMMENT ON COLUMN licencias.id_centro IS
+    'Centro de apuesta específico al que aplica esta licencia.';
+COMMENT ON COLUMN licencias.id_representante IS
+    'Persona representante legal que gestionó/firmó esta licencia (auditoría).';
 
 CREATE INDEX idx_licencias_persona              ON licencias (id_persona);
 CREATE INDEX idx_licencias_comercializador      ON licencias (id_comercializador);
+CREATE INDEX idx_licencias_centro               ON licencias (id_centro);
+CREATE INDEX idx_licencias_representante        ON licencias (id_representante);
 CREATE INDEX idx_licencias_categoria            ON licencias (categoria);
 CREATE INDEX idx_licencias_persona_categoria    ON licencias (id_persona, categoria);
 
@@ -628,17 +644,20 @@ CREATE TABLE pagos (
     CONSTRAINT fk_pago_licencia
         FOREIGN KEY (id_licencia)
         REFERENCES licencias (id_documento)
-        ON DELETE RESTRICT ON UPDATE CASCADE,
+        ON DELETE RESTRICT ON UPDATE CASCADE
+        DEFERRABLE INITIALLY DEFERRED,
 
     CONSTRAINT fk_pago_autorizacion
         FOREIGN KEY (id_autorizacion)
         REFERENCES autorizaciones_especiales (id_documento)
-        ON DELETE RESTRICT ON UPDATE CASCADE,
+        ON DELETE RESTRICT ON UPDATE CASCADE
+        DEFERRABLE INITIALLY DEFERRED,
 
     CONSTRAINT fk_pago_participacion
         FOREIGN KEY (id_participacion)
         REFERENCES participaciones (id_documento)
-        ON DELETE RESTRICT ON UPDATE CASCADE,
+        ON DELETE RESTRICT ON UPDATE CASCADE
+        DEFERRABLE INITIALLY DEFERRED,
 
     CONSTRAINT fk_pago_registrado_por
         FOREIGN KEY (registrado_por)
@@ -717,6 +736,32 @@ CREATE TRIGGER trg_documentos_emitidos_updated_at
 CREATE TRIGGER trg_pagos_updated_at
     BEFORE UPDATE ON pagos
     FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
+-- ============================================================
+-- TRIGGER: Validacion de pago para licencias vigentes
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION fn_validar_pago_licencia()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+    IF NEW.estado_documento = 'vigente'
+       AND NEW.tipo = 'Licencia' THEN
+        IF NOT EXISTS (
+            SELECT 1
+            FROM pagos p
+            WHERE p.id_licencia = NEW.id_documento
+        ) THEN
+            RAISE EXCEPTION 'No se puede emitir una licencia vigente sin pago registrado (documento: %)',
+                NEW.numero_documento;
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_validar_pago_licencia
+    BEFORE INSERT OR UPDATE ON documentos_emitidos
+    FOR EACH ROW EXECUTE FUNCTION fn_validar_pago_licencia();
 
 -- ============================================================
 -- FIN DEL SCRIPT

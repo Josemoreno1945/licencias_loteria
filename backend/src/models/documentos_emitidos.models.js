@@ -12,8 +12,6 @@ export const get_documentos_emitidos = async () => {
     de.estado_documento,
     de.fecha_expedicion,
     de.fecha_vencimiento,
-    de.fecha_emision,
-    de.fecha_entrega,
     de.direccion_establecimiento,
     de.detalles_extra,
     u.nombre_usuario AS emitido_por,
@@ -40,8 +38,6 @@ export const get_documentos_emitidos_id = async (id) => {
     de.estado_documento,
     de.fecha_expedicion,
     de.fecha_vencimiento,
-    de.fecha_emision,
-    de.fecha_entrega,
     de.direccion_establecimiento,
     de.detalles_extra,
     u.nombre_usuario AS emitido_por,
@@ -69,7 +65,6 @@ export const get_documentos_emitidos_vigentes = async () => {
     de.estado_documento,
     de.fecha_expedicion,
     de.fecha_vencimiento,
-    de.fecha_emision,
     u.nombre_usuario AS emitido_por,
     s.tipo_tramite
   FROM documentos_emitidos AS de
@@ -88,10 +83,10 @@ export const crear_documento_emitido = async (data) => {
     INSERT INTO documentos_emitidos (
       id_solicitud, tipo, tipo_emision, id_documento_anterior,
       numero_documento, papel_seguridad, estado_documento,
-      fecha_expedicion, fecha_vencimiento, fecha_emision,
-      fecha_entrega, direccion_establecimiento, detalles_extra, emitido_por
+      fecha_expedicion, fecha_vencimiento,
+      direccion_establecimiento, detalles_extra, emitido_por
     )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *`;
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`;
   const values = [
     data.id_solicitud,
     data.tipo,
@@ -102,8 +97,6 @@ export const crear_documento_emitido = async (data) => {
     data.estado_documento ?? "vigente",
     data.fecha_expedicion,
     data.fecha_vencimiento,
-    data.fecha_emision,
-    data.fecha_entrega ?? null,
     data.direccion_establecimiento ?? null,
     data.detalles_extra ?? null,
     data.emitido_por,
@@ -118,13 +111,11 @@ export const actualizar_documento_emitido_id = async (id, data) => {
     UPDATE documentos_emitidos
     SET
       estado_documento          = $1,
-      fecha_entrega             = $2,
-      direccion_establecimiento = $3,
-      detalles_extra            = $4
-    WHERE id_documento = $5 RETURNING *`;
+      direccion_establecimiento = $2,
+      detalles_extra            = $3
+    WHERE id_documento = $4 RETURNING *`;
   const values = [
     data.estado_documento,
-    data.fecha_entrega ?? null,
     data.direccion_establecimiento ?? null,
     data.detalles_extra ?? null,
     id,
@@ -208,8 +199,6 @@ export const buscar_documentos_por_numero = async (numero_documento) => {
     de.estado_documento,
     de.fecha_expedicion,
     de.fecha_vencimiento,
-    de.fecha_emision,
-    de.fecha_entrega,
     de.direccion_establecimiento,
     de.detalles_extra,
     u.nombre_usuario AS emitido_por,
@@ -255,7 +244,6 @@ export const buscar_documentos_por_solicitud = async (id_solicitud) => {
     de.estado_documento,
     de.fecha_expedicion,
     de.fecha_vencimiento,
-    de.fecha_emision,
     u.nombre_usuario AS emitido_por
   FROM documentos_emitidos AS de
   JOIN usuarios AS u ON de.emitido_por = u.id_usuario

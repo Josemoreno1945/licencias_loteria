@@ -209,8 +209,6 @@ export const get_detalle_persona = async (id_persona) => {
        de.estado_documento,
        de.fecha_expedicion,
        de.fecha_vencimiento,
-       de.fecha_emision,
-       de.fecha_entrega,
        de.direccion_establecimiento,
        l.categoria,
        l.numero_lot,

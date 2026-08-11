@@ -35,12 +35,6 @@ export const crear_documento_emitido_schema = z.object({
     .string({ required_error: "La fecha de vencimiento es requerida" })
     .date("Formato de fecha inválido (YYYY-MM-DD)"),
 
-  fecha_emision: z
-    .string({ required_error: "La fecha de emision es requerida" })
-    .date("Formato de fecha inválido (YYYY-MM-DD)"),
-
-  fecha_entrega: z.string().date("Formato de fecha inválido (YYYY-MM-DD)").optional().nullable(),
-
   direccion_establecimiento: z.string().min(1, "La direccion no puede estar vacia").optional().nullable(),
 
   detalles_extra: z.record(z.unknown()).optional().nullable(),
@@ -52,8 +46,6 @@ export const actualizar_documento_emitido_schema = z.object({
   estado_documento: z.enum(["vigente", "vencido", "anulado", "suspendido"], {
     required_error: "El estado del documento es requerido",
   }),
-
-  fecha_entrega: z.string().date("Formato de fecha inválido (YYYY-MM-DD)").optional().nullable(),
 
   direccion_establecimiento: z.string().min(1, "La direccion no puede estar vacia").optional().nullable(),
 

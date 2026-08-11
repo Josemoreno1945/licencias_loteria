@@ -9,7 +9,7 @@ const dateStringSchema = z
   });
 
 const base_pago_schema = z.object({
-  id_banco: uuidSchema,
+  id_banco: z.string().min(1, "El banco es requerido"),
 
   num_referencia: z
     .string({ required_error: "El numero de referencia es requerido" })
@@ -47,6 +47,10 @@ const base_pago_schema = z.object({
   registrado_por: uuidSchema,
 });
 
+// NOTA: Estos schemas se mantienen para referencia futura.
+// La creacion y actualizacion independiente de pagos esta deshabilitada.
+// Los pagos ahora se crean de forma unificada desde el modulo de Licencias
+// (y en el futuro desde Autorizaciones y Participaciones).
 export const crear_pago_schema = base_pago_schema;
 
 export const actualizar_pago_schema = base_pago_schema.omit({

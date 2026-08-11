@@ -94,10 +94,6 @@ const emitir_licencia_schema = z.object({
 
   fecha_vencimiento: optionalDateField,
 
-  fecha_emision: dateStringSchema,
-
-  fecha_entrega: optionalDateField,
-
   direccion_establecimiento: optionalStringField(
     z.string().min(1, "La direccion no puede estar vacia"),
   ),
@@ -112,12 +108,35 @@ const emitir_licencia_schema = z.object({
     z.string().max(30, "El numero_lot no puede exceder los 30 caracteres"),
   ),
 
-  // Array de UUIDs de juegos autorizados. Cada elemento debe ser un UUID válido.
-  // El array completo es opcional: null/undefined = sin juegos.
+  id_centro: optionalUuidField,
+
+  id_representante: optionalUuidField,
+
   juegos: z
     .array(z.string().uuid("Cada ID de juego debe ser un UUID válido"))
     .optional()
     .nullable(),
+
+  pago: z.object({
+    id_banco: uuidSchema,
+    num_referencia: z
+      .string()
+      .min(1, "El numero de referencia es requerido")
+      .max(50, "El numero de referencia no puede exceder los 50 caracteres"),
+    fecha_pago: dateStringSchema,
+    monto: z.number().positive("El monto debe ser mayor a cero"),
+    tasa_dia: z.number().positive("La tasa del dia debe ser mayor a cero"),
+    responsable_texto: z
+      .string()
+      .max(200, "El responsable no puede exceder los 200 caracteres")
+      .optional()
+      .nullable(),
+    observaciones: z
+      .string()
+      .min(1, "Las observaciones no pueden estar vacias")
+      .optional()
+      .nullable(),
+  }),
 });
 
 export const crear_licencia_schema = simple_licencia_schema;
@@ -125,4 +144,7 @@ export const crear_licencia_completa_schema = emitir_licencia_schema;
 
 export const actualizar_licencia_schema = simple_licencia_schema.omit({
   id_documento: true,
+}).extend({
+  id_centro: optionalUuidField,
+  id_representante: optionalUuidField,
 });
