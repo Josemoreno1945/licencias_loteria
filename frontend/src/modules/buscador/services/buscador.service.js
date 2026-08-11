@@ -1,9 +1,16 @@
 import axiosInstance from "../../../api/axiosInstance";
 
-// Busca personas cuya ci_rif coincida con el valor dado (búsqueda parcial)
-export const buscarPersonasPorCiRif = async (ci_rif) => {
+// Busca personas por ci_rif con paginacion y filtros opcionales
+export const buscarPersonasPorCiRif = async (params = {}) => {
   const { data } = await axiosInstance.get("/buscador", {
-    params: { ci_rif },
+    params: {
+      ci_rif: params.ci_rif || "",
+      page: params.page || 1,
+      limit: params.limit || 10,
+      tipo_persona: params.tipo_persona || "",
+      estado_documento: params.estado_documento || "",
+      categoria: params.categoria || "",
+    },
   });
   return data;
 };

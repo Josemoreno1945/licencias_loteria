@@ -165,6 +165,24 @@ const BuscadorDetalleModal = ({
                   Solicitudes ({detalle.solicitudes?.length || 0})
                 </CNavLink>
               </CNavItem>
+              <CNavItem>
+                <CNavLink
+                  active={activeTab === 'representantes'}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => setActiveTab('representantes')}
+                >
+                  Representantes ({detalle.representantes?.length || 0})
+                </CNavLink>
+              </CNavItem>
+              <CNavItem>
+                <CNavLink
+                  active={activeTab === 'centros_apuesta'}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => setActiveTab('centros_apuesta')}
+                >
+                  Centros de Apuesta ({detalle.centros_apuesta?.length || 0})
+                </CNavLink>
+              </CNavItem>
 
               {/* ── Placeholder Participaciones ── */}
               {/* TODO: activar cuando el módulo esté listo
@@ -305,6 +323,74 @@ const BuscadorDetalleModal = ({
                             >
                               Ver
                             </CButton>
+                          </CTableDataCell>
+                        </CTableRow>
+                      ))}
+                    </CTableBody>
+                  </CTable>
+                )}
+              </CTabPane>
+
+              {/* ── TAB: REPRESENTANTES ── */}
+              <CTabPane visible={activeTab === 'representantes'}>
+                {detalle.representantes?.length === 0 ? (
+                  <CAlert color="info">Esta persona no es representante de ningun comercializador.</CAlert>
+                ) : (
+                  <CTable hover responsive striped align="middle" className="mb-0 small">
+                    <CTableHead>
+                      <CTableRow>
+                        <CTableHeaderCell>#</CTableHeaderCell>
+                        <CTableHeaderCell>Comercializador</CTableHeaderCell>
+                        <CTableHeaderCell>RIF</CTableHeaderCell>
+                        <CTableHeaderCell>Cargo</CTableHeaderCell>
+                        <CTableHeaderCell>Estado</CTableHeaderCell>
+                      </CTableRow>
+                    </CTableHead>
+                    <CTableBody>
+                      {detalle.representantes.map((rep, idx) => (
+                        <CTableRow key={idx}>
+                          <CTableDataCell className="text-muted">{idx + 1}</CTableDataCell>
+                          <CTableDataCell className="fw-semibold">{rep.comercializador}</CTableDataCell>
+                          <CTableDataCell>{rep.rif}</CTableDataCell>
+                          <CTableDataCell>{rep.cargo || <span className="text-muted">—</span>}</CTableDataCell>
+                          <CTableDataCell>
+                            <CBadge color={rep.estado === 'activo' ? 'success' : 'secondary'}>
+                              {rep.estado}
+                            </CBadge>
+                          </CTableDataCell>
+                        </CTableRow>
+                      ))}
+                    </CTableBody>
+                  </CTable>
+                )}
+              </CTabPane>
+
+              {/* ── TAB: CENTROS DE APUESTA ── */}
+              <CTabPane visible={activeTab === 'centros_apuesta'}>
+                {detalle.centros_apuesta?.length === 0 ? (
+                  <CAlert color="info">Esta persona no tiene centros de apuesta a su cargo.</CAlert>
+                ) : (
+                  <CTable hover responsive striped align="middle" className="mb-0 small">
+                    <CTableHead>
+                      <CTableRow>
+                        <CTableHeaderCell>#</CTableHeaderCell>
+                        <CTableHeaderCell>Nombre Agencia</CTableHeaderCell>
+                        <CTableHeaderCell>Direccion</CTableHeaderCell>
+                        <CTableHeaderCell>Comercializador</CTableHeaderCell>
+                        <CTableHeaderCell>Estado</CTableHeaderCell>
+                      </CTableRow>
+                    </CTableHead>
+                    <CTableBody>
+                      {detalle.centros_apuesta.map((centro, idx) => (
+                        <CTableRow key={idx}>
+                          <CTableDataCell className="text-muted">{idx + 1}</CTableDataCell>
+                          <CTableDataCell className="fw-semibold">{centro.nombre_agencia}</CTableDataCell>
+                          <CTableDataCell>{centro.direccion || <span className="text-muted">—</span>}</CTableDataCell>
+                          <CTableDataCell>{centro.comercializador || <span className="text-muted">—</span>}</CTableDataCell>
+                          <CTableDataCell>
+                            <CBadge color={centro.estado === 'activo' ? 'success' : 'secondary'}>
+                              {centro.estado}
+                            </CBadge>
                           </CTableDataCell>
                         </CTableRow>
                       ))}
