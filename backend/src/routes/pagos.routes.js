@@ -14,31 +14,30 @@ import {
   buscar_c_pagos_por_usuario,
 } from "../controllers/pagos.controllers.js";
 
-// import { verifyToken } from "../middlewares/auth.js";
-// import { isGerente } from "../middlewares/roles.js";
+import { verifyToken, hasRole, noSupervisorWrite } from "../middlewares/auth.js";
 
 const router = Router();
 
-router.get("/pagos", get_c_pagos);
+router.get("/pagos", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_pagos);
 
-router.get("/pagos/por-licencia/:id", buscar_c_pagos_por_licencia);
+router.get("/pagos/por-licencia/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_pagos_por_licencia);
 
-router.get("/pagos/por-autorizacion/:id", buscar_c_pagos_por_autorizacion);
+router.get("/pagos/por-autorizacion/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_pagos_por_autorizacion);
 
-router.get("/pagos/por-participacion/:id", buscar_c_pagos_por_participacion);
+router.get("/pagos/por-participacion/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_pagos_por_participacion);
 
-router.get("/pagos/por-banco/:id", buscar_c_pagos_por_banco);
+router.get("/pagos/por-banco/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_pagos_por_banco);
 
-router.get("/pagos/por-rango-fecha", buscar_c_pagos_por_rango_fecha);
+router.get("/pagos/por-rango-fecha", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_pagos_por_rango_fecha);
 
-router.get("/pagos/por-referencia/:referencia", buscar_c_pago_por_referencia);
+router.get("/pagos/por-referencia/:referencia", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_pago_por_referencia);
 
-router.get("/pagos/por-usuario/:id", buscar_c_pagos_por_usuario);
+router.get("/pagos/por-usuario/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_pagos_por_usuario);
 
-router.get("/pagos/:id", get_c_pagos_id);
+router.get("/pagos/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_pagos_id);
 
-router.post("/pagos", crear_c_pago);
+router.post("/pagos", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, crear_c_pago);
 
-router.put("/pagos/:id", actualizar_pago);
+router.put("/pagos/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, actualizar_pago);
 
 export default router;

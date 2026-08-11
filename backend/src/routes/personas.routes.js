@@ -7,17 +7,16 @@ import {
   actualizar_personas,
 } from "../controllers/personas.controllers.js";
 
-// import { verifyToken } from "../middlewares/auth.js";
-// import { isGerente } from "../middlewares/roles.js";
+import { verifyToken, hasRole, noSupervisorWrite } from "../middlewares/auth.js";
 
 const router = Router();
 
-router.get("/personas", get_c_personas);
+router.get("/personas", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_personas);
 
-router.get("/personas/:id", get_c_personas_id);
+router.get("/personas/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_personas_id);
 
-router.post("/personas", crear_c_personas);
+router.post("/personas", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, crear_c_personas);
 
-router.put("/personas/:id", actualizar_personas);
+router.put("/personas/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, actualizar_personas);
 
 export default router;

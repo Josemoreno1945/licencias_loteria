@@ -28,7 +28,7 @@ const PersonaDetalleModal = ({ idPersona, onClose }) => {
       setError(null)
       try {
         const res = await axiosInstance.get(`/personas/${idPersona}`)
-        setData(res.data[0]) // asumiendo que devuelve un array con 1 elemento
+        setData(Array.isArray(res.data) ? res.data[0] : res.data)
       } catch (err) {
         setError(err.response?.data?.message || 'Error al cargar el detalle de la persona')
       } finally {

@@ -12,7 +12,7 @@ import {
 } from "../models/licencias.models.js";
 
 import { crear_licencia_completa } from "../services/licencias.service.js";
-import { errors, throwError } from "../utils/errors.js";
+import { errors, throwError, zodValidationError } from "../utils/errors.js";
 import {
   crear_licencia_schema,
   crear_licencia_completa_schema,
@@ -69,15 +69,9 @@ export const crear_c_licencia = async (req, res, next) => {
     const parseL = crear_licencia_schema.safeParse(data);
     if (!parseL.success) {
       const raw = parseL.error?.issues || parseL.error?.errors || [];
-      const issues = (raw || []).map((it) => ({
-        path: Array.isArray(it.path)
-          ? it.path.join(".")
-          : String(it.path || ""),
-        message: it.message || "Validation error",
-        code: it.code || null,
-      }));
-      const zErr = { name: "ZodError", errors: issues };
-      return next(zErr);
+      if (!parseL.success) {
+        return next(zodValidationError(parseL.error));
+      }
     }
 
     const rows = await crear_licencia(data);
@@ -94,15 +88,9 @@ export const crear_c_licencia_completa = async (req, res, next) => {
     const parseL = crear_licencia_completa_schema.safeParse(data);
     if (!parseL.success) {
       const raw = parseL.error?.issues || parseL.error?.errors || [];
-      const issues = (raw || []).map((it) => ({
-        path: Array.isArray(it.path)
-          ? it.path.join(".")
-          : String(it.path || ""),
-        message: it.message || "Validation error",
-        code: it.code || null,
-      }));
-      const zErr = { name: "ZodError", errors: issues };
-      return next(zErr);
+      if (!parseL.success) {
+        return next(zodValidationError(parseL.error));
+      }
     }
 
     const result = await crear_licencia_completa(data);
@@ -125,15 +113,9 @@ export const actualizar_licencia = async (req, res, next) => {
     const parseL = actualizar_licencia_schema.safeParse(data);
     if (!parseL.success) {
       const raw = parseL.error?.issues || parseL.error?.errors || [];
-      const issues = (raw || []).map((it) => ({
-        path: Array.isArray(it.path)
-          ? it.path.join(".")
-          : String(it.path || ""),
-        message: it.message || "Validation error",
-        code: it.code || null,
-      }));
-      const zErr = { name: "ZodError", errors: issues };
-      return next(zErr);
+      if (!parseL.success) {
+        return next(zodValidationError(parseL.error));
+      }
     }
 
     // OBTENEMOS LA LICENCIA ACTUAL PRIMERO

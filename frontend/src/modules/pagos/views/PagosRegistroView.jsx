@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { CCard, CCardBody, CCardHeader, CContainer, CSpinner, CAlert } from '@coreui/react'
 import { useAuth } from '../../auth/store/AuthContext'
-import FeedbackModal from '../../personas/components/FeedbackModal'
+import FeedbackModal from '../../../components/FeedbackModal'
 import PagosForm from '../components/PagosForm'
 import { extractErrorMessage } from '../../../utils/errorHandler'
 import { createPago, getBancos, getLicencias } from '../services/pagos.service'

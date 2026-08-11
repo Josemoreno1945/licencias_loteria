@@ -14,31 +14,30 @@ import {
   buscar_c_permisos_vencidos,
 } from "../controllers/permisos_juego.controllers.js";
 
-// import { verifyToken } from "../middlewares/auth.js";
-// import { isGerente } from "../middlewares/roles.js";
+import { verifyToken, hasRole, noSupervisorWrite } from "../middlewares/auth.js";
 
 const router = Router();
 
-router.get("/permisos-juego", get_c_permisos_juego);
+router.get("/permisos-juego", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_permisos_juego);
 
-router.get("/permisos-juego/activos", get_c_permisos_juego_activos);
+router.get("/permisos-juego/activos", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_permisos_juego_activos);
 
-router.get("/permisos-juego/vencidos", buscar_c_permisos_vencidos);
+router.get("/permisos-juego/vencidos", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_permisos_vencidos);
 
-router.get("/permisos-juego/por-juego/:id", buscar_c_permisos_por_juego);
+router.get("/permisos-juego/por-juego/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_permisos_por_juego);
 
-router.get("/permisos-juego/por-comercializador/:id", buscar_c_permisos_por_comercializador);
+router.get("/permisos-juego/por-comercializador/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_permisos_por_comercializador);
 
-router.get("/permisos-juego/por-centro/:id", buscar_c_permisos_por_centro);
+router.get("/permisos-juego/por-centro/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_permisos_por_centro);
 
-router.get("/permisos-juego/por-nivel/:nivel", buscar_c_permisos_por_nivel);
+router.get("/permisos-juego/por-nivel/:nivel", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_permisos_por_nivel);
 
-router.get("/permisos-juego/:id", get_c_permisos_juego_id);
+router.get("/permisos-juego/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_permisos_juego_id);
 
-router.post("/permisos-juego", crear_c_permiso_juego);
+router.post("/permisos-juego", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, crear_c_permiso_juego);
 
-router.delete("/permisos-juego/:id", eliminar_c_permiso_juego);
+router.delete("/permisos-juego/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, eliminar_c_permiso_juego);
 
-router.put("/permisos-juego/:id", actualizar_permiso_juego);
+router.put("/permisos-juego/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, actualizar_permiso_juego);
 
 export default router;

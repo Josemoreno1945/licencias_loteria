@@ -11,7 +11,7 @@ import {
   buscar_participaciones_proximas_a_vencer,
 } from "../models/participaciones.models.js";
 
-import { errors, throwError } from "../utils/errors.js";
+import { errors, throwError, zodValidationError } from "../utils/errors.js";
 import {
   crear_participacion_schema,
   actualizar_participacion_schema,
@@ -66,9 +66,7 @@ export const crear_c_participacion = async (req, res, next) => {
 
     const parsePar = crear_participacion_schema.safeParse(data);
     if (!parsePar.success) {
-      return res.status(400).json({
-        errors: parsePar.error.errors,
-      });
+      return next(zodValidationError(parsePar.error));
     }
 
     const rows = await crear_participacion(data);
@@ -91,9 +89,7 @@ export const actualizar_participacion = async (req, res, next) => {
     const parsePar = actualizar_participacion_schema.safeParse(data);
 
     if (!parsePar.success) {
-      return res.status(400).json({
-        errors: parsePar.error.errors,
-      });
+      return next(zodValidationError(parsePar.error));
     }
 
     // OBTENEMOS LA PARTICIPACION ACTUAL PRIMERO

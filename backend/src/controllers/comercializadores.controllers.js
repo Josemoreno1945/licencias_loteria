@@ -9,7 +9,7 @@ import {
   get_comercializador_rif,
 } from "../models/comercializadores.models.js";
 
-import { errors, throwError } from "../utils/errors.js";
+import { errors, throwError, zodValidationError } from "../utils/errors.js";
 import {
   crear_comercializador_schema,
   actualizar_comercializador_schema,
@@ -64,9 +64,7 @@ export const crear_c_comercializador = async (req, res, next) => {
 
     const parseC = crear_comercializador_schema.safeParse(data);
     if (!parseC.success) {
-      return res.status(400).json({
-        errors: parseC.error.errors,
-      });
+      return next(zodValidationError(parseC.error));
     }
 
     const emailExiste = await get_comercializador_email(data.email);
@@ -121,9 +119,7 @@ export const actualizar_comercializador = async (req, res, next) => {
     const parseC = actualizar_comercializador_schema.safeParse(data);
 
     if (!parseC.success) {
-      return res.status(400).json({
-        errors: parseC.error.errors,
-      });
+      return next(zodValidationError(parseC.error));
     }
 
     // OBTENEMOS EL COMERCIALIZADOR ACTUAL PRIMERO

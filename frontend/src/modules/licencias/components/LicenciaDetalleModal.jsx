@@ -38,7 +38,7 @@ const LicenciaDetalleModal = ({ idLicencia, onClose }) => {
       setError(null)
       try {
         const res = await axiosInstance.get(`/licencias/${idLicencia}`)
-        setData(res.data[0]) // asumiendo que devuelve un array con 1 elemento
+        setData(Array.isArray(res.data) ? res.data[0] : res.data)
       } catch (err) {
         setError(err.response?.data?.message || 'Error al cargar el detalle de la licencia')
       } finally {

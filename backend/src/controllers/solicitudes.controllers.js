@@ -11,7 +11,7 @@ import {
   buscar_solicitudes_por_usuario,
 } from "../models/solicitudes.models.js";
 
-import { errors, throwError } from "../utils/errors.js";
+import { errors, throwError, zodValidationError } from "../utils/errors.js";
 import {
   crear_solicitud_schema,
   actualizar_solicitud_schema,
@@ -66,12 +66,7 @@ export const crear_c_solicitud = async (req, res, next) => {
 
     const parseS = crear_solicitud_schema.safeParse(data);
     if (!parseS.success) {
-      const issues = parseS.error.issues.map((it) => ({
-        path: Array.isArray(it.path) ? it.path.join(".") : String(it.path || ""),
-        message: it.message || "Validation error",
-        code: it.code || null,
-      }));
-      return next({ name: "ZodError", errors: issues });
+      return next(zodValidationError(parseS.error));
     }
 
     const rows = await crear_solicitud(data);
@@ -94,12 +89,7 @@ export const actualizar_solicitud = async (req, res, next) => {
     const parseS = actualizar_solicitud_schema.safeParse(data);
 
     if (!parseS.success) {
-      const issues = parseS.error.issues.map((it) => ({
-        path: Array.isArray(it.path) ? it.path.join(".") : String(it.path || ""),
-        message: it.message || "Validation error",
-        code: it.code || null,
-      }));
-      return next({ name: "ZodError", errors: issues });
+      return next(zodValidationError(parseS.error));
     }
 
     // OBTENEMOS LA SOLICITUD ACTUAL PRIMERO

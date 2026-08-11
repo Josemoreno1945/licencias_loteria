@@ -26,4 +26,8 @@ pool.on("error", (err) => {
   console.error("Error inesperado en la base de datos", err);
 });
 
+pool.on("remove", () => {
+  console.warn("Conexión a la base de datos removida del pool");
+});
+
 export { pool };

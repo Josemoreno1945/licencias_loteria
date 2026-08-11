@@ -8,7 +8,7 @@ import {
   get_centros_apuesta_nombre,
 } from "../models/centros_de_apuesta.models.js";
 
-import { errors, throwError } from "../utils/errors.js";
+import { errors, throwError, zodValidationError } from "../utils/errors.js";
 
 import {
   crear_centros_apuesta_schema,
@@ -64,9 +64,7 @@ export const crear_c_centros_apuesta = async (req, res, next) => {
 
     const parseCA = crear_centros_apuesta_schema.safeParse(data);
     if (!parseCA.success) {
-      return res.status(400).json({
-        errors: parseCA.error.errors,
-      });
+      return next(zodValidationError(parseCA.error));
     }
 
     const duplicado = await get_centros_apuesta_nombre(data.nombre_agencia);
@@ -116,9 +114,7 @@ export const actualizar_c_centros_apuesta = async (req, res, next) => {
     const parseCA = actualizar_centros_apuesta_schema.safeParse(data);
 
     if (!parseCA.success) {
-      return res.status(400).json({
-        errors: parseCA.error.errors,
-      });
+      return next(zodValidationError(parseCA.error));
     }
 
     const centroActualArray = await get_centros_apuesta_id(id);

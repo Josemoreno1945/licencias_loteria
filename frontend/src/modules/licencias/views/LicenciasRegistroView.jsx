@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { CCard, CCardBody, CCardHeader, CContainer, CRow, CCol, CSpinner, CAlert } from '@coreui/react'
 import { useAuth } from '../../auth/store/AuthContext'
 import LicenciasForm from '../components/LicenciasForm'
-import FeedbackModal from '../../personas/components/FeedbackModal'
+import FeedbackModal from '../../../components/FeedbackModal'
 import { extractErrorMessage } from '../../../utils/errorHandler'
 import { emitirLicencia, getSolicitudesLicencia, getJuegosActivos } from '../services/licencias.service'
 

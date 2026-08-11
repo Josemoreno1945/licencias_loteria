@@ -13,7 +13,7 @@ import {
   buscar_documentos_por_solicitud,
 } from "../models/documentos_emitidos.models.js";
 
-import { errors, throwError } from "../utils/errors.js";
+import { errors, throwError, zodValidationError } from "../utils/errors.js";
 import {
   crear_documento_emitido_schema,
   actualizar_documento_emitido_schema,
@@ -68,9 +68,7 @@ export const crear_c_documento_emitido = async (req, res, next) => {
 
     const parseDE = crear_documento_emitido_schema.safeParse(data);
     if (!parseDE.success) {
-      return res.status(400).json({
-        errors: parseDE.error.errors,
-      });
+      return next(zodValidationError(parseDE.error));
     }
 
     const numeroExiste = await get_documento_numero(data.numero_documento);
@@ -103,9 +101,7 @@ export const actualizar_documento_emitido = async (req, res, next) => {
     const parseDE = actualizar_documento_emitido_schema.safeParse(data);
 
     if (!parseDE.success) {
-      return res.status(400).json({
-        errors: parseDE.error.errors,
-      });
+      return next(zodValidationError(parseDE.error));
     }
 
     // OBTENEMOS EL DOCUMENTO ACTUAL PRIMERO

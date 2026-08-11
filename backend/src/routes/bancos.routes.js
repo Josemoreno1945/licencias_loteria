@@ -9,21 +9,20 @@ import {
   actualizar_banco,
 } from "../controllers/bancos.controllers.js";
 
-// import { verifyToken } from "../middlewares/auth.js";
-// import { isGerente } from "../middlewares/roles.js";
+import { verifyToken, hasRole, noSupervisorWrite } from "../middlewares/auth.js";
 
 const router = Router();
 
-router.get("/bancos", get_c_bancos);
+router.get("/bancos", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_bancos);
 
-router.get("/bancos/activos", get_c_bancos_activos);
+router.get("/bancos/activos", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_bancos_activos);
 
-router.get("/bancos/:id", get_c_bancos_id);
+router.get("/bancos/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_bancos_id);
 
-router.post("/bancos", crear_c_bancos);
+router.post("/bancos", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, crear_c_bancos);
 
-router.delete("/bancos/:id", eliminar_c_banco);
+router.delete("/bancos/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, eliminar_c_banco);
 
-router.put("/bancos/:id", actualizar_banco);
+router.put("/bancos/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, actualizar_banco);
 
 export default router;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { CCard, CCardBody, CCardHeader, CContainer, CAlert } from '@coreui/react'
 import axiosInstance from '../../../api/axiosInstance'
-import FeedbackModal from '../../personas/components/FeedbackModal'
+import FeedbackModal from '../../../components/FeedbackModal'
 import CentrosApuestaForm from '../components/CentrosApuestaForm'
 import { extractErrorMessage } from '../../../utils/errorHandler'
 

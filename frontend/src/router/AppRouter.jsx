@@ -11,10 +11,9 @@ import DashboardView from '../modules/dashboard/views/DashboardView'
 
 // Personas
 import PersonasListaView from '../modules/personas/views/PersonasListaView'
-import PersonasRegistroView from '../modules/personas/views/personasView'
+import PersonasRegistroView from '../modules/personas/views/PersonasRegistroView'
 
 // Operadoras
-import OperadorasView from '../modules/operadoras/views/OperadorasView'
 import OperadorasListaView from '../modules/operadoras/views/OperadorasListaView'
 import OperadorasRegistroView from '../modules/operadoras/views/OperadorasRegistroView'
 
@@ -87,7 +86,7 @@ const AppRouter = () => {
           <Route path="personas/registro" element={<RoleRoute allowedRoles={GESTORES}><PersonasRegistroView /></RoleRoute>} />
 
           {/* Operadoras */}
-          <Route path="operadoras" element={<OperadorasView />} />
+          <Route path="operadoras" element={<Navigate to="/operadoras/lista" replace />} />
           <Route path="operadoras/lista" element={<RoleRoute allowedRoles={TODOS}><OperadorasListaView /></RoleRoute>} />
           <Route path="operadoras/registro" element={<RoleRoute allowedRoles={GESTORES}><OperadorasRegistroView /></RoleRoute>} />
 
@@ -134,7 +133,6 @@ const AppRouter = () => {
           {/* Módulos pendientes — redirigen a dashboard hasta que se implementen */}
           <Route path="participaciones/*" element={<Navigate to="/dashboard" replace />} />
           <Route path="autorizaciones/*" element={<Navigate to="/dashboard" replace />} />
-          <Route path="pagos/*" element={<Navigate to="/dashboard" replace />} />
 
           {/* Buscador / Consultor */}
           <Route path="buscador" element={<RoleRoute allowedRoles={TODOS}><BuscadorView /></RoleRoute>} />

@@ -8,7 +8,7 @@ import {
   get_operadora_rif,
 } from "../models/operadoras.models.js";
 
-import { errors, throwError } from "../utils/errors.js";
+import { errors, throwError, zodValidationError } from "../utils/errors.js";
 import {
   crear_operadora_schema,
   actualizar_operadora_schema,
@@ -63,9 +63,7 @@ export const crear_c_operadora = async (req, res, next) => {
 
     const parseO = crear_operadora_schema.safeParse(data);
     if (!parseO.success) {
-      return res.status(400).json({
-        errors: parseO.error.errors,
-      });
+      return next(zodValidationError(parseO.error));
     }
 
     const rifExiste = await get_operadora_rif(data.rif);
@@ -115,9 +113,7 @@ export const actualizar_operadora = async (req, res, next) => {
     const parseO = actualizar_operadora_schema.safeParse(data);
 
     if (!parseO.success) {
-      return res.status(400).json({
-        errors: parseO.error.errors,
-      });
+      return next(zodValidationError(parseO.error));
     }
 
     // OBTENEMOS LA OPERADORA ACTUAL PRIMERO

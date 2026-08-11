@@ -9,21 +9,20 @@ import {
   actualizar_comercializador,
 } from "../controllers/comercializadores.controllers.js";
 
-// import { verifyToken } from "../middlewares/auth.js";
-// import { isGerente } from "../middlewares/roles.js";
+import { verifyToken, hasRole, noSupervisorWrite } from "../middlewares/auth.js";
 
 const router = Router();
 
-router.get("/comercializadores", get_c_comercializadores);
+router.get("/comercializadores", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_comercializadores);
 
-router.get("/comercializadores/activos", get_c_comercializadores_activos);
+router.get("/comercializadores/activos", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_comercializadores_activos);
 
-router.get("/comercializadores/:id", get_c_comercializadores_id);
+router.get("/comercializadores/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_comercializadores_id);
 
-router.post("/comercializadores", crear_c_comercializador);
+router.post("/comercializadores", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, crear_c_comercializador);
 
-router.delete("/comercializadores/:id", eliminar_c_comercializador);
+router.delete("/comercializadores/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, eliminar_c_comercializador);
 
-router.put("/comercializadores/:id", actualizar_comercializador);
+router.put("/comercializadores/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, actualizar_comercializador);
 
 export default router;

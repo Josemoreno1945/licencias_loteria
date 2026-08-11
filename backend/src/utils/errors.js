@@ -10,6 +10,19 @@ export function throwError(errorObj) {
   throw error;
 }
 
+export function zodValidationError(zodError) {
+  const issues = (zodError.issues || zodError.errors || []).map((it) => ({
+    path: Array.isArray(it.path) ? it.path.join(".") : String(it.path || ""),
+    message: it.message || "Validation error",
+    code: it.code || null,
+  }));
+  const error = new Error("Validation failed");
+  error.name = "ZodError";
+  error.status = 400;
+  error.errors = issues;
+  return error;
+}
+
 export const errors = {
   // Usuarios
   usuario_no_encontrado: {

@@ -9,21 +9,20 @@ import {
   buscar_c_documentos_por_juego,
 } from "../controllers/documento_juegos.controllers.js";
 
-// import { verifyToken } from "../middlewares/auth.js";
-// import { isGerente } from "../middlewares/roles.js";
+import { verifyToken, hasRole, noSupervisorWrite } from "../middlewares/auth.js";
 
 const router = Router();
 
-router.get("/documento-juegos", get_c_documento_juegos);
+router.get("/documento-juegos", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_documento_juegos);
 
-router.get("/documento-juegos/por-documento/:id", buscar_c_juegos_por_documento);
+router.get("/documento-juegos/por-documento/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_juegos_por_documento);
 
-router.get("/documento-juegos/por-juego/:id", buscar_c_documentos_por_juego);
+router.get("/documento-juegos/por-juego/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_documentos_por_juego);
 
-router.get("/documento-juegos/:id", get_c_documento_juegos_id);
+router.get("/documento-juegos/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_documento_juegos_id);
 
-router.post("/documento-juegos", crear_c_documento_juego);
+router.post("/documento-juegos", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, crear_c_documento_juego);
 
-router.delete("/documento-juegos/:id", eliminar_c_documento_juego);
+router.delete("/documento-juegos/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, eliminar_c_documento_juego);
 
 export default router;

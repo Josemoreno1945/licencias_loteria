@@ -9,7 +9,7 @@ import {
   get_juegos_nombre,
 } from "../models/juegos.models.js";
 
-import { errors, throwError } from "../utils/errors.js";
+import { errors, throwError, zodValidationError } from "../utils/errors.js";
 
 import { juegos_schema } from "../schemas/juegos.schemas.js";
 
@@ -71,12 +71,7 @@ export const crear_c_juegos = async (req, res, next) => {
 
     const parseJ = juegos_schema.safeParse(data);
     if (!parseJ.success) {
-      const issues = parseJ.error.issues.map((it) => ({
-        path: Array.isArray(it.path) ? it.path.join(".") : String(it.path || ""),
-        message: it.message || "Validation error",
-        code: it.code || null,
-      }));
-      return next({ name: "ZodError", errors: issues });
+      return next(zodValidationError(parseJ.error));
     }
     const parsedData = parseJ.data;
     const nombreExiste = await get_juegos_nombre(parsedData.nombre);
@@ -125,12 +120,7 @@ export const actualizar_juegos = async (req, res, next) => {
     const parseJ = juegos_schema.safeParse(data);
 
     if (!parseJ.success) {
-      const issues = parseJ.error.issues.map((it) => ({
-        path: Array.isArray(it.path) ? it.path.join(".") : String(it.path || ""),
-        message: it.message || "Validation error",
-        code: it.code || null,
-      }));
-      return next({ name: "ZodError", errors: issues });
+      return next(zodValidationError(parseJ.error));
     }
 
     // OBTENEMOS EL JUEGO ACTUAL PRIMERO

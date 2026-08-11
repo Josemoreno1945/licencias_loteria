@@ -6,7 +6,7 @@ import { crear_usuario } from "../models/usuarios.models.js";
 import { get_usuario_email, get_nombre_de_usuario } from "../models/usuarios.models.js";
 
 import { JWT_SECRET } from "../config.js";
-import { errors, throwError } from "../utils/errors.js";
+import { errors, throwError, zodValidationError } from "../utils/errors.js";
 import { login_schema } from "../schemas/auth.schemas.js";
 import { crear_usuario_schema } from "../schemas/usuarios.schemas.js";
 
@@ -18,7 +18,7 @@ export const login = async (req, res, next) => {
     // 1. Validar body con Zod
     const parseResult = login_schema.safeParse(req.body);
     if (!parseResult.success) {
-      return res.status(400).json({ errors: parseResult.error.errors });
+      return next(zodValidationError(parseResult.error));
     }
 
     const { email, password } = parseResult.data;
@@ -76,7 +76,7 @@ export const register = async (req, res, next) => {
     // 1. Validar body con Zod (mismo esquema que crear usuario)
     const parseResult = crear_usuario_schema.safeParse(req.body);
     if (!parseResult.success) {
-      return res.status(400).json({ errors: parseResult.error.errors });
+      return next(zodValidationError(parseResult.error));
     }
 
     const data = parseResult.data;

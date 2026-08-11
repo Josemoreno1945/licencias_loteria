@@ -37,7 +37,7 @@ const SolicitudDetalleModal = ({ idSolicitud, onClose }) => {
       setError(null)
       try {
         const res = await axiosInstance.get(`/solicitudes/${idSolicitud}`)
-        setData(res.data[0])
+        setData(Array.isArray(res.data) ? res.data[0] : res.data)
       } catch (err) {
         setError(err.response?.data?.message || 'Error al cargar el detalle de la solicitud')
       } finally {

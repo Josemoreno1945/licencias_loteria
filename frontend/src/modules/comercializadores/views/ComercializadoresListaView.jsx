@@ -34,7 +34,7 @@ import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
 import axiosInstance from '../../../api/axiosInstance'
 import { useAuth } from '../../auth/store/AuthContext'
-import FeedbackModal from '../../personas/components/FeedbackModal'
+import FeedbackModal from '../../../components/FeedbackModal'
 import { extractErrorMessage } from '../../../utils/errorHandler'
 
 const ComercializadoresListaView = () => {

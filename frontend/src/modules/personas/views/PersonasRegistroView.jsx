@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CCard, CCardBody, CCardHeader, CContainer } from '@coreui/react';
-import axios from 'axios';
-import FeedbackModal from '../components/FeedbackModal';
+import axiosInstance from '../../../api/axiosInstance';
+import FeedbackModal from '../../../components/FeedbackModal';
 import PersonasForm from '../components/PersonasForm';
 import { extractErrorMessage } from '../../../utils/errorHandler';
 
@@ -53,12 +53,7 @@ const PersonasView = () => {
     });
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:4000/personas', formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axiosInstance.post('/personas', formData);
 
       setModalState({
         visible: true,

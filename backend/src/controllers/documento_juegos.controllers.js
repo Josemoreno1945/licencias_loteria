@@ -8,7 +8,7 @@ import {
   get_documento_juego_duplicado,
 } from "../models/documento_juegos.models.js";
 
-import { errors, throwError } from "../utils/errors.js";
+import { errors, throwError, zodValidationError } from "../utils/errors.js";
 import { crear_documento_juego_schema } from "../schemas/documento_juegos.schemas.js";
 
 // Regex para validar que el string tiene formato UUID
@@ -51,9 +51,7 @@ export const crear_c_documento_juego = async (req, res, next) => {
 
     const parseDJ = crear_documento_juego_schema.safeParse(data);
     if (!parseDJ.success) {
-      return res.status(400).json({
-        errors: parseDJ.error.errors,
-      });
+      return next(zodValidationError(parseDJ.error));
     }
 
     const duplicado = await get_documento_juego_duplicado(data.id_documento, data.id_juego);

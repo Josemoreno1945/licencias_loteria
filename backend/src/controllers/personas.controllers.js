@@ -8,7 +8,7 @@ import {
 } from "../models/personas.models.js";
 
 import bcrypt from "bcryptjs";
-import { errors, throwError } from "../utils/errors.js";
+import { errors, throwError, zodValidationError } from "../utils/errors.js";
 import { persona_schema } from "../schemas/personas.schemas.js";
 
 // Regex para validar que el string tiene formato UUID
@@ -51,9 +51,7 @@ export const crear_c_personas = async (req, res, next) => {
 
     const parseP = persona_schema.safeParse(data);
     if (!parseP.success) {
-      return res.status(400).json({
-        errors: parseP.error.errors,
-      });
+      return next(zodValidationError(parseP.error));
     }
 
     const emailExiste = await get_persona_email(data.email);
@@ -108,9 +106,7 @@ export const actualizar_personas = async (req, res, next) => {
     const parseP = persona_schema.safeParse(data); //esquema ARREGLAR -----------------
 
     if (!parseP.success) {
-      return res.status(400).json({
-        errors: parseP.error.errors,
-      });
+      return next(zodValidationError(parseP.error));
     }
 
     // OBTENEMOS LA PERSONA ACTUAL PRIMERO

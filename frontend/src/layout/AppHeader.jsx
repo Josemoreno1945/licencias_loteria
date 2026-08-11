@@ -149,21 +149,6 @@ const AppHeader = ({ sidebarShow, setSidebarShow }) => {
                 </div>
               </CDropdownHeader>
 
-              <CDropdownItem href="/perfil" className="dropdown-item-icon">
-                <CIcon icon={cilUser} className="me-2" />
-                Mi Perfil
-              </CDropdownItem>
-
-              <CDropdownItem href="/configuracion" className="dropdown-item-icon">
-                <CIcon icon={cilSettings} className="me-2" />
-                Configuración
-              </CDropdownItem>
-
-              <CDropdownItem href="/seguridad" className="dropdown-item-icon">
-                <CIcon icon={cilLockLocked} className="me-2" />
-                Seguridad
-              </CDropdownItem>
-
               <CDropdownDivider />
 
               <CDropdownItem

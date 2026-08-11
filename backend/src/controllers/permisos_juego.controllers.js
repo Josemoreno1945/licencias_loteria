@@ -12,7 +12,7 @@ import {
   buscar_permisos_vencidos,
 } from "../models/permisos_de_juegos.models.js";
 
-import { errors, throwError } from "../utils/errors.js";
+import { errors, throwError, zodValidationError } from "../utils/errors.js";
 import {
   crear_permiso_juego_schema,
   actualizar_permiso_juego_schema,
@@ -67,9 +67,7 @@ export const crear_c_permiso_juego = async (req, res, next) => {
 
     const parsePJ = crear_permiso_juego_schema.safeParse(data);
     if (!parsePJ.success) {
-      return res.status(400).json({
-        errors: parsePJ.error.errors,
-      });
+      return next(zodValidationError(parsePJ.error));
     }
 
     const rows = await crear_permiso_juego(data);
@@ -114,9 +112,7 @@ export const actualizar_permiso_juego = async (req, res, next) => {
     const parsePJ = actualizar_permiso_juego_schema.safeParse(data);
 
     if (!parsePJ.success) {
-      return res.status(400).json({
-        errors: parsePJ.error.errors,
-      });
+      return next(zodValidationError(parsePJ.error));
     }
 
     // OBTENEMOS EL PERMISO ACTUAL PRIMERO

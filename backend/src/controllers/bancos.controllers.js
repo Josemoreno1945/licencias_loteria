@@ -8,7 +8,7 @@ import {
   get_banco_nombre,
 } from "../models/bancos.models.js";
 
-import { errors, throwError } from "../utils/errors.js";
+import { errors, throwError, zodValidationError } from "../utils/errors.js";
 
 import { bancos_schema } from "../schemas/bancos.schemas.js";
 
@@ -61,9 +61,7 @@ export const crear_c_bancos = async (req, res, next) => {
 
     const parseB = bancos_schema.safeParse(data);
     if (!parseB.success) {
-      return res.status(400).json({
-        errors: parseB.error.errors,
-      });
+      return next(zodValidationError(parseB.error));
     }
 
     const nombreExiste = await get_banco_nombre(data.nombre);
@@ -113,9 +111,7 @@ export const actualizar_banco = async (req, res, next) => {
     const parseB = bancos_schema.safeParse(data);
 
     if (!parseB.success) {
-      return res.status(400).json({
-        errors: parseB.error.errors,
-      });
+      return next(zodValidationError(parseB.error));
     }
 
     // OBTENEMOS EL BANCO ACTUAL PRIMERO

@@ -10,24 +10,24 @@ import {
   eliminar_c_juegos,
 } from "../controllers/juegos.controllers.js";
 
-// import { verifyToken } from "../middlewares/auth.js";
-// import { isGerente } from "../middlewares/roles.js";
+import { verifyToken, hasRole, noSupervisorWrite } from "../middlewares/auth.js";
 
 const router = Router();
 
-router.get("/juegos", get_c_juegos);
+router.get("/juegos", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_juegos);
 
-// Rutas con path fijo SIEMPRE antes de /:id para evitar conflictos
-router.get("/juegos/activas", get_c_juegos_activas);
-router.get("/juegos/activos", get_c_juegos_activas);    // alias semántico
-router.get("/juegos/inactivos", get_c_juegos_inactivos); // BUG #3 — ruta faltante agregada
+router.get("/juegos/activas", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_juegos_activas);
 
-router.get("/juegos/:id", get_c_juegos_id);
+router.get("/juegos/activos", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_juegos_activas);
 
-router.post("/juegos", crear_c_juegos);
+router.get("/juegos/inactivos", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_juegos_inactivos);
 
-router.delete("/juegos/:id", eliminar_c_juegos);
+router.get("/juegos/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_juegos_id);
 
-router.put("/juegos/:id", actualizar_juegos);
+router.post("/juegos", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, crear_c_juegos);
+
+router.delete("/juegos/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, eliminar_c_juegos);
+
+router.put("/juegos/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, actualizar_juegos);
 
 export default router;

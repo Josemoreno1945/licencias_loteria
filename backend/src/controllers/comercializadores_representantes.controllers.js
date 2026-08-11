@@ -9,7 +9,7 @@ import {
   check_duplicado_representante,
 } from "../models/comercializadores_representantes.models.js";
 
-import { errors, throwError } from "../utils/errors.js";
+import { errors, throwError, zodValidationError } from "../utils/errors.js";
 
 import {
   crear_representante_schema,
@@ -86,9 +86,7 @@ export const crear_c_representante = async (req, res, next) => {
 
     const parseR = crear_representante_schema.safeParse(data);
     if (!parseR.success) {
-      return res.status(400).json({
-        errors: parseR.error.errors,
-      });
+      return next(zodValidationError(parseR.error));
     }
 
     const duplicado = await check_duplicado_representante(data.id_comercializador, data.id_persona);
@@ -138,9 +136,7 @@ export const actualizar_c_representante = async (req, res, next) => {
     const parseR = actualizar_representante_schema.safeParse(data);
 
     if (!parseR.success) {
-      return res.status(400).json({
-        errors: parseR.error.errors,
-      });
+      return next(zodValidationError(parseR.error));
     }
 
     const representanteActualArray = await get_representante_id(id);

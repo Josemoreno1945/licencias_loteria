@@ -13,7 +13,7 @@ import {
   buscar_pagos_por_usuario,
 } from "../models/pagos.models.js";
 
-import { errors, throwError } from "../utils/errors.js";
+import { errors, throwError, zodValidationError } from "../utils/errors.js";
 import { crear_pago_schema, actualizar_pago_schema } from "../schemas/pagos.schemas.js";
 
 // Regex para validar que el string tiene formato UUID
@@ -56,9 +56,7 @@ export const crear_c_pago = async (req, res, next) => {
 
     const parseP = crear_pago_schema.safeParse(data);
     if (!parseP.success) {
-      return res.status(400).json({
-        errors: parseP.error.errors,
-      });
+      return next(zodValidationError(parseP.error));
     }
 
     // Verificar que al menos un documento esté vinculado
@@ -93,9 +91,7 @@ export const actualizar_pago = async (req, res, next) => {
     const parseP = actualizar_pago_schema.safeParse(data);
 
     if (!parseP.success) {
-      return res.status(400).json({
-        errors: parseP.error.errors,
-      });
+      return next(zodValidationError(parseP.error));
     }
 
     // Verificar que al menos un documento esté vinculado

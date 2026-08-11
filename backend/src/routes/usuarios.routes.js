@@ -8,19 +8,18 @@ import {
   eliminar_c_usuario,
 } from "../controllers/usuarios.controllers.js";
 
-//import { verifyToken } from "../middlewares/auth.js";
-//import { isGerente } from "../middlewares/roles.js";
+import { verifyToken, soloAdmins } from "../middlewares/auth.js";
 
 const router = Router();
 
-router.get("/usuarios", get_c_usuarios);
+router.get("/usuarios", verifyToken, soloAdmins, get_c_usuarios);
 
-router.get("/usuarios/:id", get_c_usuarios_id);
+router.get("/usuarios/:id", verifyToken, soloAdmins, get_c_usuarios_id);
 
-router.post("/usuarios", crear_c_usuario);
+router.post("/usuarios", verifyToken, soloAdmins, crear_c_usuario);
 
-router.delete("/usuarios/:id", eliminar_c_usuario);
+router.delete("/usuarios/:id", verifyToken, soloAdmins, eliminar_c_usuario);
 
-router.put("/usuarios/:id", actualizar_usuario);
+router.put("/usuarios/:id", verifyToken, soloAdmins, actualizar_usuario);
 
 export default router;

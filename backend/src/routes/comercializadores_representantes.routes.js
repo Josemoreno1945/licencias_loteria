@@ -9,24 +9,19 @@ import {
   actualizar_c_representante,
 } from "../controllers/comercializadores_representantes.controllers.js";
 
-// Si hay middlewares de auth, importarlos aquí
-// import { verifyToken } from "../middlewares/jwt.middleware.js";
+import { verifyToken, hasRole, noSupervisorWrite } from "../middlewares/auth.js";
 
 const router = Router();
 
-// get
-router.get("/representantes", get_c_representantes);
-router.get("/representantes/:id", get_c_representante_id);
-router.get("/representantes/persona/:id_persona", get_c_representantes_by_persona);
-router.get("/representantes/comercializador/:id_comercializador", get_c_representantes_by_comercializador);
+router.get("/representantes", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_representantes);
+router.get("/representantes/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_representante_id);
+router.get("/representantes/persona/:id_persona", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_representantes_by_persona);
+router.get("/representantes/comercializador/:id_comercializador", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_representantes_by_comercializador);
 
-// post
-router.post("/representantes", crear_c_representante);
+router.post("/representantes", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, crear_c_representante);
 
-// put
-router.put("/representantes/:id", actualizar_c_representante);
+router.put("/representantes/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, actualizar_c_representante);
 
-// delete
-router.delete("/representantes/:id", eliminar_c_representante);
+router.delete("/representantes/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, eliminar_c_representante);
 
 export default router;

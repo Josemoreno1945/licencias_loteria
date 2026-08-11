@@ -14,50 +14,56 @@ import {
   buscar_c_licencias_proximas_a_vencer,
 } from "../controllers/licencias.controllers.js";
 
-// import { verifyToken } from "../middlewares/auth.js";
-// import { isGerente } from "../middlewares/roles.js";
+import { verifyToken, hasRole, noSupervisorWrite } from "../middlewares/auth.js";
 
 const router = Router();
 
-router.get("/licencias", get_c_licencias);
+router.get("/licencias", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_licencias);
 
-router.get("/licencias/vigentes", get_c_licencias_vigentes);
+router.get("/licencias/vigentes", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_licencias_vigentes);
 
 router.get(
   "/licencias/proximas-a-vencer",
+  verifyToken,
+  hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"),
   buscar_c_licencias_proximas_a_vencer,
 );
 
-router.get("/licencias/por-persona/:id", buscar_c_licencias_por_persona);
+router.get("/licencias/por-persona/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_licencias_por_persona);
 
 router.get(
   "/licencias/por-categoria/:categoria",
+  verifyToken,
+  hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"),
   buscar_c_licencias_por_categoria,
 );
 
 router.get(
   "/licencias/por-comercializador/:id",
+  verifyToken,
+  hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"),
   buscar_c_licencias_por_comercializador,
 );
 
 router.get(
   "/licencias/por-numero-lot/:numero_lot",
+  verifyToken,
+  hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"),
   buscar_c_licencias_por_numero_lot,
 );
 
-// Ruta explícita para evitar que un GET accidental a /licencias/emitir
-// sea interpretado por la ruta "/licencias/:id". Devuelve 405 (solo POST).
 router.get("/licencias/emitir", (req, res) => {
   res
     .status(405)
     .json({ error: "Method GET not allowed on /licencias/emitir. Use POST." });
 });
 
-router.get("/licencias/:id", get_c_licencias_id);
+router.get("/licencias/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_licencias_id);
 
-router.post("/licencias", crear_c_licencia);
-router.post("/licencias/emitir", crear_c_licencia_completa);
+router.post("/licencias", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, crear_c_licencia);
 
-router.put("/licencias/:id", actualizar_licencia);
+router.post("/licencias/emitir", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, crear_c_licencia_completa);
+
+router.put("/licencias/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, actualizar_licencia);
 
 export default router;

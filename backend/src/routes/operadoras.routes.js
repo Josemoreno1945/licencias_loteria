@@ -9,21 +9,20 @@ import {
   actualizar_operadora,
 } from "../controllers/operadoras.controllers.js";
 
-// import { verifyToken } from "../middlewares/auth.js";
-// import { isGerente } from "../middlewares/roles.js";
+import { verifyToken, hasRole, noSupervisorWrite } from "../middlewares/auth.js";
 
 const router = Router();
 
-router.get("/operadoras", get_c_operadoras);
+router.get("/operadoras", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_operadoras);
 
-router.get("/operadoras/activas", get_c_operadoras_activas);
+router.get("/operadoras/activas", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_operadoras_activas);
 
-router.get("/operadoras/:id", get_c_operadoras_id);
+router.get("/operadoras/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_operadoras_id);
 
-router.post("/operadoras", crear_c_operadora);
+router.post("/operadoras", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, crear_c_operadora);
 
-router.delete("/operadoras/:id", eliminar_c_operadora);
+router.delete("/operadoras/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, eliminar_c_operadora);
 
-router.put("/operadoras/:id", actualizar_operadora);
+router.put("/operadoras/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, actualizar_operadora);
 
 export default router;

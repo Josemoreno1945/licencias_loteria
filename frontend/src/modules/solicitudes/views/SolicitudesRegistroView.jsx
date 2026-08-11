@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CCard, CCardBody, CCardHeader, CContainer } from '@coreui/react';
 import axiosInstance from '../../../api/axiosInstance';
-import FeedbackModal from '../../personas/components/FeedbackModal';
+import FeedbackModal from '../../../components/FeedbackModal';
 import SolicitudesForm from '../components/SolicitudesForm';
 import { useAuth } from '../../auth/store/AuthContext';
 import { extractErrorMessage } from '../../../utils/errorHandler';

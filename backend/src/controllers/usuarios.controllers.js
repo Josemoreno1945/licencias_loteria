@@ -10,7 +10,7 @@ import {
 } from "../models/usuarios.models.js";
 
 import bcrypt from "bcryptjs";
-import { errors, throwError } from "../utils/errors.js";
+import { errors, throwError, zodValidationError } from "../utils/errors.js";
 import {
   crear_usuario_schema,
   actualizar_usuario_schema,
@@ -56,9 +56,7 @@ export const crear_c_usuario = async (req, res, next) => {
 
     const parseU = crear_usuario_schema.safeParse(data);
     if (!parseU.success) {
-      return res.status(400).json({
-        errors: parseU.error.errors,
-      });
+      return next(zodValidationError(parseU.error));
     }
 
     const emailExiste = await get_usuario_email(data.email);
@@ -115,9 +113,7 @@ export const actualizar_usuario = async (req, res, next) => {
     const parseU = actualizar_usuario_schema.safeParse(data);
 
     if (!parseU.success) {
-      return res.status(400).json({
-        errors: parseU.error.errors,
-      });
+      return next(zodValidationError(parseU.error));
     }
 
     // OBTENEMOS EL USUARIO ACTUAL PRIMERO

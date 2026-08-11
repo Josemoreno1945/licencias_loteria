@@ -11,21 +11,26 @@ const useFetch = (endpoint, { immediate = true } = {}) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (signal) => {
     setLoading(true)
     setError(null)
     try {
-      const { data: result } = await axiosInstance.get(endpoint)
+      const { data: result } = await axiosInstance.get(endpoint, { signal })
       setData(result)
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al cargar datos')
+      if (err.name !== 'CanceledError') {
+        setError(err.response?.data?.message || 'Error al cargar datos')
+      }
     } finally {
       setLoading(false)
     }
   }, [endpoint])
 
   useEffect(() => {
-    if (immediate) fetchData()
+    if (!immediate) return
+    const controller = new AbortController()
+    fetchData(controller.signal)
+    return () => controller.abort()
   }, [fetchData, immediate])
 
   return { data, loading, error, refetch: fetchData }

@@ -11,7 +11,7 @@ import {
   buscar_autorizaciones_proximas_a_vencer,
 } from "../models/autorizaciones_especiales.models.js";
 
-import { errors, throwError } from "../utils/errors.js";
+import { errors, throwError, zodValidationError } from "../utils/errors.js";
 import {
   crear_autorizacion_especial_schema,
   actualizar_autorizacion_especial_schema,
@@ -66,9 +66,7 @@ export const crear_c_autorizacion_especial = async (req, res, next) => {
 
     const parseAE = crear_autorizacion_especial_schema.safeParse(data);
     if (!parseAE.success) {
-      return res.status(400).json({
-        errors: parseAE.error.errors,
-      });
+      return next(zodValidationError(parseAE.error));
     }
 
     const rows = await crear_autorizacion_especial(data);
@@ -91,9 +89,7 @@ export const actualizar_autorizacion_especial = async (req, res, next) => {
     const parseAE = actualizar_autorizacion_especial_schema.safeParse(data);
 
     if (!parseAE.success) {
-      return res.status(400).json({
-        errors: parseAE.error.errors,
-      });
+      return next(zodValidationError(parseAE.error));
     }
 
     // OBTENEMOS LA AUTORIZACION ACTUAL PRIMERO
