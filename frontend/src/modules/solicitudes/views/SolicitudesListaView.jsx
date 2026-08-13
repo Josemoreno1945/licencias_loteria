@@ -19,6 +19,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import useFetch from '../../../hooks/useFetch';
 import { useAuth } from '../../auth/store/AuthContext';
 import SolicitudDetalleModal from '../components/SolicitudDetalleModal';
+import Paginacion from '../../../components/Paginacion';
 
 const SolicitudesListaView = () => {
   const navigate = useNavigate();
@@ -27,6 +28,12 @@ const SolicitudesListaView = () => {
   
   const location = useLocation();
   const [modalDataId, setModalDataId] = React.useState(null);
+  const [paginaActual, setPaginaActual] = React.useState(1);
+
+  const PAGE_SIZE = 10;
+  const totalPaginas = solicitudes ? Math.ceil(solicitudes.length / PAGE_SIZE) : 0;
+  const startIndex = (paginaActual - 1) * PAGE_SIZE;
+  const solicitudesPaginadas = solicitudes?.slice(startIndex, startIndex + PAGE_SIZE) || [];
 
   React.useEffect(() => {
     if (location.state?.openModalId) {
@@ -109,10 +116,10 @@ const SolicitudesListaView = () => {
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {solicitudes && solicitudes.map((sol, index) => (
+                    {solicitudesPaginadas.map((sol, index) => (
                       <CTableRow key={sol.id_solicitudes}>
                         <CTableDataCell className="text-muted small">
-                          {index + 1}
+                          {startIndex + index + 1}
                         </CTableDataCell>
                         <CTableDataCell className="fw-semibold">
                           {sol.persona ? `${sol.ci_rif} — ${sol.persona}` : sol.id_persona || '—'}
@@ -151,6 +158,13 @@ const SolicitudesListaView = () => {
                     ))}
                   </CTableBody>
                 </CTable>
+              )}
+              {totalPaginas > 1 && (
+                <Paginacion
+                  currentPage={paginaActual}
+                  totalPages={totalPaginas}
+                  onPageChange={setPaginaActual}
+                />
               )}
             </>
           )}

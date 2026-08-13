@@ -34,11 +34,17 @@ import axiosInstance from '../../../api/axiosInstance'
 import { useAuth } from '../../auth/store/AuthContext'
 import FeedbackModal from '../../../components/FeedbackModal'
 import { extractErrorMessage } from '../../../utils/errorHandler'
+import Paginacion from '../../../components/Paginacion'
 
 const CentrosApuestaListaView = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { data: centros, loading, error, refetch } = useFetch('/centros_apuesta')
+  const [paginaActual, setPaginaActual] = React.useState(1)
+  const PAGE_SIZE = 10
+  const totalPaginas = centros ? Math.ceil(centros.length / PAGE_SIZE) : 0
+  const startIndex = (paginaActual - 1) * PAGE_SIZE
+  const centrosPaginados = centros?.slice(startIndex, startIndex + PAGE_SIZE) || []
 
   // --- Estado para el modal de permisos ---
   const [permisosModal, setPermisosModal] = useState({ visible: false, centro: null })
@@ -293,7 +299,7 @@ const CentrosApuestaListaView = () => {
           {/* Tabla */}
           {!loading && !error && (
             <>
-              {centros && centros.length === 0 ? (
+              {centrosPaginados.length === 0 ? (
                 <CAlert color="info">No hay centros de apuesta registrados aun.</CAlert>
               ) : (
                 <CTable hover responsive striped align="middle" className="mb-0">
@@ -309,10 +315,10 @@ const CentrosApuestaListaView = () => {
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {centros && centros.map((centro, index) => (
+                    {centrosPaginados.map((centro, index) => (
                       <CTableRow key={centro.id_centro}>
                         <CTableDataCell className="text-muted small">
-                          {index + 1}
+                          {startIndex + index + 1}
                         </CTableDataCell>
                         <CTableDataCell className="fw-semibold">
                           {centro.nombre_agencia}
@@ -356,6 +362,13 @@ const CentrosApuestaListaView = () => {
                     ))}
                   </CTableBody>
                 </CTable>
+              )}
+              {totalPaginas > 1 && (
+                <Paginacion
+                  currentPage={paginaActual}
+                  totalPages={totalPaginas}
+                  onPageChange={setPaginaActual}
+                />
               )}
             </>
           )}

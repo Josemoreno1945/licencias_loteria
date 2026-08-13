@@ -1,16 +1,7 @@
 import axiosInstance from "../../../api/axiosInstance";
 
 export const emitirLicencia = async (payload) => {
-  const resp = await axiosInstance.post("/licencias/emitir", payload, {
-    validateStatus: () => true,
-  });
-
-  if (resp.status >= 400) {
-    const err = new Error(`Request failed with status ${resp.status}`);
-    err.response = resp;
-    throw err;
-  }
-
+  const resp = await axiosInstance.post("/licencias/emitir", payload);
   return resp.data;
 };
 

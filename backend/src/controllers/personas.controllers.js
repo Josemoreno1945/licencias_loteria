@@ -9,11 +9,8 @@ import {
 
 import bcrypt from "bcryptjs";
 import { errors, throwError, zodValidationError } from "../utils/errors.js";
+import { uuidRegex } from "../utils/validators.js";
 import { persona_schema } from "../schemas/personas.schemas.js";
-
-// Regex para validar que el string tiene formato UUID
-const uuidRegex =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 //get----------------------------------------------------------
 export const get_c_personas = async (req, res, next) => {

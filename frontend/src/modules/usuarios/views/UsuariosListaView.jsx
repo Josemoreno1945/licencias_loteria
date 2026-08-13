@@ -18,6 +18,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
 import { useAuth } from '../../auth/store/AuthContext'
+import Paginacion from '../../../components/Paginacion'
 
 const ROLE_LABELS = {
   superAdmin: 'Super Administrador',
@@ -30,6 +31,11 @@ const UsuariosListaView = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { data: usuarios, loading, error, refetch } = useFetch('/usuarios')
+  const [paginaActual, setPaginaActual] = React.useState(1)
+  const PAGE_SIZE = 10
+  const totalPaginas = usuarios ? Math.ceil(usuarios.length / PAGE_SIZE) : 0
+  const startIndex = (paginaActual - 1) * PAGE_SIZE
+  const usuariosPaginados = usuarios?.slice(startIndex, startIndex + PAGE_SIZE) || []
 
   return (
     <CContainer fluid>
@@ -88,10 +94,10 @@ const UsuariosListaView = () => {
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {usuarios && usuarios.map((usuario, index) => (
+                    {usuariosPaginados.map((usuario, index) => (
                       <CTableRow key={usuario.id_usuario}>
                         <CTableDataCell className="text-muted small">
-                          {index + 1}
+                          {startIndex + index + 1}
                         </CTableDataCell>
                         <CTableDataCell className="fw-semibold">
                           {usuario.nombre_usuario}
@@ -111,6 +117,13 @@ const UsuariosListaView = () => {
                     ))}
                   </CTableBody>
                 </CTable>
+              )}
+              {totalPaginas > 1 && (
+                <Paginacion
+                  currentPage={paginaActual}
+                  totalPages={totalPaginas}
+                  onPageChange={setPaginaActual}
+                />
               )}
             </>
           )}

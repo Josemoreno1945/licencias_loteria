@@ -1,26 +1,38 @@
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { login as loginService, logout as logoutService, register as registerService } from '../services/auth.service'
 
 const AuthContext = createContext(null)
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const stored = localStorage.getItem('user')
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem('token')
+    const storedUser = localStorage.getItem('user')
     try {
-      return stored && stored !== 'undefined' ? JSON.parse(stored) : null
+      if (storedToken && storedUser && storedUser !== 'undefined') {
+        setUser(JSON.parse(storedUser))
+      }
     } catch (e) {
-      return null
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
     }
-  })
+    setLoading(false)
+  }, [])
 
   const login = useCallback(async (credentials) => {
-    const data = await loginService(credentials)
-    localStorage.setItem('token', data.token)
-    // El backend devuelve { token, usuario: {...} } — no "user"
-    const user = data.usuario ?? data.user
-    localStorage.setItem('user', JSON.stringify(user))
-    setUser(user)
-    return data
+    setLoading(true)
+    try {
+      const data = await loginService(credentials)
+      localStorage.setItem('token', data.token)
+      const user = data.usuario ?? data.user
+      localStorage.setItem('user', JSON.stringify(user))
+      setUser(user)
+      return data
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   const register = useCallback(async (userData) => {
@@ -31,11 +43,12 @@ export const AuthProvider = ({ children }) => {
   const logout = useCallback(() => {
     logoutService()
     localStorage.removeItem('user')
+    localStorage.removeItem('token')
     setUser(null)
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register, isAuthenticated: !!user && !!localStorage.getItem('token') }}>
+    <AuthContext.Provider value={{ user, login, logout, register, isAuthenticated: !!user, loading }}>
       {children}
     </AuthContext.Provider>
   )

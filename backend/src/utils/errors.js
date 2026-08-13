@@ -242,7 +242,7 @@ export const errors = {
     message: "No token provided",
   },
   invalidToken: {
-    status: 403,
+    status: 401,
     message: "Invalid token",
   },
 

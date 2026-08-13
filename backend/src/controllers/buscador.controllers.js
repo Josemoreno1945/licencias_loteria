@@ -5,10 +5,7 @@ import {
 } from "../models/buscador.models.js";
 
 import { errors, throwError } from "../utils/errors.js";
-
-// Regex para validar UUID
-const uuidRegex =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+import { uuidRegex } from "../utils/validators.js";
 
 // Normaliza el valor de ci_rif: trim, mayusculas, sin espacios
 const normalizeCiRif = (val) => {

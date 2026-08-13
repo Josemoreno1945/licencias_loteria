@@ -12,14 +12,11 @@ import {
 } from "../models/solicitudes.models.js";
 
 import { errors, throwError, zodValidationError } from "../utils/errors.js";
+import { uuidRegex } from "../utils/validators.js";
 import {
   crear_solicitud_schema,
   actualizar_solicitud_schema,
 } from "../schemas/solicitudes.schemas.js";
-
-// Regex para validar que el string tiene formato UUID
-const uuidRegex =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 //get----------------------------------------------------------
 export const get_c_solicitudes = async (req, res, next) => {

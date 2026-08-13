@@ -1,0 +1,7 @@
+.select {
+  cursor: pointer;
+}
+
+.select:hover:not(.active) {
+  background-color: rgba(0, 123, 255, 0.1);
+}

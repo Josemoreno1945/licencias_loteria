@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
+import helmet from "helmet";
 
 import auth_rutas from "./routes/auth.routes.js";
 import usuarios_rutas from "./routes/usuarios.routes.js";
@@ -29,6 +30,7 @@ const app = express();
 app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:5173", credentials: true }));
 app.use(morgan("dev"));
 app.use(express.json());
+app.use(helmet());
 
 // Rutas
 app.use(auth_rutas);

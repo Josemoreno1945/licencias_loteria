@@ -19,6 +19,7 @@ import { cilPlus } from '@coreui/icons'
 import { useNavigate, useLocation } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
 import LicenciaDetalleModal from '../components/LicenciaDetalleModal'
+import Paginacion from '../../../components/Paginacion'
 
 const LicenciasListaView = () => {
   const navigate = useNavigate()
@@ -26,6 +27,12 @@ const LicenciasListaView = () => {
   
   const location = useLocation()
   const [modalDataId, setModalDataId] = React.useState(null)
+  const [paginaActual, setPaginaActual] = React.useState(1)
+
+  const PAGE_SIZE = 10
+  const totalPaginas = licencias ? Math.ceil(licencias.length / PAGE_SIZE) : 0
+  const startIndex = (paginaActual - 1) * PAGE_SIZE
+  const licenciasPaginadas = licencias?.slice(startIndex, startIndex + PAGE_SIZE) || []
 
   React.useEffect(() => {
     if (location.state?.openModalId) {
@@ -75,9 +82,9 @@ const LicenciasListaView = () => {
                 </CTableRow>
               </CTableHead>
               <CTableBody>
-                {licencias.map((licencia, index) => (
+                {licenciasPaginadas.map((licencia, index) => (
                   <CTableRow key={licencia.id_documento}>
-                    <CTableDataCell>{index + 1}</CTableDataCell>
+                    <CTableDataCell>{startIndex + index + 1}</CTableDataCell>
                     <CTableDataCell>{licencia.numero_documento}</CTableDataCell>
                     <CTableDataCell>{licencia.persona}</CTableDataCell>
                     <CTableDataCell>{licencia.categoria}</CTableDataCell>
@@ -98,8 +105,13 @@ const LicenciasListaView = () => {
                 ))}
               </CTableBody>
             </CTable>
-          )}
-        </CCardBody>
+            )}
+            <Paginacion
+              currentPage={paginaActual}
+              totalPages={totalPaginas}
+              onPageChange={setPaginaActual}
+            />
+          </CCardBody>
       </CCard>
     </CContainer>
   )

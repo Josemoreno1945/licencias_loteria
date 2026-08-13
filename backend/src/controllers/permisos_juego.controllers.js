@@ -17,10 +17,7 @@ import {
   crear_permiso_juego_schema,
   actualizar_permiso_juego_schema,
 } from "../schemas/permisos_juego.schemas.js";
-
-// Regex para validar que el string tiene formato UUID
-const uuidRegex =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+import { uuidRegex } from "../utils/validators.js";
 
 //get----------------------------------------------------------
 export const get_c_permisos_juego = async (req, res, next) => {

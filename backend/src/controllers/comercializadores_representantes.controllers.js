@@ -15,10 +15,7 @@ import {
   crear_representante_schema,
   actualizar_representante_schema,
 } from "../schemas/comercializadores_representantes.schemas.js";
-
-// Regex para validar que el string tiene formato UUID
-const uuidRegex =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+import { uuidRegex } from "../utils/validators.js";
 
 // get ----------------------------------------------------------
 export const get_c_representantes = async (req, res, next) => {

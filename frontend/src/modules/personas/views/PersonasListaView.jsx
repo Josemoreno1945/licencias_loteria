@@ -19,6 +19,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
 import { useAuth } from '../../auth/store/AuthContext'
 import PersonaDetalleModal from '../components/PersonaDetalleModal'
+import Paginacion from '../../../components/Paginacion'
 
 const PersonasListaView = () => {
   const navigate = useNavigate()
@@ -27,6 +28,12 @@ const PersonasListaView = () => {
   
   const location = useLocation()
   const [modalDataId, setModalDataId] = React.useState(null)
+  const [paginaActual, setPaginaActual] = React.useState(1)
+
+  const PAGE_SIZE = 10
+  const totalPaginas = personas ? Math.ceil(personas.length / PAGE_SIZE) : 0
+  const startIndex = (paginaActual - 1) * PAGE_SIZE
+  const personasPaginadas = personas?.slice(startIndex, startIndex + PAGE_SIZE) || []
 
   React.useEffect(() => {
     if (location.state?.openModalId) {
@@ -99,10 +106,10 @@ const PersonasListaView = () => {
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {personas && personas.map((persona, index) => (
+                    {personasPaginadas.map((persona, index) => (
                       <CTableRow key={persona.ci_rif}>
                         <CTableDataCell className="text-muted small">
-                          {index + 1}
+                          {startIndex + index + 1}
                         </CTableDataCell>
                         <CTableDataCell className="fw-semibold">
                           {persona.ci_rif}
@@ -135,6 +142,13 @@ const PersonasListaView = () => {
                     ))}
                   </CTableBody>
                 </CTable>
+              )}
+              {totalPaginas > 1 && (
+                <Paginacion
+                  currentPage={paginaActual}
+                  totalPages={totalPaginas}
+                  onPageChange={setPaginaActual}
+                />
               )}
             </>
           )}

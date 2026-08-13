@@ -2,7 +2,6 @@ import {
   get_licencias,
   get_licencias_id,
   get_licencias_vigentes,
-  crear_licencia,
   actualizar_licencia_id,
   buscar_licencias_por_persona,
   buscar_licencias_por_categoria,
@@ -11,17 +10,16 @@ import {
   buscar_licencias_proximas_a_vencer,
 } from "../models/licencias.models.js";
 
+import { get_personas_id } from "../models/personas.models.js";
+import { get_comercializadores_id } from "../models/comercializadores.models.js";
+import { get_centros_apuesta_id } from "../models/centros_de_apuesta.models.js";
+
 import { crear_licencia_completa } from "../services/licencias.service.js";
 import { errors, throwError, zodValidationError } from "../utils/errors.js";
 import {
-  crear_licencia_schema,
   crear_licencia_completa_schema,
   actualizar_licencia_schema,
 } from "../schemas/licencias.schemas.js";
-
-// Regex para validar que el string tiene formato UUID
-const uuidRegex =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 //get----------------------------------------------------------
 export const get_c_licencias = async (req, res, next) => {
@@ -66,16 +64,13 @@ export const crear_c_licencia = async (req, res, next) => {
   try {
     const data = req.body;
 
-    const parseL = crear_licencia_schema.safeParse(data);
+    const parseL = crear_licencia_completa_schema.safeParse(data);
     if (!parseL.success) {
-      const raw = parseL.error?.issues || parseL.error?.errors || [];
-      if (!parseL.success) {
-        return next(zodValidationError(parseL.error));
-      }
+      return next(zodValidationError(parseL.error));
     }
 
-    const rows = await crear_licencia(data);
-    return res.json(rows);
+    const result = await crear_licencia_completa(data);
+    return res.json(result);
   } catch (error) {
     next(error);
   }
@@ -87,10 +82,7 @@ export const crear_c_licencia_completa = async (req, res, next) => {
 
     const parseL = crear_licencia_completa_schema.safeParse(data);
     if (!parseL.success) {
-      const raw = parseL.error?.issues || parseL.error?.errors || [];
-      if (!parseL.success) {
-        return next(zodValidationError(parseL.error));
-      }
+      return next(zodValidationError(parseL.error));
     }
 
     const result = await crear_licencia_completa(data);
@@ -112,10 +104,7 @@ export const actualizar_licencia = async (req, res, next) => {
     const data = req.body;
     const parseL = actualizar_licencia_schema.safeParse(data);
     if (!parseL.success) {
-      const raw = parseL.error?.issues || parseL.error?.errors || [];
-      if (!parseL.success) {
-        return next(zodValidationError(parseL.error));
-      }
+      return next(zodValidationError(parseL.error));
     }
 
     // OBTENEMOS LA LICENCIA ACTUAL PRIMERO
@@ -124,7 +113,38 @@ export const actualizar_licencia = async (req, res, next) => {
       throwError(errors.licencia_no_encontrada);
     }
 
-    const rows = await actualizar_licencia_id(id, data);
+    const parsed = parseL.data;
+
+    // VALIDAMOS EXISTENCIA DE ENTIDADES RELACIONADAS
+    if (parsed.id_persona) {
+      const personaExiste = await get_personas_id(parsed.id_persona);
+      if (!personaExiste || personaExiste.length === 0) {
+        throwError(errors.persona_no_encontrada);
+      }
+    }
+
+    if (parsed.id_comercializador) {
+      const comercializadorExiste = await get_comercializadores_id(parsed.id_comercializador);
+      if (!comercializadorExiste || comercializadorExiste.length === 0) {
+        throwError(errors.comercializadora_no_encontrada);
+      }
+    }
+
+    if (parsed.id_centro) {
+      const centroExiste = await get_centros_apuesta_id(parsed.id_centro);
+      if (!centroExiste || centroExiste.length === 0) {
+        throwError(errors.centros_apuesta_no_encontrada);
+      }
+    }
+
+    if (parsed.id_representante) {
+      const representanteExiste = await get_personas_id(parsed.id_representante);
+      if (!representanteExiste || representanteExiste.length === 0) {
+        throwError(errors.persona_no_encontrada);
+      }
+    }
+
+    const rows = await actualizar_licencia_id(id, parsed);
     res.json(rows);
   } catch (error) {
     next(error);

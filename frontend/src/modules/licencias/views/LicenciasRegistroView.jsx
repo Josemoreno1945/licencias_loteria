@@ -42,27 +42,45 @@ const LicenciasRegistroView = () => {
   useEffect(() => {
     const loadDependencies = async () => {
       setLoadingDeps(true)
-      try {
-        const [solicitudesData, juegosData, bancosData, centrosData, representantesData] = await Promise.all([
-          getSolicitudesLicencia().catch(err => { console.error('Error cargando solicitudes:', err); throw err }),
-          getJuegosActivos().catch(err => { console.error('Error cargando juegos:', err); throw err }),
-          getBancos().catch(err => { console.error('Error cargando bancos:', err); throw err }),
-          getCentrosApuestaActivos().catch(err => { console.error('Error cargando centros de apuesta:', err); throw err }),
-          getRepresentantes().catch(err => { console.error('Error cargando representantes:', err); throw err }),
-        ])
-        setSolicitudes(solicitudesData || [])
-        setJuegos(juegosData || [])
-        setBancos(bancosData || [])
-        setCentrosApuesta(centrosData || [])
-        setRepresentantes(representantesData || [])
-      } catch (err) {
-        console.error('Error general cargando dependencias:', err)
-        setError('No se pudieron cargar las dependencias. Verifica la consola para más detalles.')
-      } finally {
-        setLoadingDeps(false)
+      setError(null)
+
+      const results = await Promise.allSettled([
+        getSolicitudesLicencia(),
+        getJuegosActivos(),
+        getBancos(),
+        getCentrosApuestaActivos(),
+        getRepresentantes(),
+      ])
+
+      const errorsList = []
+
+      results[0].status === 'fulfilled'
+        ? setSolicitudes(results[0].value || [])
+        : errorsList.push(`No se pudieron cargar las solicitudes.`)
+
+      results[1].status === 'fulfilled'
+        ? setJuegos(results[1].value || [])
+        : errorsList.push(`No se pudieron cargar los juegos activos.`)
+
+      results[2].status === 'fulfilled'
+        ? setBancos(results[2].value || [])
+        : errorsList.push(`No se pudieron cargar los bancos.`)
+
+      results[3].status === 'fulfilled'
+        ? setCentrosApuesta(results[3].value || [])
+        : errorsList.push(`No se pudieron cargar los centros de apuesta.`)
+
+      results[4].status === 'fulfilled'
+        ? setRepresentantes(results[4].value || [])
+        : errorsList.push(`No se pudieron cargar los representantes.`)
+
+      if (errorsList.length > 0) {
+        console.error('Errores cargando dependencias:', errorsList)
+        setError(errorsList.join(' '))
       }
     }
     loadDependencies()
+    setLoadingDeps(false)
   }, [])
 
   const handleInputChange = (e) => {

@@ -11,10 +11,7 @@ import {
 import { errors, throwError, zodValidationError } from "../utils/errors.js";
 
 import { bancos_schema } from "../schemas/bancos.schemas.js";
-
-// Regex para validar que el string tiene formato UUID
-const uuidRegex =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+import { uuidRegex } from "../utils/validators.js";
 
 //get----------------------------------------------------------
 export const get_c_bancos = async (req, res, next) => {
@@ -90,7 +87,7 @@ export const eliminar_c_banco = async (req, res, next) => {
     } else {
       return res.json({
         message: "Banco eliminado (inactivo) exitosamente",
-        comercializador: rows[0],
+        banco: rows[0],
       });
     }
   } catch (error) {

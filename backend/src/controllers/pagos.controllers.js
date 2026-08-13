@@ -12,6 +12,7 @@ import {
 } from "../models/pagos.models.js";
 
 import { errors, throwError } from "../utils/errors.js";
+import { uuidRegex } from "../utils/validators.js";
 
 //get----------------------------------------------------------
 export const get_c_pagos = async (req, res, next) => {

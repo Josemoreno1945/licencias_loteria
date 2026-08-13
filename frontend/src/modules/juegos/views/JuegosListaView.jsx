@@ -18,11 +18,17 @@ import {
 import { useNavigate } from 'react-router-dom';
 import useFetch from '../../../hooks/useFetch';
 import { useAuth } from '../../auth/store/AuthContext';
+import Paginacion from '../../../components/Paginacion';
 
 const JuegosListaView = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: juegos, loading, error, refetch } = useFetch('/juegos');
+  const [paginaActual, setPaginaActual] = React.useState(1);
+  const PAGE_SIZE = 10;
+  const totalPaginas = juegos ? Math.ceil(juegos.length / PAGE_SIZE) : 0;
+  const startIndex = (paginaActual - 1) * PAGE_SIZE;
+  const juegosPaginados = juegos?.slice(startIndex, startIndex + PAGE_SIZE) || [];
 
   return (
     <CContainer fluid>
@@ -64,39 +70,46 @@ const JuegosListaView = () => {
 
           {!loading && !error && (
             <>
-              {juegos && juegos.length === 0 ? (
+              {juegosPaginados.length === 0 ? (
                 <CAlert color="info">No hay juegos registrados aún.</CAlert>
               ) : (
-                <CTable hover responsive striped align="middle" className="mb-0">
-                  <CTableHead>
-                    <CTableRow>
-                      <CTableHeaderCell>#</CTableHeaderCell>
-                      <CTableHeaderCell>Nombre del Juego</CTableHeaderCell>
-                      <CTableHeaderCell>Operadora (Propietaria)</CTableHeaderCell>
-                      <CTableHeaderCell>Estado</CTableHeaderCell>
-                    </CTableRow>
-                  </CTableHead>
-                  <CTableBody>
-                    {juegos && juegos.map((juego, index) => (
-                      <CTableRow key={juego.id_juego}>
-                        <CTableDataCell className="text-muted small">
-                          {index + 1}
-                        </CTableDataCell>
-                        <CTableDataCell className="fw-semibold">
-                          {juego.nombre}
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          {juego.operadora_razon_social || juego.id_operadora}
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          <CBadge color={juego.estado === 'activo' ? 'success' : 'secondary'}>
-                            {juego.estado === 'activo' ? 'Activo' : 'Inactivo'}
-                          </CBadge>
-                        </CTableDataCell>
+                <>
+                  <CTable hover responsive striped align="middle" className="mb-0">
+                    <CTableHead>
+                      <CTableRow>
+                        <CTableHeaderCell>#</CTableHeaderCell>
+                        <CTableHeaderCell>Nombre del Juego</CTableHeaderCell>
+                        <CTableHeaderCell>Operadora (Propietaria)</CTableHeaderCell>
+                        <CTableHeaderCell>Estado</CTableHeaderCell>
                       </CTableRow>
-                    ))}
-                  </CTableBody>
-                </CTable>
+                    </CTableHead>
+                    <CTableBody>
+                      {juegosPaginados.map((juego, index) => (
+                        <CTableRow key={juego.id_juego}>
+                          <CTableDataCell className="text-muted small">
+                            {startIndex + index + 1}
+                          </CTableDataCell>
+                          <CTableDataCell className="fw-semibold">
+                            {juego.nombre}
+                          </CTableDataCell>
+                          <CTableDataCell>
+                            {juego.operadora_razon_social || juego.id_operadora}
+                          </CTableDataCell>
+                          <CTableDataCell>
+                            <CBadge color={juego.estado === 'activo' ? 'success' : 'secondary'}>
+                              {juego.estado === 'activo' ? 'Activo' : 'Inactivo'}
+                            </CBadge>
+                          </CTableDataCell>
+                        </CTableRow>
+                      ))}
+                    </CTableBody>
+                  </CTable>
+                  <Paginacion
+                    currentPage={paginaActual}
+                    totalPages={totalPaginas}
+                    onPageChange={setPaginaActual}
+                  />
+                </>
               )}
             </>
           )}

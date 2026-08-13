@@ -18,11 +18,18 @@ import {
 import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
 import { useAuth } from '../../auth/store/AuthContext'
+import Paginacion from '../../../components/Paginacion'
 
 const BancosListaView = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { data: bancos, loading, error, refetch } = useFetch('/bancos')
+  const [paginaActual, setPaginaActual] = React.useState(1)
+
+  const PAGE_SIZE = 10
+  const totalPaginas = bancos ? Math.ceil(bancos.length / PAGE_SIZE) : 0
+  const startIndex = (paginaActual - 1) * PAGE_SIZE
+  const bancosPaginados = bancos?.slice(startIndex, startIndex + PAGE_SIZE) || []
 
   return (
     <CContainer fluid>
@@ -80,10 +87,10 @@ const BancosListaView = () => {
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {bancos && bancos.map((banco, index) => (
+                    {bancosPaginados.map((banco, index) => (
                       <CTableRow key={banco.id_banco || index}>
                         <CTableDataCell className="text-muted small">
-                          {index + 1}
+                          {startIndex + index + 1}
                         </CTableDataCell>
                         <CTableDataCell className="fw-semibold">
                           {banco.nombre}
@@ -100,6 +107,13 @@ const BancosListaView = () => {
                     ))}
                   </CTableBody>
                 </CTable>
+              )}
+              {totalPaginas > 1 && (
+                <Paginacion
+                  currentPage={paginaActual}
+                  totalPages={totalPaginas}
+                  onPageChange={setPaginaActual}
+                />
               )}
             </>
           )}

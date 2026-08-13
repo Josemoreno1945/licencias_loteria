@@ -12,10 +12,7 @@ import {
 import { errors, throwError, zodValidationError } from "../utils/errors.js";
 
 import { juegos_schema } from "../schemas/juegos.schemas.js";
-
-// Regex para validar que el string tiene formato UUID
-const uuidRegex =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+import { uuidRegex } from "../utils/validators.js";
 
 //get----------------------------------------------------------
 export const get_c_juegos = async (req, res, next) => {
@@ -98,8 +95,8 @@ export const eliminar_c_juegos = async (req, res, next) => {
       throwError(errors.juegos_no_encontrados);
     } else {
       return res.json({
-        message: "Juego eliminado (inactiva) exitosamente",
-        operadora: rows[0],
+        message: "Juego eliminado (inactivo) exitosamente",
+        juego: rows[0],
       });
     }
   } catch (error) {

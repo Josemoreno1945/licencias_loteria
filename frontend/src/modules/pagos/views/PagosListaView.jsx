@@ -18,10 +18,17 @@ import CIcon from '@coreui/icons-react'
 import { cilPlus } from '@coreui/icons'
 import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
+import Paginacion from '../../../components/Paginacion'
 
 const PagosListaView = () => {
   const navigate = useNavigate()
   const { data: pagos, loading, error } = useFetch('/pagos')
+  const [paginaActual, setPaginaActual] = React.useState(1)
+
+  const PAGE_SIZE = 10
+  const totalPaginas = pagos ? Math.ceil(pagos.length / PAGE_SIZE) : 0
+  const startIndex = (paginaActual - 1) * PAGE_SIZE
+  const pagosPaginados = pagos?.slice(startIndex, startIndex + PAGE_SIZE) || []
 
   return (
     <CContainer fluid>
@@ -31,7 +38,7 @@ const PagosListaView = () => {
             <h4 className="mb-1 text-primary">Pagos</h4>
             <p className="text-muted small">Listado de pagos registrados para licencias.</p>
           </div>
-          <CButton color="primary" onClick={() => navigate('/pagos/registro')}>
+          <CButton color="primary" onClick={() => navigate('/licencias/registro')}>
             <CIcon icon={cilPlus} className="me-2" /> Nuevo Pago
           </CButton>
         </CCardHeader>
@@ -59,9 +66,9 @@ const PagosListaView = () => {
                 </CTableRow>
               </CTableHead>
               <CTableBody>
-                {pagos.map((pago, index) => (
+                {pagosPaginados.map((pago, index) => (
                   <CTableRow key={pago.id_pago}>
-                    <CTableDataCell>{index + 1}</CTableDataCell>
+                    <CTableDataCell>{startIndex + index + 1}</CTableDataCell>
                     <CTableDataCell>{pago.banco}</CTableDataCell>
                     <CTableDataCell>{pago.num_referencia}</CTableDataCell>
                     <CTableDataCell>{pago.fecha_pago}</CTableDataCell>
@@ -73,7 +80,12 @@ const PagosListaView = () => {
               </CTableBody>
             </CTable>
           )}
-        </CCardBody>
+            <Paginacion
+              currentPage={paginaActual}
+              totalPages={totalPaginas}
+              onPageChange={setPaginaActual}
+            />
+          </CCardBody>
       </CCard>
     </CContainer>
   )
