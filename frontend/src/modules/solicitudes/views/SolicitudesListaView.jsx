@@ -17,23 +17,47 @@ import {
 } from '@coreui/react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import useFetch from '../../../hooks/useFetch';
+import useDebounce from '../../../hooks/useDebounce';
+import { filterBySearch } from '../../../utils/helpers';
 import { useAuth } from '../../auth/store/AuthContext';
 import SolicitudDetalleModal from '../components/SolicitudDetalleModal';
+import Buscador from '../../../components/Buscador';
 import Paginacion from '../../../components/Paginacion';
+
+const SOLICITUDES_SEARCH_FIELDS = [
+  'ci_rif',
+  'persona',
+  'comercializador',
+  'operadora',
+  'tipo_tramite',
+  'categoria_licencia',
+  'estado',
+];
 
 const SolicitudesListaView = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: solicitudes, loading, error, refetch } = useFetch('/solicitudes');
-  
+
   const location = useLocation();
   const [modalDataId, setModalDataId] = React.useState(null);
   const [paginaActual, setPaginaActual] = React.useState(1);
+  const [busqueda, setBusqueda] = React.useState('');
+  const debouncedBusqueda = useDebounce(busqueda, 400);
+
+  const solicitudesFiltradas = React.useMemo(
+    () => filterBySearch(solicitudes, debouncedBusqueda, SOLICITUDES_SEARCH_FIELDS),
+    [solicitudes, debouncedBusqueda]
+  );
 
   const PAGE_SIZE = 10;
-  const totalPaginas = solicitudes ? Math.ceil(solicitudes.length / PAGE_SIZE) : 0;
+  const totalPaginas = solicitudesFiltradas ? Math.ceil(solicitudesFiltradas.length / PAGE_SIZE) : 0;
   const startIndex = (paginaActual - 1) * PAGE_SIZE;
-  const solicitudesPaginadas = solicitudes?.slice(startIndex, startIndex + PAGE_SIZE) || [];
+  const solicitudesPaginadas = solicitudesFiltradas?.slice(startIndex, startIndex + PAGE_SIZE) || [];
+
+  React.useEffect(() => {
+    setPaginaActual(1);
+  }, [debouncedBusqueda]);
 
   React.useEffect(() => {
     if (location.state?.openModalId) {
@@ -80,6 +104,15 @@ const SolicitudesListaView = () => {
         </CCardHeader>
 
         <CCardBody>
+          <div className="mb-3 buscador-container">
+            <Buscador
+              value={busqueda}
+              onChange={setBusqueda}
+              onClear={() => setBusqueda('')}
+              placeholder="Buscar solicitud..."
+            />
+          </div>
+
           {loading && (
             <div className="d-flex justify-content-center align-items-center py-5">
               <CSpinner color="primary" />
@@ -98,8 +131,12 @@ const SolicitudesListaView = () => {
 
           {!loading && !error && (
             <>
-              {solicitudes && solicitudes.length === 0 ? (
-                <CAlert color="info">No hay solicitudes registradas aún.</CAlert>
+              {solicitudesFiltradas.length === 0 ? (
+                <CAlert color="info">
+                  {solicitudes?.length === 0
+                    ? 'No hay solicitudes registradas aún.'
+                    : 'No se encontraron solicitudes.'}
+                </CAlert>
               ) : (
                 <CTable hover responsive striped align="middle" className="mb-0">
                   <CTableHead>

@@ -16,7 +16,18 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPeople, cilGamepad, cilPlus } from '@coreui/icons'
+import useDebounce from '../../../hooks/useDebounce'
+import { filterBySearch } from '../../../utils/helpers'
+import Buscador from '../../../components/Buscador'
 import Paginacion from '../../../components/Paginacion'
+
+const COMERCIALIZADORES_SEARCH_FIELDS = [
+  'rif',
+  'razon_social',
+  'telefono',
+  'email',
+  'estado',
+]
 
 const ComercializadoresTabla = ({
   comercializadores,
@@ -33,9 +44,21 @@ const ComercializadoresTabla = ({
 }) => {
   const PAGE_SIZE = 10
 
+  const [busqueda, setBusqueda] = React.useState('')
+  const debouncedBusqueda = useDebounce(busqueda, 400)
+  const comercializadoresFiltrados = React.useMemo(
+    () => filterBySearch(comercializadores, debouncedBusqueda, COMERCIALIZADORES_SEARCH_FIELDS),
+    [comercializadores, debouncedBusqueda]
+  )
+
+  React.useEffect(() => {
+    onPageChange(1)
+  }, [debouncedBusqueda])
+
+  const totalPaginasFiltrado = comercializadoresFiltrados ? Math.ceil(comercializadoresFiltrados.length / PAGE_SIZE) : 0
   const startIndex = (paginaActual - 1) * PAGE_SIZE
   const endIndex = startIndex + PAGE_SIZE
-  const comercializadoresPaginados = comercializadores?.slice(startIndex, endIndex) || []
+  const comercializadoresPaginados = comercializadoresFiltrados?.slice(startIndex, endIndex) || []
 
   return (
     <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
@@ -58,6 +81,15 @@ const ComercializadoresTabla = ({
       </CCardHeader>
 
       <CCardBody>
+        <div className="mb-3 buscador-container">
+          <Buscador
+            value={busqueda}
+            onChange={setBusqueda}
+            onClear={() => setBusqueda('')}
+            placeholder="Buscar comercializador..."
+          />
+        </div>
+
         {loading && (
           <div className="d-flex justify-content-center align-items-center py-5">
             <CSpinner color="primary" />
@@ -76,8 +108,8 @@ const ComercializadoresTabla = ({
 
         {!loading && !error && (
           <>
-            {comercializadores && comercializadores.length === 0 ? (
-              <CAlert color="info">No hay comercializadores registrados aun.</CAlert>
+            {comercializadores && comercializadoresFiltrados.length === 0 ? (
+              <CAlert color="info">No se encontraron comercializadores.</CAlert>
             ) : (
               <>
                 <CTable hover responsive striped align="middle" className="mb-0">
@@ -138,7 +170,7 @@ const ComercializadoresTabla = ({
                 </CTable>
                 <Paginacion
                   currentPage={paginaActual}
-                  totalPages={totalPaginas}
+                  totalPages={totalPaginasFiltrado}
                   onPageChange={onPageChange}
                 />
               </>

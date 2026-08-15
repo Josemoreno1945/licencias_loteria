@@ -1,0 +1,9 @@
+.buscador-container {
+  max-width: 320px;
+}
+
+@media (min-width: 576px) {
+  .buscador-container {
+    max-width: 400px;
+  }
+}

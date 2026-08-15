@@ -48,6 +48,12 @@ import PagosListaView from '../modules/pagos/views/PagosListaView'
 import SolicitudesListaView from '../modules/solicitudes/views/SolicitudesListaView'
 import SolicitudesRegistroView from '../modules/solicitudes/views/SolicitudesRegistroView'
 
+// Participaciones
+import ParticipacionesListaView from '../modules/participaciones/views/ParticipacionesListaView'
+
+// Autorizaciones Especiales
+import AutorizacionesListaView from '../modules/autorizaciones_especiales/views/AutorizacionesListaView'
+
 // Buscador
 import BuscadorView from '../modules/buscador/views/BuscadorView'
 
@@ -128,9 +134,13 @@ const AppRouter = () => {
           <Route path="solicitudes/lista" element={<RoleRoute allowedRoles={TODOS}><SolicitudesListaView /></RoleRoute>} />
           <Route path="solicitudes/registro" element={<RoleRoute allowedRoles={GESTORES}><SolicitudesRegistroView /></RoleRoute>} />
 
-          {/* Módulos pendientes — redirigen a dashboard hasta que se implementen */}
-          <Route path="participaciones/*" element={<Navigate to="/dashboard" replace />} />
-          <Route path="autorizaciones/*" element={<Navigate to="/dashboard" replace />} />
+          {/* Participaciones */}
+          <Route path="participaciones" element={<Navigate to="/participaciones/lista" replace />} />
+          <Route path="participaciones/lista" element={<RoleRoute allowedRoles={TODOS}><ParticipacionesListaView /></RoleRoute>} />
+
+          {/* Autorizaciones Especiales */}
+          <Route path="autorizaciones" element={<Navigate to="/autorizaciones/lista" replace />} />
+          <Route path="autorizaciones/lista" element={<RoleRoute allowedRoles={TODOS}><AutorizacionesListaView /></RoleRoute>} />
 
           {/* Buscador / Consultor */}
           <Route path="buscador" element={<RoleRoute allowedRoles={TODOS}><BuscadorView /></RoleRoute>} />

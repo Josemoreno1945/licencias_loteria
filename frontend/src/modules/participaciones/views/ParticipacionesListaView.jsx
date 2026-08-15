@@ -15,6 +15,8 @@ import {
   CAlert,
   CButton,
 } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilPlus } from '@coreui/icons'
 import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
 import useDebounce from '../../../hooks/useDebounce'
@@ -23,31 +25,33 @@ import { useAuth } from '../../auth/store/AuthContext'
 import Buscador from '../../../components/Buscador'
 import Paginacion from '../../../components/Paginacion'
 
-const OPERADORAS_SEARCH_FIELDS = [
-  'rif',
-  'razon_social',
-  'direccion_fiscal',
-  'estado',
+const PARTICIPACIONES_SEARCH_FIELDS = [
+  'numero_documento',
+  'nro_archivo',
+  'ci_rif',
+  'persona',
+  'representante',
+  'comercializador',
+  'numero_licencia',
 ]
 
-const OperadorasListaView = () => {
+const ParticipacionesListaView = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { data: operadoras, loading, error, refetch } = useFetch('/operadoras')
-
+  const { data: participaciones, loading, error, refetch } = useFetch('/participaciones')
   const [paginaActual, setPaginaActual] = React.useState(1)
   const [busqueda, setBusqueda] = React.useState('')
   const debouncedBusqueda = useDebounce(busqueda, 400)
 
-  const operadorasFiltradas = React.useMemo(
-    () => filterBySearch(operadoras, debouncedBusqueda, OPERADORAS_SEARCH_FIELDS),
-    [operadoras, debouncedBusqueda]
+  const participacionesFiltradas = React.useMemo(
+    () => filterBySearch(participaciones, debouncedBusqueda, PARTICIPACIONES_SEARCH_FIELDS),
+    [participaciones, debouncedBusqueda]
   )
 
   const PAGE_SIZE = 10
-  const totalPaginas = operadorasFiltradas ? Math.ceil(operadorasFiltradas.length / PAGE_SIZE) : 0
+  const totalPaginas = participacionesFiltradas ? Math.ceil(participacionesFiltradas.length / PAGE_SIZE) : 0
   const startIndex = (paginaActual - 1) * PAGE_SIZE
-  const operadorasPaginadas = operadorasFiltradas?.slice(startIndex, startIndex + PAGE_SIZE) || []
+  const participacionesPaginadas = participacionesFiltradas?.slice(startIndex, startIndex + PAGE_SIZE) || []
 
   React.useEffect(() => {
     setPaginaActual(1)
@@ -58,18 +62,18 @@ const OperadorasListaView = () => {
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
         <CCardHeader className="bg-white d-flex justify-content-between align-items-center pb-0">
           <div>
-            <h4 className="mb-1 text-primary">Lista de Operadoras</h4>
+            <h4 className="mb-1 text-primary">Lista de Participaciones</h4>
             <p className="text-muted small mb-3">
-              Empresas propietarias de juegos de azar registradas en el sistema.
+              Participaciones registradas en el sistema.
             </p>
           </div>
           {user?.rol !== 'supervisor' && (
             <CButton
               color="primary"
               size="sm"
-              onClick={() => navigate('/operadoras/registro')}
+              onClick={() => navigate('/participaciones/registro')}
             >
-              + Nueva Operadora
+              <CIcon icon={cilPlus} className="me-1" /> + Nueva Participación
             </CButton>
           )}
         </CCardHeader>
@@ -80,7 +84,7 @@ const OperadorasListaView = () => {
               value={busqueda}
               onChange={setBusqueda}
               onClear={() => setBusqueda('')}
-              placeholder="Buscar operadora..."
+              placeholder="Buscar participación..."
             />
           </div>
 
@@ -88,7 +92,7 @@ const OperadorasListaView = () => {
           {loading && (
             <div className="d-flex justify-content-center align-items-center py-5">
               <CSpinner color="primary" />
-              <span className="ms-3 text-muted">Cargando operadoras...</span>
+              <span className="ms-3 text-muted">Cargando participaciones...</span>
             </div>
           )}
 
@@ -105,40 +109,60 @@ const OperadorasListaView = () => {
           {/* Tabla */}
           {!loading && !error && (
             <>
-              {operadorasFiltradas.length === 0 ? (
+              {participacionesFiltradas.length === 0 ? (
                 <CAlert color="info">
-                  {operadoras?.length === 0
-                    ? 'No hay operadoras registradas aun.'
-                    : 'No se encontraron operadoras.'}
+                  {participaciones?.length === 0
+                    ? 'No hay participaciones registradas aun.'
+                    : 'No se encontraron participaciones.'}
                 </CAlert>
               ) : (
-                <CTable hover responsive striped className="mb-0">
+                <CTable hover responsive striped align="middle" className="mb-0">
                   <CTableHead>
                     <CTableRow>
                       <CTableHeaderCell>#</CTableHeaderCell>
-                      <CTableHeaderCell>RIF</CTableHeaderCell>
-                      <CTableHeaderCell>Razón Social</CTableHeaderCell>
-                      <CTableHeaderCell>Dirección Fiscal</CTableHeaderCell>
+                      <CTableHeaderCell>Nro. Documento</CTableHeaderCell>
+                      <CTableHeaderCell>Nro. Archivo</CTableHeaderCell>
+                      <CTableHeaderCell>Persona</CTableHeaderCell>
+                      <CTableHeaderCell>Comercializador</CTableHeaderCell>
+                      <CTableHeaderCell>Licencia</CTableHeaderCell>
                       <CTableHeaderCell>Estado</CTableHeaderCell>
+                      <CTableHeaderCell>Vencimiento</CTableHeaderCell>
+                      <CTableHeaderCell>Acciones</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {operadorasPaginadas.map((operadora, index) => (
-                      <CTableRow key={operadora.id_operadora}>
+                    {participacionesPaginadas.map((par, index) => (
+                      <CTableRow key={par.id_documento}>
                         <CTableDataCell className="text-muted small">
                           {startIndex + index + 1}
                         </CTableDataCell>
                         <CTableDataCell className="fw-semibold">
-                          {operadora.rif}
+                          {par.numero_documento}
                         </CTableDataCell>
-                        <CTableDataCell>{operadora.razon_social}</CTableDataCell>
+                        <CTableDataCell>{par.nro_archivo}</CTableDataCell>
                         <CTableDataCell>
-                          {operadora.direccion_fiscal || <span className="text-muted">—</span>}
+                          <div className="fw-semibold">{par.ci_rif}</div>
+                          <div className="text-muted small">{par.persona}</div>
                         </CTableDataCell>
+                        <CTableDataCell>{par.comercializador || <span className="text-muted">—</span>}</CTableDataCell>
+                        <CTableDataCell>{par.numero_licencia || <span className="text-muted">—</span>}</CTableDataCell>
                         <CTableDataCell>
-                          <CBadge color={operadora.estado === 'activo' ? 'success' : 'secondary'}>
-                            {operadora.estado === 'activo' ? 'Activo' : 'Inactivo'}
+                          <CBadge color={par.estado_documento === 'vigente' ? 'success' : par.estado_documento === 'vencido' ? 'warning' : 'danger'}>
+                            {par.estado_documento}
                           </CBadge>
+                        </CTableDataCell>
+                        <CTableDataCell>
+                          {par.fecha_vencimiento?.slice(0, 10)}
+                        </CTableDataCell>
+                        <CTableDataCell>
+                          <CButton
+                            size="sm"
+                            color="primary"
+                            variant="outline"
+                            onClick={() => {}}
+                          >
+                            Ver
+                          </CButton>
                         </CTableDataCell>
                       </CTableRow>
                     ))}
@@ -160,4 +184,4 @@ const OperadorasListaView = () => {
   )
 }
 
-export default OperadorasListaView
+export default ParticipacionesListaView

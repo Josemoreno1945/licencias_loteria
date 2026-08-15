@@ -18,21 +18,45 @@ import CIcon from '@coreui/icons-react'
 import { cilPlus } from '@coreui/icons'
 import { useNavigate, useLocation } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
+import useDebounce from '../../../hooks/useDebounce'
+import { filterBySearch } from '../../../utils/helpers'
 import LicenciaDetalleModal from '../components/LicenciaDetalleModal'
+import Buscador from '../../../components/Buscador'
 import Paginacion from '../../../components/Paginacion'
+
+const LICENCIAS_SEARCH_FIELDS = [
+  'numero_documento',
+  'persona',
+  'ci_rif',
+  'categoria',
+  'estado_documento',
+  'comercializador',
+  'numero_lot',
+]
 
 const LicenciasListaView = () => {
   const navigate = useNavigate()
   const { data: licencias, loading, error } = useFetch('/licencias')
-  
+
   const location = useLocation()
   const [modalDataId, setModalDataId] = React.useState(null)
   const [paginaActual, setPaginaActual] = React.useState(1)
+  const [busqueda, setBusqueda] = React.useState('')
+  const debouncedBusqueda = useDebounce(busqueda, 400)
+
+  const licenciasFiltradas = React.useMemo(
+    () => filterBySearch(licencias, debouncedBusqueda, LICENCIAS_SEARCH_FIELDS),
+    [licencias, debouncedBusqueda]
+  )
 
   const PAGE_SIZE = 10
-  const totalPaginas = licencias ? Math.ceil(licencias.length / PAGE_SIZE) : 0
+  const totalPaginas = licenciasFiltradas ? Math.ceil(licenciasFiltradas.length / PAGE_SIZE) : 0
   const startIndex = (paginaActual - 1) * PAGE_SIZE
-  const licenciasPaginadas = licencias?.slice(startIndex, startIndex + PAGE_SIZE) || []
+  const licenciasPaginadas = licenciasFiltradas?.slice(startIndex, startIndex + PAGE_SIZE) || []
+
+  React.useEffect(() => {
+    setPaginaActual(1)
+  }, [debouncedBusqueda])
 
   React.useEffect(() => {
     if (location.state?.openModalId) {
@@ -58,16 +82,28 @@ const LicenciasListaView = () => {
           </CButton>
         </CCardHeader>
         <CCardBody>
+          <div className="mb-3 buscador-container">
+            <Buscador
+              value={busqueda}
+              onChange={setBusqueda}
+              onClear={() => setBusqueda('')}
+              placeholder="Buscar licencia..."
+            />
+          </div>
           {loading && (
             <div className="d-flex justify-content-center py-5">
               <CSpinner />
             </div>
           )}
           {error && <CAlert color="danger">{error}</CAlert>}
-          {!loading && !error && licencias?.length === 0 && (
-            <CAlert color="info">No se encontraron licencias emitidas.</CAlert>
+          {!loading && !error && licenciasFiltradas.length === 0 && (
+            <CAlert color="info">
+              {licencias?.length === 0
+                ? 'No se encontraron licencias emitidas.'
+                : 'No se encontraron licencias.'}
+            </CAlert>
           )}
-          {!loading && !error && licencias?.length > 0 && (
+          {!loading && !error && licenciasFiltradas.length > 0 && (
             <CTable hover responsive>
               <CTableHead>
                 <CTableRow>

@@ -15,77 +15,80 @@ import {
   CAlert,
   CButton,
 } from '@coreui/react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import CIcon from '@coreui/icons-react'
+import { cilPlus } from '@coreui/icons'
+import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
 import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
 import { useAuth } from '../../auth/store/AuthContext'
-import PersonaDetalleModal from '../components/PersonaDetalleModal'
 import Buscador from '../../../components/Buscador'
 import Paginacion from '../../../components/Paginacion'
 
-const PERSONAS_SEARCH_FIELDS = [
+const AUTORIZACIONES_SEARCH_FIELDS = [
+  'numero_documento',
+  'nro_mesa',
   'ci_rif',
-  'razon_social',
-  'tipo_persona',
-  'telefono',
-  'email',
+  'persona',
+  'operadora',
+  'centro_apuesta',
+  'agencia_texto',
 ]
 
-const PersonasListaView = () => {
+const AutorizacionesListaView = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { data: personas, loading, error, refetch } = useFetch('/personas')
-
-  const location = useLocation()
-  const [modalDataId, setModalDataId] = React.useState(null)
+  const { data: autorizaciones, loading, error, refetch } = useFetch('/autorizaciones-especiales')
   const [paginaActual, setPaginaActual] = React.useState(1)
   const [busqueda, setBusqueda] = React.useState('')
   const debouncedBusqueda = useDebounce(busqueda, 400)
 
-  const personasFiltradas = React.useMemo(
-    () => filterBySearch(personas, debouncedBusqueda, PERSONAS_SEARCH_FIELDS),
-    [personas, debouncedBusqueda]
+  const autorizacionesFiltradas = React.useMemo(
+    () => filterBySearch(autorizaciones, debouncedBusqueda, AUTORIZACIONES_SEARCH_FIELDS),
+    [autorizaciones, debouncedBusqueda]
   )
 
   const PAGE_SIZE = 10
-  const totalPaginas = personasFiltradas ? Math.ceil(personasFiltradas.length / PAGE_SIZE) : 0
+  const totalPaginas = autorizacionesFiltradas ? Math.ceil(autorizacionesFiltradas.length / PAGE_SIZE) : 0
   const startIndex = (paginaActual - 1) * PAGE_SIZE
-  const personasPaginadas = personasFiltradas?.slice(startIndex, startIndex + PAGE_SIZE) || []
+  const autorizacionesPaginadas = autorizacionesFiltradas?.slice(startIndex, startIndex + PAGE_SIZE) || []
 
   React.useEffect(() => {
     setPaginaActual(1)
   }, [debouncedBusqueda])
 
-  React.useEffect(() => {
-    if (location.state?.openModalId) {
-      setModalDataId(location.state.openModalId)
-      // Limpiar el state para que no se reabra al recargar
-      window.history.replaceState({}, '')
+  const getEstadoBadge = (estado) => {
+    switch (estado) {
+      case 'vigente':
+        return 'success'
+      case 'vencido':
+        return 'warning'
+      case 'suspendido':
+        return 'danger'
+      case 'anulado':
+        return 'secondary'
+      default:
+        return 'info'
     }
-  }, [location.state])
+  }
 
   return (
     <CContainer fluid>
-      <PersonaDetalleModal 
-        idPersona={modalDataId} 
-        onClose={() => setModalDataId(null)} 
-      />
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
         <CCardHeader className="bg-white d-flex justify-content-between align-items-center pb-0">
           <div>
-            <h4 className="mb-1 text-primary">Lista de Personas</h4>
+            <h4 className="mb-1 text-primary">Lista de Autorizaciones Especiales</h4>
             <p className="text-muted small mb-3">
-              Personas naturales y juridicas registradas en el sistema.
+              Autorizaciones especiales registradas en el sistema.
             </p>
           </div>
           {user?.rol !== 'supervisor' && (
             <CButton
               color="primary"
               size="sm"
-              onClick={() => navigate('/personas/registro')}
+              onClick={() => navigate('/autorizaciones/registro')}
             >
-              + Nueva Persona
+              <CIcon icon={cilPlus} className="me-1" /> + Nueva Autorización
             </CButton>
           )}
         </CCardHeader>
@@ -96,7 +99,7 @@ const PersonasListaView = () => {
               value={busqueda}
               onChange={setBusqueda}
               onClear={() => setBusqueda('')}
-              placeholder="Buscar persona..."
+              placeholder="Buscar autorización..."
             />
           </div>
 
@@ -104,7 +107,7 @@ const PersonasListaView = () => {
           {loading && (
             <div className="d-flex justify-content-center align-items-center py-5">
               <CSpinner color="primary" />
-              <span className="ms-3 text-muted">Cargando personas...</span>
+              <span className="ms-3 text-muted">Cargando autorizaciones...</span>
             </div>
           )}
 
@@ -121,54 +124,59 @@ const PersonasListaView = () => {
           {/* Tabla */}
           {!loading && !error && (
             <>
-              {personasFiltradas.length === 0 ? (
+              {autorizacionesFiltradas.length === 0 ? (
                 <CAlert color="info">
-                  {personas?.length === 0
-                    ? 'No hay personas registradas aun.'
-                    : 'No se encontraron personas.'}
+                  {autorizaciones?.length === 0
+                    ? 'No hay autorizaciones especiales registradas aun.'
+                    : 'No se encontraron autorizaciones.'}
                 </CAlert>
               ) : (
                 <CTable hover responsive striped align="middle" className="mb-0">
                   <CTableHead>
                     <CTableRow>
                       <CTableHeaderCell>#</CTableHeaderCell>
-                      <CTableHeaderCell>CI / RIF</CTableHeaderCell>
-                      <CTableHeaderCell>Nombre / Razon Social</CTableHeaderCell>
-                      <CTableHeaderCell>Tipo</CTableHeaderCell>
-                      <CTableHeaderCell>Telefono</CTableHeaderCell>
-                      <CTableHeaderCell>Email</CTableHeaderCell>
+                      <CTableHeaderCell>Nro. Documento</CTableHeaderCell>
+                      <CTableHeaderCell>Nro. Mesa</CTableHeaderCell>
+                      <CTableHeaderCell>Persona</CTableHeaderCell>
+                      <CTableHeaderCell>Operadora</CTableHeaderCell>
+                      <CTableHeaderCell>Agencia</CTableHeaderCell>
+                      <CTableHeaderCell>Estado</CTableHeaderCell>
+                      <CTableHeaderCell>Vencimiento</CTableHeaderCell>
                       <CTableHeaderCell>Acciones</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {personasPaginadas.map((persona, index) => (
-                      <CTableRow key={persona.ci_rif}>
+                    {autorizacionesPaginadas.map((aut, index) => (
+                      <CTableRow key={aut.id_documento}>
                         <CTableDataCell className="text-muted small">
                           {startIndex + index + 1}
                         </CTableDataCell>
                         <CTableDataCell className="fw-semibold">
-                          {persona.ci_rif}
+                          {aut.numero_documento}
                         </CTableDataCell>
-                        <CTableDataCell>{persona.razon_social}</CTableDataCell>
+                        <CTableDataCell>{aut.nro_mesa}</CTableDataCell>
                         <CTableDataCell>
-                          <CBadge
-                            color={persona.tipo_persona === 'natural' ? 'info' : 'warning'}
-                          >
-                            {persona.tipo_persona === 'natural' ? 'Natural' : 'Juridica'}
+                          <div className="fw-semibold">{aut.ci_rif}</div>
+                          <div className="text-muted small">{aut.persona}</div>
+                        </CTableDataCell>
+                        <CTableDataCell>{aut.operadora || <span className="text-muted">—</span>}</CTableDataCell>
+                        <CTableDataCell>
+                          {aut.centro_apuesta || aut.agencia_texto || <span className="text-muted">—</span>}
+                        </CTableDataCell>
+                        <CTableDataCell>
+                          <CBadge color={getEstadoBadge(aut.estado_documento)}>
+                            {aut.estado_documento}
                           </CBadge>
                         </CTableDataCell>
                         <CTableDataCell>
-                          {persona.telefono || <span className="text-muted">—</span>}
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          {persona.email || <span className="text-muted">—</span>}
+                          {aut.fecha_vencimiento?.slice(0, 10)}
                         </CTableDataCell>
                         <CTableDataCell>
                           <CButton
                             size="sm"
                             color="primary"
                             variant="outline"
-                            onClick={() => setModalDataId(persona.id_persona)}
+                            onClick={() => {}}
                           >
                             Ver
                           </CButton>
@@ -193,4 +201,4 @@ const PersonasListaView = () => {
   )
 }
 
-export default PersonasListaView
+export default AutorizacionesListaView

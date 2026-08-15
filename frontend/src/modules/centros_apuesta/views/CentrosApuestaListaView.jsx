@@ -24,19 +24,41 @@ import CIcon from '@coreui/icons-react'
 import { cilGamepad } from '@coreui/icons'
 import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
+import useDebounce from '../../../hooks/useDebounce'
+import { filterBySearch } from '../../../utils/helpers'
 import axiosInstance from '../../../api/axiosInstance'
 import { useAuth } from '../../auth/store/AuthContext'
+import Buscador from '../../../components/Buscador'
 import Paginacion from '../../../components/Paginacion'
+
+const CENTROS_APOYO_SEARCH_FIELDS = [
+  'nombre_agencia',
+  'comercializador_razon_social',
+  'persona_razon_social',
+  'direccion',
+]
 
 const CentrosApuestaListaView = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { data: centros, loading, error, refetch } = useFetch('/centros_apuesta')
   const [paginaActual, setPaginaActual] = React.useState(1)
+  const [busqueda, setBusqueda] = React.useState('')
+  const debouncedBusqueda = useDebounce(busqueda, 400)
+
+  const centrosFiltrados = React.useMemo(
+    () => filterBySearch(centros, debouncedBusqueda, CENTROS_APOYO_SEARCH_FIELDS),
+    [centros, debouncedBusqueda]
+  )
+
   const PAGE_SIZE = 10
-  const totalPaginas = centros ? Math.ceil(centros.length / PAGE_SIZE) : 0
+  const totalPaginas = centrosFiltrados ? Math.ceil(centrosFiltrados.length / PAGE_SIZE) : 0
   const startIndex = (paginaActual - 1) * PAGE_SIZE
-  const centrosPaginados = centros?.slice(startIndex, startIndex + PAGE_SIZE) || []
+  const centrosPaginados = centrosFiltrados?.slice(startIndex, startIndex + PAGE_SIZE) || []
+
+  React.useEffect(() => {
+    setPaginaActual(1)
+  }, [debouncedBusqueda])
 
   // --- Estado para el modal de permisos ---
   const [permisosModal, setPermisosModal] = useState({ visible: false, centro: null })
@@ -147,6 +169,15 @@ const CentrosApuestaListaView = () => {
         </CCardHeader>
 
         <CCardBody>
+          <div className="mb-3 buscador-container">
+            <Buscador
+              value={busqueda}
+              onChange={setBusqueda}
+              onClear={() => setBusqueda('')}
+              placeholder="Buscar centro de apuesta..."
+            />
+          </div>
+
           {/* Estado de carga */}
           {loading && (
             <div className="d-flex justify-content-center align-items-center py-5">
@@ -168,8 +199,12 @@ const CentrosApuestaListaView = () => {
           {/* Tabla */}
           {!loading && !error && (
             <>
-              {centrosPaginados.length === 0 ? (
-                <CAlert color="info">No hay centros de apuesta registrados aun.</CAlert>
+              {centrosFiltrados.length === 0 ? (
+                <CAlert color="info">
+                  {centros?.length === 0
+                    ? 'No hay centros de apuesta registrados aun.'
+                    : 'No se encontraron centros de apuesta.'}
+                </CAlert>
               ) : (
                 <CTable hover responsive striped align="middle" className="mb-0">
                   <CTableHead>

@@ -17,8 +17,18 @@ import {
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
+import useDebounce from '../../../hooks/useDebounce'
+import { filterBySearch } from '../../../utils/helpers'
 import { useAuth } from '../../auth/store/AuthContext'
+import Buscador from '../../../components/Buscador'
 import Paginacion from '../../../components/Paginacion'
+
+const USUARIOS_SEARCH_FIELDS = [
+  'nombre_usuario',
+  'email',
+  'rol',
+  'estado',
+]
 
 const ROLE_LABELS = {
   superAdmin: 'Super Administrador',
@@ -32,10 +42,22 @@ const UsuariosListaView = () => {
   const { user } = useAuth()
   const { data: usuarios, loading, error, refetch } = useFetch('/usuarios')
   const [paginaActual, setPaginaActual] = React.useState(1)
+  const [busqueda, setBusqueda] = React.useState('')
+  const debouncedBusqueda = useDebounce(busqueda, 400)
+
+  const usuariosFiltrados = React.useMemo(
+    () => filterBySearch(usuarios, debouncedBusqueda, USUARIOS_SEARCH_FIELDS),
+    [usuarios, debouncedBusqueda]
+  )
+
   const PAGE_SIZE = 10
-  const totalPaginas = usuarios ? Math.ceil(usuarios.length / PAGE_SIZE) : 0
+  const totalPaginas = usuariosFiltrados ? Math.ceil(usuariosFiltrados.length / PAGE_SIZE) : 0
   const startIndex = (paginaActual - 1) * PAGE_SIZE
-  const usuariosPaginados = usuarios?.slice(startIndex, startIndex + PAGE_SIZE) || []
+  const usuariosPaginados = usuariosFiltrados?.slice(startIndex, startIndex + PAGE_SIZE) || []
+
+  React.useEffect(() => {
+    setPaginaActual(1)
+  }, [debouncedBusqueda])
 
   return (
     <CContainer fluid>
@@ -59,6 +81,15 @@ const UsuariosListaView = () => {
         </CCardHeader>
 
         <CCardBody>
+          <div className="mb-3 buscador-container">
+            <Buscador
+              value={busqueda}
+              onChange={setBusqueda}
+              onClear={() => setBusqueda('')}
+              placeholder="Buscar usuario..."
+            />
+          </div>
+
           {/* Estado de carga */}
           {loading && (
             <div className="d-flex justify-content-center align-items-center py-5">
@@ -80,8 +111,12 @@ const UsuariosListaView = () => {
           {/* Tabla */}
           {!loading && !error && (
             <>
-              {usuarios && usuarios.length === 0 ? (
-                <CAlert color="info">No hay usuarios registrados aun.</CAlert>
+              {usuariosFiltrados.length === 0 ? (
+                <CAlert color="info">
+                  {usuarios?.length === 0
+                    ? 'No hay usuarios registrados aun.'
+                    : 'No se encontraron usuarios.'}
+                </CAlert>
               ) : (
                 <CTable hover responsive striped className="mb-0">
                   <CTableHead>

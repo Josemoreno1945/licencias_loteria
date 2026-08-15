@@ -17,18 +17,39 @@ import {
 } from '@coreui/react';
 import { useNavigate } from 'react-router-dom';
 import useFetch from '../../../hooks/useFetch';
+import useDebounce from '../../../hooks/useDebounce';
+import { filterBySearch } from '../../../utils/helpers';
 import { useAuth } from '../../auth/store/AuthContext';
+import Buscador from '../../../components/Buscador';
 import Paginacion from '../../../components/Paginacion';
+
+const JUEGOS_SEARCH_FIELDS = [
+  'nombre',
+  'operadora_razon_social',
+  'estado',
+];
 
 const JuegosListaView = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: juegos, loading, error, refetch } = useFetch('/juegos');
   const [paginaActual, setPaginaActual] = React.useState(1);
+  const [busqueda, setBusqueda] = React.useState('');
+  const debouncedBusqueda = useDebounce(busqueda, 400);
+
+  const juegosFiltrados = React.useMemo(
+    () => filterBySearch(juegos, debouncedBusqueda, JUEGOS_SEARCH_FIELDS),
+    [juegos, debouncedBusqueda]
+  );
+
   const PAGE_SIZE = 10;
-  const totalPaginas = juegos ? Math.ceil(juegos.length / PAGE_SIZE) : 0;
+  const totalPaginas = juegosFiltrados ? Math.ceil(juegosFiltrados.length / PAGE_SIZE) : 0;
   const startIndex = (paginaActual - 1) * PAGE_SIZE;
-  const juegosPaginados = juegos?.slice(startIndex, startIndex + PAGE_SIZE) || [];
+  const juegosPaginados = juegosFiltrados?.slice(startIndex, startIndex + PAGE_SIZE) || [];
+
+  React.useEffect(() => {
+    setPaginaActual(1);
+  }, [debouncedBusqueda]);
 
   return (
     <CContainer fluid>
@@ -52,6 +73,15 @@ const JuegosListaView = () => {
         </CCardHeader>
 
         <CCardBody>
+          <div className="mb-3 buscador-container">
+            <Buscador
+              value={busqueda}
+              onChange={setBusqueda}
+              onClear={() => setBusqueda('')}
+              placeholder="Buscar juego..."
+            />
+          </div>
+
           {loading && (
             <div className="d-flex justify-content-center align-items-center py-5">
               <CSpinner color="primary" />
@@ -70,8 +100,12 @@ const JuegosListaView = () => {
 
           {!loading && !error && (
             <>
-              {juegosPaginados.length === 0 ? (
-                <CAlert color="info">No hay juegos registrados aún.</CAlert>
+              {juegosFiltrados.length === 0 ? (
+                <CAlert color="info">
+                  {juegos?.length === 0
+                    ? 'No hay juegos registrados aún.'
+                    : 'No se encontraron juegos.'}
+                </CAlert>
               ) : (
                 <>
                   <CTable hover responsive striped align="middle" className="mb-0">

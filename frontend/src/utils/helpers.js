@@ -17,3 +17,16 @@ export const getToken = () => localStorage.getItem('token')
 export const setToken = (token) => localStorage.setItem('token', token)
 
 export const removeToken = () => localStorage.removeItem('token')
+
+export const filterBySearch = (items, searchTerm, fields) => {
+  if (!items) return items
+  if (!searchTerm || searchTerm.trim() === '') return items
+  const term = searchTerm.toLowerCase().trim()
+  return items.filter((item) =>
+    fields.some((field) => {
+      const value = item[field]
+      if (value === null || value === undefined) return false
+      return String(value).toLowerCase().includes(term)
+    })
+  )
+}

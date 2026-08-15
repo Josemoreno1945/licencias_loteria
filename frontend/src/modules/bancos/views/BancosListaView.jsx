@@ -17,19 +17,39 @@ import {
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
+import useDebounce from '../../../hooks/useDebounce'
+import { filterBySearch } from '../../../utils/helpers'
 import { useAuth } from '../../auth/store/AuthContext'
+import Buscador from '../../../components/Buscador'
 import Paginacion from '../../../components/Paginacion'
+
+const BANCOS_SEARCH_FIELDS = [
+  'nombre',
+  'codigo',
+  'estado',
+]
 
 const BancosListaView = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { data: bancos, loading, error, refetch } = useFetch('/bancos')
   const [paginaActual, setPaginaActual] = React.useState(1)
+  const [busqueda, setBusqueda] = React.useState('')
+  const debouncedBusqueda = useDebounce(busqueda, 400)
+
+  const bancosFiltrados = React.useMemo(
+    () => filterBySearch(bancos, debouncedBusqueda, BANCOS_SEARCH_FIELDS),
+    [bancos, debouncedBusqueda]
+  )
 
   const PAGE_SIZE = 10
-  const totalPaginas = bancos ? Math.ceil(bancos.length / PAGE_SIZE) : 0
+  const totalPaginas = bancosFiltrados ? Math.ceil(bancosFiltrados.length / PAGE_SIZE) : 0
   const startIndex = (paginaActual - 1) * PAGE_SIZE
-  const bancosPaginados = bancos?.slice(startIndex, startIndex + PAGE_SIZE) || []
+  const bancosPaginados = bancosFiltrados?.slice(startIndex, startIndex + PAGE_SIZE) || []
+
+  React.useEffect(() => {
+    setPaginaActual(1)
+  }, [debouncedBusqueda])
 
   return (
     <CContainer fluid>
@@ -53,6 +73,15 @@ const BancosListaView = () => {
         </CCardHeader>
 
         <CCardBody>
+          <div className="mb-3 buscador-container">
+            <Buscador
+              value={busqueda}
+              onChange={setBusqueda}
+              onClear={() => setBusqueda('')}
+              placeholder="Buscar banco..."
+            />
+          </div>
+
           {/* Estado de carga */}
           {loading && (
             <div className="d-flex justify-content-center align-items-center py-5">
@@ -74,8 +103,12 @@ const BancosListaView = () => {
           {/* Tabla */}
           {!loading && !error && (
             <>
-              {bancos && bancos.length === 0 ? (
-                <CAlert color="info">No hay bancos registrados aun.</CAlert>
+              {bancosFiltrados.length === 0 ? (
+                <CAlert color="info">
+                  {bancos?.length === 0
+                    ? 'No hay bancos registrados aun.'
+                    : 'No se encontraron bancos.'}
+                </CAlert>
               ) : (
                 <CTable hover responsive striped className="mb-0">
                   <CTableHead>
