@@ -4,7 +4,7 @@ import { useAuth } from '../../auth/store/AuthContext'
 import LicenciasForm from '../components/LicenciasForm'
 import FeedbackModal from '../../../components/FeedbackModal'
 import { extractErrorMessage } from '../../../utils/errorHandler'
-import { emitirLicencia, getSolicitudesLicencia, getJuegosActivos, getBancos, getCentrosApuestaActivos, getRepresentantes } from '../services/licencias.service'
+import { emitirLicencia, getSolicitudesLicencia, getJuegosActivos, getBancos, getCentrosApuestaActivos, getRepresentantes, getPermisosJuegosPorComercializador } from '../services/licencias.service'
 
 const LicenciasRegistroView = () => {
   const { user } = useAuth()
@@ -19,7 +19,7 @@ const LicenciasRegistroView = () => {
     direccion_establecimiento: '',
     detalles_extra: '',
     numero_lot: '',
-    juegos: '',
+    juegos: [],
     id_centro: '',
     id_representante: '',
     id_banco: '',
@@ -32,6 +32,7 @@ const LicenciasRegistroView = () => {
   })
   const [solicitudes, setSolicitudes] = useState([])
   const [juegos, setJuegos] = useState([])
+  const [juegosFiltrados, setJuegosFiltrados] = useState([])
   const [bancos, setBancos] = useState([])
   const [centrosApuesta, setCentrosApuesta] = useState([])
   const [representantes, setRepresentantes] = useState([])
@@ -44,48 +45,83 @@ const LicenciasRegistroView = () => {
       setLoadingDeps(true)
       setError(null)
 
-      const results = await Promise.allSettled([
-        getSolicitudesLicencia(),
-        getJuegosActivos(),
-        getBancos(),
-        getCentrosApuestaActivos(),
-        getRepresentantes(),
-      ])
+      try {
+        const results = await Promise.allSettled([
+          getSolicitudesLicencia(),
+          getJuegosActivos(),
+          getBancos(),
+          getCentrosApuestaActivos(),
+          getRepresentantes(),
+        ])
 
-      const errorsList = []
+        const errorsList = []
 
-      results[0].status === 'fulfilled'
-        ? setSolicitudes(results[0].value || [])
-        : errorsList.push(`No se pudieron cargar las solicitudes.`)
+        results[0].status === 'fulfilled'
+          ? setSolicitudes(results[0].value || [])
+          : errorsList.push(`No se pudieron cargar las solicitudes.`)
 
-      results[1].status === 'fulfilled'
-        ? setJuegos(results[1].value || [])
-        : errorsList.push(`No se pudieron cargar los juegos activos.`)
+        results[1].status === 'fulfilled'
+          ? setJuegos(results[1].value || [])
+          : errorsList.push(`No se pudieron cargar los juegos activos.`)
 
-      results[2].status === 'fulfilled'
-        ? setBancos(results[2].value || [])
-        : errorsList.push(`No se pudieron cargar los bancos.`)
+        results[2].status === 'fulfilled'
+          ? setBancos(results[2].value || [])
+          : errorsList.push(`No se pudieron cargar los bancos.`)
 
-      results[3].status === 'fulfilled'
-        ? setCentrosApuesta(results[3].value || [])
-        : errorsList.push(`No se pudieron cargar los centros de apuesta.`)
+        results[3].status === 'fulfilled'
+          ? setCentrosApuesta(results[3].value || [])
+          : errorsList.push(`No se pudieron cargar los centros de apuesta.`)
 
-      results[4].status === 'fulfilled'
-        ? setRepresentantes(results[4].value || [])
-        : errorsList.push(`No se pudieron cargar los representantes.`)
+        results[4].status === 'fulfilled'
+          ? setRepresentantes(results[4].value || [])
+          : errorsList.push(`No se pudieron cargar los representantes.`)
 
-      if (errorsList.length > 0) {
-        console.error('Errores cargando dependencias:', errorsList)
-        setError(errorsList.join(' '))
+        if (errorsList.length > 0) {
+          console.error('Errores cargando dependencias:', errorsList)
+          setError(errorsList.join(' '))
+        }
+      } finally {
+        setLoadingDeps(false)
       }
     }
     loadDependencies()
-    setLoadingDeps(false)
   }, [])
 
+  // Filtrar juegos según los permisos del comercializador vinculado a la solicitud
+  useEffect(() => {
+    if (!formData.id_solicitud || juegos.length === 0) {
+      setJuegosFiltrados(juegos)
+      return
+    }
+
+    const solicitud = solicitudes.find((s) => s.id_solicitudes === formData.id_solicitud)
+    if (!solicitud || !solicitud.id_comercializador) {
+      setJuegosFiltrados(juegos)
+      return
+    }
+
+    const fetchJuegosFiltrados = async () => {
+      try {
+        const permisos = await getPermisosJuegosPorComercializador(solicitud.id_comercializador)
+        const idsAutorizados = permisos.map((p) => p.id_juego)
+        setJuegosFiltrados(juegos.filter((j) => idsAutorizados.includes(j.id_juego)))
+      } catch {
+        setJuegosFiltrados(juegos)
+      }
+    }
+    fetchJuegosFiltrados()
+  }, [formData.id_solicitud, solicitudes, juegos])
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    const { name, value, selectedOptions } = e.target
+    if (e.target.multiple) {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: Array.from(selectedOptions, (option) => option.value),
+      }))
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }))
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -163,8 +199,8 @@ const LicenciasRegistroView = () => {
         ...(formData.numero_lot?.trim()
           ? { numero_lot: formData.numero_lot }
           : {}),
-        ...(formData.juegos?.trim()
-          ? { juegos: [formData.juegos] }
+        ...(formData.juegos.length > 0
+          ? { juegos: formData.juegos }
           : {}),
         pago: {
           id_banco: formData.id_banco,
@@ -195,7 +231,7 @@ const LicenciasRegistroView = () => {
         direccion_establecimiento: '',
         detalles_extra: '',
         numero_lot: '',
-        juegos: '',
+        juegos: [],
         id_centro: '',
         id_representante: '',
         id_banco: '',
@@ -242,9 +278,9 @@ const LicenciasRegistroView = () => {
             formData={formData}
             handleInputChange={handleInputChange}
             onSubmit={handleSubmit}
-            solicitudes={solicitudes}
-            juegos={juegos}
-            bancos={bancos}
+             solicitudes={solicitudes}
+             juegos={juegosFiltrados}
+             bancos={bancos}
             centrosApuesta={centrosApuesta}
             representantes={representantes}
             loadingDeps={loadingDeps}

@@ -71,18 +71,18 @@ const LicenciasForm = ({
         </CCol>
 
         <CCol md={6} className="mb-3">
-          <CFormLabel>Juego Autorizado</CFormLabel>
+          <CFormLabel>Juegos Autorizados (Ctrl+Click para múltiple)</CFormLabel>
           <CInputGroup>
             <CInputGroupText>
               <CIcon icon={cilGamepad} />
             </CInputGroupText>
-            <CFormSelect
+           <CFormSelect
               name="juegos"
-              value={formData.juegos || ''}
+              value={formData.juegos || []}
               onChange={handleInputChange}
+              multiple
               disabled={loadingDeps || juegos.length === 0}
             >
-              <option value="">Seleccione un juego...</option>
               {juegos.map((juego) => (
                 <option key={juego.id_juego} value={juego.id_juego}>
                   {juego.nombre} — {juego.operadora_razon_social ?? juego.razon_social}

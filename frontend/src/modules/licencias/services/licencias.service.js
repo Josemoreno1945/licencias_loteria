@@ -29,3 +29,8 @@ export const getRepresentantes = async () => {
   const { data } = await axiosInstance.get("/representantes");
   return data;
 };
+
+export const getPermisosJuegosPorComercializador = async (id_comercializador) => {
+  const { data } = await axiosInstance.get(`/permisos-juego/por-comercializador/${id_comercializador}`);
+  return data;
+};

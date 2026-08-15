@@ -13,6 +13,12 @@ import {
   CCol,
   CFormInput,
   CFormLabel,
+  CTable,
+  CTableHead,
+  CTableRow,
+  CTableHeaderCell,
+  CTableBody,
+  CTableDataCell,
 } from '@coreui/react'
 import axiosInstance from '../../../api/axiosInstance'
 
@@ -30,6 +36,8 @@ const LicenciaDetalleModal = ({ idLicencia, onClose }) => {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [juegos, setJuegos] = useState([])
+  const [loadingJuegos, setLoadingJuegos] = useState(false)
 
   useEffect(() => {
     if (!idLicencia) return
@@ -43,6 +51,16 @@ const LicenciaDetalleModal = ({ idLicencia, onClose }) => {
         setError(err.response?.data?.message || 'Error al cargar el detalle de la licencia')
       } finally {
         setLoading(false)
+      }
+
+      setLoadingJuegos(true)
+      try {
+        const resJ = await axiosInstance.get(`/documento-juegos/por-documento/${idLicencia}`)
+        setJuegos(resJ.data || [])
+      } catch {
+        setJuegos([])
+      } finally {
+        setLoadingJuegos(false)
       }
     }
     fetchData()
@@ -173,6 +191,36 @@ const LicenciaDetalleModal = ({ idLicencia, onClose }) => {
                 </CRow>
               ) : (
                 <CAlert color="info" className="small">Esta licencia no tiene pago registrado.</CAlert>
+              )}
+
+              <hr className="text-muted opacity-25 my-4" />
+
+              <h5 className="text-primary fw-semibold mb-3">Juegos Autorizados</h5>
+              {loadingJuegos ? (
+                <div className="d-flex justify-content-center py-3">
+                  <CSpinner color="primary" size="sm" />
+                </div>
+              ) : juegos.length === 0 ? (
+                <CAlert color="info" className="small">Esta licencia no tiene juegos autorizados.</CAlert>
+              ) : (
+                <CTable hover responsive striped className="mb-0">
+                  <CTableHead>
+                    <CTableRow>
+                      <CTableHeaderCell>#</CTableHeaderCell>
+                      <CTableHeaderCell>Juego</CTableHeaderCell>
+                      <CTableHeaderCell>Operadora</CTableHeaderCell>
+                    </CTableRow>
+                  </CTableHead>
+                  <CTableBody>
+                    {juegos.map((j, index) => (
+                      <CTableRow key={j.id_juego}>
+                        <CTableDataCell className="text-muted small">{index + 1}</CTableDataCell>
+                        <CTableDataCell className="fw-semibold">{j.nombre_juego || '—'}</CTableDataCell>
+                        <CTableDataCell>{j.operadora || '—'}</CTableDataCell>
+                      </CTableRow>
+                    ))}
+                  </CTableBody>
+                </CTable>
               )}
            </div>
         )}

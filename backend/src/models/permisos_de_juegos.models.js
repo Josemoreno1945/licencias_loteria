@@ -147,6 +147,7 @@ export const buscar_permisos_por_comercializador = async (id_comercializador) =>
   const query = `
   SELECT
     pj.id_permiso_juego,
+    j.id_juego,
     j.nombre        AS nombre_juego,
     op.razon_social AS operadora,
     c.razon_social  AS comercializador,

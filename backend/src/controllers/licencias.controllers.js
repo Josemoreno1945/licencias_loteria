@@ -16,6 +16,7 @@ import { get_centros_apuesta_id } from "../models/centros_de_apuesta.models.js";
 
 import { crear_licencia_completa } from "../services/licencias.service.js";
 import { errors, throwError, zodValidationError } from "../utils/errors.js";
+import { uuidRegex } from "../utils/validators.js";
 import {
   crear_licencia_completa_schema,
   actualizar_licencia_schema,
