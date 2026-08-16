@@ -15,8 +15,11 @@ import {
 } from "../controllers/permisos_juego.controllers.js";
 
 import { verifyToken, hasRole, noSupervisorWrite } from "../middlewares/auth.js";
+import { validateUuidParam } from "../middlewares/uuidValidator.js";
 
 const router = Router();
+
+router.param("id", validateUuidParam);
 
 router.get("/permisos-juego", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_permisos_juego);
 

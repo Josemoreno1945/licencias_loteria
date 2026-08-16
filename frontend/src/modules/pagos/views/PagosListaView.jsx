@@ -12,11 +12,7 @@ import {
   CTableDataCell,
   CSpinner,
   CAlert,
-  CButton,
 } from '@coreui/react'
-import CIcon from '@coreui/icons-react'
-import { cilPlus } from '@coreui/icons'
-import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
 import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
@@ -33,7 +29,6 @@ const PAGOS_SEARCH_FIELDS = [
 ]
 
 const PagosListaView = () => {
-  const navigate = useNavigate()
   const { data: pagos, loading, error } = useFetch('/pagos')
   const [paginaActual, setPaginaActual] = React.useState(1)
   const [busqueda, setBusqueda] = React.useState('')
@@ -61,9 +56,6 @@ const PagosListaView = () => {
             <h4 className="mb-1 text-primary">Pagos</h4>
             <p className="text-muted small">Listado de pagos registrados para licencias.</p>
           </div>
-          <CButton color="primary" onClick={() => navigate('/licencias/registro')}>
-            <CIcon icon={cilPlus} className="me-2" /> Nuevo Pago
-          </CButton>
         </CCardHeader>
         <CCardBody>
           <div className="mb-3 buscador-container">

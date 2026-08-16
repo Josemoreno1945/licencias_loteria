@@ -14,8 +14,11 @@ import {
 } from "../controllers/documentos_emitidos.controllers.js";
 
 import { verifyToken, hasRole, noSupervisorWrite } from "../middlewares/auth.js";
+import { validateUuidParam } from "../middlewares/uuidValidator.js";
 
 const router = Router();
+
+router.param("id", validateUuidParam);
 
 router.get("/documentos-emitidos", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_documentos_emitidos);
 

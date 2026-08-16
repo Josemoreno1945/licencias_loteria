@@ -10,8 +10,11 @@ import {
 } from "../controllers/centros_apuesta.controllers.js";
 
 import { verifyToken, hasRole, noSupervisorWrite } from "../middlewares/auth.js";
+import { validateUuidParam } from "../middlewares/uuidValidator.js";
 
 const router = Router();
+
+router.param("id", validateUuidParam);
 
 router.get("/centros_apuesta", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_centros_apuesta);
 

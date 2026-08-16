@@ -10,8 +10,13 @@ import {
 } from "../controllers/comercializadores_representantes.controllers.js";
 
 import { verifyToken, hasRole, noSupervisorWrite } from "../middlewares/auth.js";
+import { validateUuidParam } from "../middlewares/uuidValidator.js";
 
 const router = Router();
+
+router.param("id", validateUuidParam);
+router.param("id_persona", validateUuidParam);
+router.param("id_comercializador", validateUuidParam);
 
 router.get("/representantes", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_representantes);
 router.get("/representantes/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_representante_id);

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { CContainer, CCard } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
+import { useAuth } from '../../auth/store/AuthContext'
 import ComercializadoresTabla from '../components/ComercializadoresTabla'
 import ComercializadoresEditarModal from '../components/ComercializadoresEditarModal'
 import ComercializadoresDetalleModal from '../components/ComercializadoresDetalleModal'
@@ -10,16 +11,9 @@ import PermisosModal from '../components/PermisosModal'
 
 const ComercializadoresListaView = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
 
   const { data: comercializadores, loading, error, refetch } = useFetch('/comercializadores')
-  const [user] = useState(() => {
-    const stored = localStorage.getItem('user')
-    try {
-      return stored && stored !== 'undefined' ? JSON.parse(stored) : null
-    } catch (e) {
-      return null
-    }
-  })
 
   const [repModal, setRepModal] = useState({ visible: false, comercializador: null })
   const [permisosModal, setPermisosModal] = useState({ visible: false, comercializador: null })

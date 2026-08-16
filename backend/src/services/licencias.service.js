@@ -80,6 +80,15 @@ export const crear_licencia_completa = async (data) => {
     // 1. Crear el pago PRIMERO (requerido por el trigger)
     let pagoId = null;
     if (data.pago) {
+      // Validar integridad semántica: el banco referido debe existir
+      const bancoExiste = await client.query(
+        `SELECT 1 FROM bancos WHERE id_banco = $1`,
+        [data.pago.id_banco],
+      );
+      if (!bancoExiste.rows[0]) {
+        throwError(errors.bancos_no_encontrada);
+      }
+
       const pagoResult = await client.query(
         `INSERT INTO pagos (
            id_banco, num_referencia, fecha_pago, monto, tasa_dia,

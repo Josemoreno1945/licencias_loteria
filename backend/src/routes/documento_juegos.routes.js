@@ -10,8 +10,11 @@ import {
 } from "../controllers/documento_juegos.controllers.js";
 
 import { verifyToken, hasRole, noSupervisorWrite } from "../middlewares/auth.js";
+import { validateUuidParam } from "../middlewares/uuidValidator.js";
 
 const router = Router();
+
+router.param("id", validateUuidParam);
 
 router.get("/documento-juegos", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_documento_juegos);
 

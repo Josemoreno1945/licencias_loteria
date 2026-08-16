@@ -9,8 +9,11 @@ import {
 } from "../controllers/usuarios.controllers.js";
 
 import { verifyToken, soloAdmins } from "../middlewares/auth.js";
+import { validateUuidParam } from "../middlewares/uuidValidator.js";
 
 const router = Router();
+
+router.param("id", validateUuidParam);
 
 router.get("/usuarios", verifyToken, soloAdmins, get_c_usuarios);
 

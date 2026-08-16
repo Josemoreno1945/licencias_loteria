@@ -122,7 +122,6 @@ const _navBase = [
     roles: TODOS,
     items: [
       { component: CNavItem, name: 'Lista',    to: '/participaciones/lista',    indent: true, roles: TODOS    },
-      { component: CNavItem, name: 'Registro', to: '/participaciones/registro', indent: true, roles: GESTORES },
     ],
   },
   {
@@ -132,7 +131,6 @@ const _navBase = [
     roles: TODOS,
     items: [
       { component: CNavItem, name: 'Lista',    to: '/autorizaciones/lista',    indent: true, roles: TODOS    },
-      { component: CNavItem, name: 'Registro', to: '/autorizaciones/registro', indent: true, roles: GESTORES },
     ],
   },
 

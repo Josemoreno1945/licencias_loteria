@@ -4,7 +4,6 @@ import {
   get_c_licencias,
   get_c_licencias_id,
   get_c_licencias_vigentes,
-  crear_c_licencia,
   crear_c_licencia_completa,
   actualizar_licencia,
   buscar_c_licencias_por_persona,
@@ -15,8 +14,11 @@ import {
 } from "../controllers/licencias.controllers.js";
 
 import { verifyToken, hasRole, noSupervisorWrite } from "../middlewares/auth.js";
+import { validateUuidParam } from "../middlewares/uuidValidator.js";
 
 const router = Router();
+
+router.param("id", validateUuidParam);
 
 router.get("/licencias", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_licencias);
 
@@ -52,15 +54,7 @@ router.get(
   buscar_c_licencias_por_numero_lot,
 );
 
-router.get("/licencias/emitir", (req, res) => {
-  res
-    .status(405)
-    .json({ error: "Method GET not allowed on /licencias/emitir. Use POST." });
-});
-
 router.get("/licencias/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_licencias_id);
-
-router.post("/licencias", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, crear_c_licencia);
 
 router.post("/licencias/emitir", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, crear_c_licencia_completa);
 

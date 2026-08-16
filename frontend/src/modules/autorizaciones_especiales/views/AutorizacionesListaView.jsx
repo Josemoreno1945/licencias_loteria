@@ -15,13 +15,9 @@ import {
   CAlert,
   CButton,
 } from '@coreui/react'
-import CIcon from '@coreui/icons-react'
-import { cilPlus } from '@coreui/icons'
-import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
 import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
-import { useAuth } from '../../auth/store/AuthContext'
 import Buscador from '../../../components/Buscador'
 import Paginacion from '../../../components/Paginacion'
 
@@ -36,8 +32,6 @@ const AUTORIZACIONES_SEARCH_FIELDS = [
 ]
 
 const AutorizacionesListaView = () => {
-  const navigate = useNavigate()
-  const { user } = useAuth()
   const { data: autorizaciones, loading, error, refetch } = useFetch('/autorizaciones-especiales')
   const [paginaActual, setPaginaActual] = React.useState(1)
   const [busqueda, setBusqueda] = React.useState('')
@@ -82,15 +76,6 @@ const AutorizacionesListaView = () => {
               Autorizaciones especiales registradas en el sistema.
             </p>
           </div>
-          {user?.rol !== 'supervisor' && (
-            <CButton
-              color="primary"
-              size="sm"
-              onClick={() => navigate('/autorizaciones/registro')}
-            >
-              <CIcon icon={cilPlus} className="me-1" /> + Nueva Autorización
-            </CButton>
-          )}
         </CCardHeader>
 
         <CCardBody>
@@ -172,14 +157,7 @@ const AutorizacionesListaView = () => {
                           {aut.fecha_vencimiento?.slice(0, 10)}
                         </CTableDataCell>
                         <CTableDataCell>
-                          <CButton
-                            size="sm"
-                            color="primary"
-                            variant="outline"
-                            onClick={() => {}}
-                          >
-                            Ver
-                          </CButton>
+                          <span className="text-muted small">—</span>
                         </CTableDataCell>
                       </CTableRow>
                     ))}

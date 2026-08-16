@@ -11,14 +11,16 @@ import {
 } from "../controllers/juegos.controllers.js";
 
 import { verifyToken, hasRole, noSupervisorWrite } from "../middlewares/auth.js";
+import { validateUuidParam } from "../middlewares/uuidValidator.js";
 
 const router = Router();
 
+router.param("id", validateUuidParam);
+
 router.get("/juegos", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_juegos);
 
+// Endpoint canónico de juegos activos (el duplicado /juegos/activos fue eliminado)
 router.get("/juegos/activas", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_juegos_activas);
-
-router.get("/juegos/activos", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_juegos_activas);
 
 router.get("/juegos/inactivos", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_juegos_inactivos);
 

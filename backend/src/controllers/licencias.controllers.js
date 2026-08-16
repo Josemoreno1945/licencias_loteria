@@ -61,22 +61,6 @@ export const get_c_licencias_vigentes = async (req, res, next) => {
 };
 
 //post---------------------------------------------------------
-export const crear_c_licencia = async (req, res, next) => {
-  try {
-    const data = req.body;
-
-    const parseL = crear_licencia_completa_schema.safeParse(data);
-    if (!parseL.success) {
-      return next(zodValidationError(parseL.error));
-    }
-
-    const result = await crear_licencia_completa(data);
-    return res.json(result);
-  } catch (error) {
-    next(error);
-  }
-};
-
 export const crear_c_licencia_completa = async (req, res, next) => {
   try {
     const data = req.body;

@@ -13,8 +13,11 @@ import {
 } from "../controllers/pagos.controllers.js";
 
 import { verifyToken, hasRole } from "../middlewares/auth.js";
+import { validateUuidParam } from "../middlewares/uuidValidator.js";
 
 const router = Router();
+
+router.param("id", validateUuidParam);
 
 router.get("/pagos", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_pagos);
 

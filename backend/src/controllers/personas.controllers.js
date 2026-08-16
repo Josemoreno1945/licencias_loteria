@@ -109,7 +109,7 @@ export const actualizar_personas = async (req, res, next) => {
     // OBTENEMOS LA PERSONA ACTUAL PRIMERO
     const personaActualArray = await get_personas_id(id);
     if (!personaActualArray || personaActualArray.length === 0) {
-      throwError(errors.persona_no_encontrado);
+      throwError(errors.persona_no_encontrada);
     }
     const personaActual = personaActualArray[0];
 

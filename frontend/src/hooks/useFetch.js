@@ -6,7 +6,7 @@ import axiosInstance from '../api/axiosInstance'
  * @param {string} endpoint - URL relativa al baseURL (ej: '/licencias')
  * @param {object} options - { immediate: bool }
  */
-const useFetch = (endpoint, { immediate = true } = {}) => {
+const useFetch = (endpoint, { immediate = true, params = null } = {}) => {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -15,7 +15,7 @@ const useFetch = (endpoint, { immediate = true } = {}) => {
     setLoading(true)
     setError(null)
     try {
-      const { data: result } = await axiosInstance.get(endpoint, { signal })
+      const { data: result } = await axiosInstance.get(endpoint, { signal, params })
       setData(result)
     } catch (err) {
       if (err.name !== 'CanceledError') {
@@ -24,7 +24,7 @@ const useFetch = (endpoint, { immediate = true } = {}) => {
     } finally {
       setLoading(false)
     }
-  }, [endpoint])
+  }, [endpoint, params])
 
   useEffect(() => {
     if (!immediate) return
