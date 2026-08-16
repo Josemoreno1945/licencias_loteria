@@ -19,7 +19,7 @@ import {
   cilEnvelopeClosed,
 } from '@coreui/icons';
 
-const PersonasForm = ({ formData, handleInputChange, onSubmit }) => {
+const PersonasForm = ({ formData, handleInputChange, onSubmit, isEditMode }) => {
   return (
     <CForm onSubmit={onSubmit}>
       <CRow className="mb-4">
@@ -143,7 +143,7 @@ const PersonasForm = ({ formData, handleInputChange, onSubmit }) => {
 
       <div className="d-flex justify-content-end mt-3">
         <CButton type="submit" color="primary" size="lg">
-          Registrar Persona
+          {isEditMode ? 'Guardar cambios' : 'Registrar Persona'}
         </CButton>
       </div>
     </CForm>

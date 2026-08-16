@@ -21,6 +21,7 @@ import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
 import { useAuth } from '../../auth/store/AuthContext'
 import PersonaDetalleModal from '../components/PersonaDetalleModal'
+import PersonasEditarModal from '../components/PersonasEditarModal'
 import Buscador from '../../../components/Buscador'
 import Paginacion from '../../../components/Paginacion'
 
@@ -39,6 +40,7 @@ const PersonasListaView = () => {
 
   const location = useLocation()
   const [modalDataId, setModalDataId] = React.useState(null)
+  const [modalEditarPersonaId, setModalEditarPersonaId] = React.useState(null)
   const [paginaActual, setPaginaActual] = React.useState(1)
   const [busqueda, setBusqueda] = React.useState('')
   const debouncedBusqueda = useDebounce(busqueda, 400)
@@ -70,6 +72,11 @@ const PersonasListaView = () => {
       <PersonaDetalleModal 
         idPersona={modalDataId} 
         onClose={() => setModalDataId(null)} 
+      />
+      <PersonasEditarModal
+        idPersona={modalEditarPersonaId}
+        onClose={() => setModalEditarPersonaId(null)}
+        onUpdated={refetch}
       />
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
         <CCardHeader className="bg-white d-flex justify-content-between align-items-center pb-0">
@@ -163,16 +170,27 @@ const PersonasListaView = () => {
                         <CTableDataCell>
                           {persona.email || <span className="text-muted">—</span>}
                         </CTableDataCell>
-                        <CTableDataCell>
-                          <CButton
-                            size="sm"
-                            color="primary"
-                            variant="outline"
-                            onClick={() => setModalDataId(persona.id_persona)}
-                          >
-                            Ver
-                          </CButton>
-                        </CTableDataCell>
+                         <CTableDataCell>
+                           <CButton
+                             size="sm"
+                             color="primary"
+                             variant="outline"
+                             className="me-1"
+                             onClick={() => setModalDataId(persona.id_persona)}
+                           >
+                             Ver
+                           </CButton>
+                           {user?.rol !== 'supervisor' && (
+                             <CButton
+                               size="sm"
+                               color="warning"
+                               variant="outline"
+                               onClick={() => setModalEditarPersonaId(persona.id_persona)}
+                             >
+                               Editar
+                             </CButton>
+                           )}
+                         </CTableDataCell>
                       </CTableRow>
                     ))}
                   </CTableBody>

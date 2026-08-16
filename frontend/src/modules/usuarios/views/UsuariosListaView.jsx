@@ -20,6 +20,8 @@ import useFetch from '../../../hooks/useFetch'
 import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
 import { useAuth } from '../../auth/store/AuthContext'
+import UsuarioDetalleModal from '../components/UsuarioDetalleModal'
+import UsuariosEditarModal from '../components/UsuariosEditarModal'
 import Buscador from '../../../components/Buscador'
 import Paginacion from '../../../components/Paginacion'
 
@@ -41,6 +43,8 @@ const UsuariosListaView = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { data: usuarios, loading, error, refetch } = useFetch('/usuarios')
+  const [modalVerId, setModalVerId] = React.useState(null)
+  const [modalEditarUsuarioId, setModalEditarUsuarioId] = React.useState(null)
   const [paginaActual, setPaginaActual] = React.useState(1)
   const [busqueda, setBusqueda] = React.useState('')
   const debouncedBusqueda = useDebounce(busqueda, 400)
@@ -61,6 +65,15 @@ const UsuariosListaView = () => {
 
   return (
     <CContainer fluid>
+      <UsuarioDetalleModal
+        idUsuario={modalVerId}
+        onClose={() => setModalVerId(null)}
+      />
+      <UsuariosEditarModal
+        idUsuario={modalEditarUsuarioId}
+        onClose={() => setModalEditarUsuarioId(null)}
+        onUpdated={refetch}
+      />
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
         <CCardHeader className="bg-white d-flex justify-content-between align-items-center pb-0">
           <div>
@@ -120,13 +133,14 @@ const UsuariosListaView = () => {
               ) : (
                 <CTable hover responsive striped className="mb-0">
                   <CTableHead>
-                    <CTableRow>
-                      <CTableHeaderCell>#</CTableHeaderCell>
-                      <CTableHeaderCell>Nombre de Usuario</CTableHeaderCell>
-                      <CTableHeaderCell>Email</CTableHeaderCell>
-                      <CTableHeaderCell>Rol</CTableHeaderCell>
-                      <CTableHeaderCell>Estado</CTableHeaderCell>
-                    </CTableRow>
+                     <CTableRow>
+                       <CTableHeaderCell>#</CTableHeaderCell>
+                       <CTableHeaderCell>Nombre de Usuario</CTableHeaderCell>
+                       <CTableHeaderCell>Email</CTableHeaderCell>
+                       <CTableHeaderCell>Rol</CTableHeaderCell>
+                       <CTableHeaderCell>Estado</CTableHeaderCell>
+                       <CTableHeaderCell>Acciones</CTableHeaderCell>
+                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
                     {usuariosPaginados.map((usuario, index) => (
@@ -143,12 +157,31 @@ const UsuariosListaView = () => {
                             {ROLE_LABELS[usuario.rol] || usuario.rol}
                           </CBadge>
                         </CTableDataCell>
-                        <CTableDataCell>
-                          <CBadge color={usuario.estado === 'activo' ? 'success' : 'secondary'}>
-                            {usuario.estado === 'activo' ? 'Activo' : 'Inactivo'}
-                          </CBadge>
-                        </CTableDataCell>
-                      </CTableRow>
+                         <CTableDataCell>
+                           <CBadge color={usuario.estado === 'activo' ? 'success' : 'secondary'}>
+                             {usuario.estado === 'activo' ? 'Activo' : 'Inactivo'}
+                           </CBadge>
+                         </CTableDataCell>
+                         <CTableDataCell>
+                           <CButton
+                             size="sm"
+                             color="primary"
+                             variant="outline"
+                             className="me-1"
+                             onClick={() => setModalVerId(usuario.id_usuario)}
+                           >
+                             Ver
+                           </CButton>
+                           <CButton
+                             size="sm"
+                             color="warning"
+                             variant="outline"
+                             onClick={() => setModalEditarUsuarioId(usuario.id_usuario)}
+                           >
+                             Editar
+                           </CButton>
+                         </CTableDataCell>
+                       </CTableRow>
                     ))}
                   </CTableBody>
                 </CTable>

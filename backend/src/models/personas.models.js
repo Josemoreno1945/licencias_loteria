@@ -40,18 +40,32 @@ export const crear_persona = async (data) => {
 
 //put---------------------------------------------------
 export const actualizar_persona_id = async (id, data) => {
-  const query = `
-      UPDATE personas SET ci_rif = $1, razon_social = $2, tipo_persona = $3, direccion_fiscal = $4, telefono = $5 , email = $6
-      WHERE id_persona = $7 RETURNING *`;
-  const values = [
-    data.ci_rif,
-    data.razon_social,
-    data.tipo_persona,
-    data.direccion_fiscal,
-    data.telefono,
-    data.email,
-    id,
+  const allowed = [
+    "ci_rif",
+    "razon_social",
+    "tipo_persona",
+    "direccion_fiscal",
+    "telefono",
+    "email",
   ];
+  const fields = [];
+  const values = [];
+  let i = 1;
+
+  for (const col of allowed) {
+    if (data[col] !== undefined) {
+      fields.push(`${col} = $${i}`);
+      values.push(data[col]);
+      i++;
+    }
+  }
+
+  if (fields.length === 0) return [];
+
+  const query = `
+      UPDATE personas SET ${fields.join(", ")}
+      WHERE id_persona = $${i} RETURNING *`;
+  values.push(id);
   const result = await pool.query(query, values);
   return result.rows;
 };

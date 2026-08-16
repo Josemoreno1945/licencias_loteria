@@ -97,7 +97,7 @@ export const eliminar_c_usuario = async (req, res, next) => {
   }
 };
 
-//put------------------------------------------------------ARREGLARRRRRRRRRRRRRRRRRRRR
+//put------------------------------------------------------
 export const actualizar_usuario = async (req, res, next) => {
   try {
     const id = req.params.id;
@@ -120,23 +120,25 @@ export const actualizar_usuario = async (req, res, next) => {
     }
     const usuarioActual = usuarioActualArray[0];
 
-    // VERIFICAMOS DUPLICADOS SOLO SI EL CAMPO CAMBIÓ
-    if (data.email !== usuarioActual.email) {
+    // VERIFICAMOS DUPLICADOS SOLO SI EL CAMPO CAMBIÓ Y SE ENVÍA
+    if (data.email && data.email !== usuarioActual.email) {
       const emailExiste = await get_usuario_email(data.email);
       if (emailExiste) throwError(errors.usuario_email_duplicado);
     }
 
-    if (data.nombre_usuario !== usuarioActual.nombre_usuario) {
+    if (data.nombre_usuario && data.nombre_usuario !== usuarioActual.nombre_usuario) {
       const usernameExiste = await get_nombre_de_usuario(data.nombre_usuario);
       if (usernameExiste) throwError(errors.usuario_duplicado);
     }
 
-    // HASHEAMOS LA CONTRASEÑA SI SE ENVÍO UNA NUEVA (o mantenemos la vieja)
-    let hashedPassword = usuarioActual.password_hash;
+    // Construimos los datos a actualizar (actualización parcial)
+    const userData = { ...data };
+    delete userData.password;
+    // HASHEAMOS LA CONTRASEÑA SOLO SI SE ENVÍA UNA NUEVA, SI NO LA DEJAMOS INTACTA
     if (data.password) {
-      hashedPassword = await bcrypt.hash(data.password, 8);
+      userData.password_hash = await bcrypt.hash(data.password, 8);
     }
-    const userData = { ...data, password_hash: hashedPassword };
+
     const rows = await actualizar_usuario_id(id, userData);
     res.json(rows);
   } catch (error) {

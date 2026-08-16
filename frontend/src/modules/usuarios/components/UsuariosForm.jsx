@@ -17,7 +17,7 @@ import {
   cilLockLocked,
 } from '@coreui/icons'
 
-const UsuariosForm = ({ formData, handleInputChange, onSubmit }) => {
+const UsuariosForm = ({ formData, handleInputChange, onSubmit, isEditMode }) => {
   return (
     <CForm onSubmit={onSubmit}>
       <CRow className="mb-4">
@@ -72,7 +72,7 @@ const UsuariosForm = ({ formData, handleInputChange, onSubmit }) => {
               placeholder="Minimo 8 caracteres"
               value={formData.password}
               onChange={handleInputChange}
-              required
+              required={!isEditMode}
             />
           </CInputGroup>
         </CCol>
@@ -121,7 +121,7 @@ const UsuariosForm = ({ formData, handleInputChange, onSubmit }) => {
 
       <div className="d-flex justify-content-end mt-3">
         <CButton type="submit" color="primary" size="lg">
-          Registrar Usuario
+          {isEditMode ? 'Guardar cambios' : 'Registrar Usuario'}
         </CButton>
       </div>
     </CForm>

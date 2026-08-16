@@ -22,8 +22,8 @@ export const crear_usuario_schema = base_usuario_schema.extend({
     .min(6, "La contraseña debe tener al menos 6 caracteres"),
 });
 
-// 3. Esquema para ACTUALIZAR (La contraseña es OPCIONAL)
-export const actualizar_usuario_schema = base_usuario_schema.extend({
+// 3. Esquema para ACTUALIZAR (actualización parcial: nada es obligatorio, la contraseña es OPCIONAL)
+export const actualizar_usuario_schema = base_usuario_schema.partial().extend({
   password: z
     .string()
     .min(6, "Si cambias la contraseña, debe tener al menos 6 caracteres")

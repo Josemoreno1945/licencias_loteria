@@ -3,7 +3,7 @@ import { pool } from "../db.js";
 //get--------------------------------------------------------------------
 export const get_usuarios = async () => {
   const query = `
-  SELECT nombre_usuario , email , rol , estado
+  SELECT id_usuario, nombre_usuario , email , rol , estado
   FROM usuarios`;
   const result = await pool.query(query);
   return result.rows;
@@ -11,7 +11,7 @@ export const get_usuarios = async () => {
 
 export const get_usuarios_id = async (id) => {
   const query = ` 
-  SELECT nombre_usuario , email , rol , estado 
+  SELECT id_usuario, nombre_usuario , email , rol , estado 
   FROM usuarios
   WHERE id_usuario = $1
   `;
@@ -59,17 +59,25 @@ export const eliminar_usuario_id = async (id) => {
 
 //put---------------------------------------------------
 export const actualizar_usuario_id = async (id, data) => {
+  const allowed = ["nombre_usuario", "email", "password_hash", "rol", "estado"];
+  const fields = [];
+  const values = [];
+  let i = 1;
+
+  for (const col of allowed) {
+    if (data[col] !== undefined) {
+      fields.push(`${col} = $${i}`);
+      values.push(data[col]);
+      i++;
+    }
+  }
+
+  if (fields.length === 0) return [];
+
   const query = `
-      UPDATE usuarios SET nombre_usuario = $1, email = $2, password_hash = $3, rol = $4, estado = $5 
-      WHERE id_usuario = $6 RETURNING *`;
-  const values = [
-    data.nombre_usuario,
-    data.email,
-    data.password_hash,
-    data.rol,
-    data.estado,
-    id,
-  ];
+      UPDATE usuarios SET ${fields.join(", ")} 
+      WHERE id_usuario = $${i} RETURNING *`;
+  values.push(id);
   const result = await pool.query(query, values);
   return result.rows;
 };

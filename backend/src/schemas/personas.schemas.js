@@ -29,3 +29,6 @@ export const persona_schema = z.object({
 
   email: z.string().email("Solo email valido"),
 });
+
+// 2. Esquema para ACTUALIZAR (todos los campos opcionales -> actualización parcial)
+export const actualizar_persona_schema = persona_schema.partial();

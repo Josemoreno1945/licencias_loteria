@@ -10,7 +10,7 @@ import {
 import bcrypt from "bcryptjs";
 import { errors, throwError, zodValidationError } from "../utils/errors.js";
 import { uuidRegex } from "../utils/validators.js";
-import { persona_schema } from "../schemas/personas.schemas.js";
+import { persona_schema, actualizar_persona_schema } from "../schemas/personas.schemas.js";
 
 //get----------------------------------------------------------
 export const get_c_personas = async (req, res, next) => {
@@ -100,7 +100,7 @@ export const actualizar_personas = async (req, res, next) => {
     }
 
     const data = req.body;
-    const parseP = persona_schema.safeParse(data); //esquema ARREGLAR -----------------
+    const parseP = actualizar_persona_schema.safeParse(data);
 
     if (!parseP.success) {
       return next(zodValidationError(parseP.error));
@@ -113,13 +113,13 @@ export const actualizar_personas = async (req, res, next) => {
     }
     const personaActual = personaActualArray[0];
 
-    // VERIFICAMOS DUPLICADOS SOLO SI EL CAMPO CAMBIÓ
-    if (data.email !== personaActual.email) {
+    // VERIFICAMOS DUPLICADOS SOLO SI EL CAMPO CAMBIÓ Y SE ENVÍA
+    if (data.email && data.email !== personaActual.email) {
       const emailExiste = await get_persona_email(data.email);
       if (emailExiste) throwError(errors.persona_email_duplicado);
     }
 
-    if (data.ci_rif !== personaActual.ci_rif) {
+    if (data.ci_rif && data.ci_rif !== personaActual.ci_rif) {
       const ci_rifExiste = await get_ci_rif(data.ci_rif);
       if (ci_rifExiste) throwError(errors.persona_cedula_rif_duplicado);
     }
