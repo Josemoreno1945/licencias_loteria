@@ -68,17 +68,17 @@ export const crear_c_documento_emitido = async (req, res, next) => {
       return next(zodValidationError(parseDE.error));
     }
 
-    const numeroExiste = await get_documento_numero(data.numero_documento);
+    const numeroExiste = await get_documento_numero(parseDE.data.numero_documento);
     if (numeroExiste) {
       throwError(errors.documento_numero_duplicado);
     }
 
-    const papelExiste = await get_documento_papel(data.papel_seguridad);
+    const papelExiste = await get_documento_papel(parseDE.data.papel_seguridad);
     if (papelExiste) {
       throwError(errors.documento_papel_duplicado);
     }
 
-    const rows = await crear_documento_emitido(data);
+    const rows = await crear_documento_emitido(parseDE.data);
     return res.json(rows);
   } catch (error) {
     next(error);
@@ -107,7 +107,7 @@ export const actualizar_documento_emitido = async (req, res, next) => {
       throwError(errors.documento_emitido_no_encontrado);
     }
 
-    const rows = await actualizar_documento_emitido_id(id, data);
+    const rows = await actualizar_documento_emitido_id(id, parseDE.data);
     res.json(rows);
   } catch (error) {
     next(error);

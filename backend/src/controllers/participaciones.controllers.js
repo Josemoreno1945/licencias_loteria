@@ -66,7 +66,7 @@ export const crear_c_participacion = async (req, res, next) => {
       return next(zodValidationError(parsePar.error));
     }
 
-    const rows = await crear_participacion(data);
+    const rows = await crear_participacion(parsePar.data);
     return res.json(rows);
   } catch (error) {
     next(error);
@@ -95,7 +95,7 @@ export const actualizar_participacion = async (req, res, next) => {
       throwError(errors.participacion_no_encontrada);
     }
 
-    const rows = await actualizar_participacion_id(id, data);
+    const rows = await actualizar_participacion_id(id, parsePar.data);
     res.json(rows);
   } catch (error) {
     next(error);

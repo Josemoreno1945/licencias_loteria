@@ -66,7 +66,7 @@ export const crear_c_solicitud = async (req, res, next) => {
       return next(zodValidationError(parseS.error));
     }
 
-    const rows = await crear_solicitud(data);
+    const rows = await crear_solicitud(parseS.data);
     return res.json(rows);
   } catch (error) {
     next(error);
@@ -95,7 +95,7 @@ export const actualizar_solicitud = async (req, res, next) => {
       throwError(errors.solicitud_no_encontrada);
     }
 
-    const rows = await actualizar_solicitud_id(id, data);
+    const rows = await actualizar_solicitud_id(id, parseS.data);
     res.json(rows);
   } catch (error) {
     next(error);

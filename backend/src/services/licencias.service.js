@@ -11,8 +11,9 @@ const buildDateString = (value) => {
 };
 
 export const crear_licencia_completa = async (data) => {
-  const client = await pool.connect();
+  let client;
   try {
+    client = await pool.connect();
     await client.query("BEGIN");
     await client.query("SET CONSTRAINTS ALL DEFERRED");
 
@@ -169,9 +170,13 @@ export const crear_licencia_completa = async (data) => {
       pago: pagoId ? { id_pago: pagoId } : null,
     };
   } catch (error) {
-    await client.query("ROLLBACK");
+    if (client) {
+      await client.query("ROLLBACK");
+    }
     throw error;
   } finally {
-    client.release();
+    if (client) {
+      client.release();
+    }
   }
 };

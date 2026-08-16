@@ -19,7 +19,7 @@ const useFetch = (endpoint, { immediate = true } = {}) => {
       setData(result)
     } catch (err) {
       if (err.name !== 'CanceledError') {
-        setError(err.response?.data?.message || 'Error al cargar datos')
+        setError(err.response?.data?.error || 'Error al cargar datos')
       }
     } finally {
       setLoading(false)

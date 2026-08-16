@@ -159,8 +159,8 @@ const BuscadorView = () => {
     }
     if (debouncedNormalized && debouncedNormalized.length >= 1) {
       const filters = {}
-      if (tipoPersona) filters.tipoPersona = tipoPersona
-      if (estadoDocumento) filters.estadoDocumento = estadoDocumento
+      if (tipoPersona) filters.tipo_persona = tipoPersona
+      if (estadoDocumento) filters.estado_documento = estadoDocumento
       if (categoria) filters.categoria = categoria
 
       ejecutarBusqueda(debouncedNormalized, filters, 1)
@@ -174,16 +174,16 @@ const BuscadorView = () => {
     manualSearchRef.current = true
     setQuery(normalized)
     const filters = {}
-    if (tipoPersona) filters.tipoPersona = tipoPersona
-    if (estadoDocumento) filters.estadoDocumento = estadoDocumento
+    if (tipoPersona) filters.tipo_persona = tipoPersona
+    if (estadoDocumento) filters.estado_documento = estadoDocumento
     if (categoria) filters.categoria = categoria
     ejecutarBusqueda(normalized, filters, 1)
   }
 
   const handlePageChange = (newPage) => {
     const filters = {}
-    if (tipoPersona) filters.tipoPersona = tipoPersona
-    if (estadoDocumento) filters.estadoDocumento = estadoDocumento
+    if (tipoPersona) filters.tipo_persona = tipoPersona
+    if (estadoDocumento) filters.estado_documento = estadoDocumento
     if (categoria) filters.categoria = categoria
     ejecutarBusqueda(debouncedNormalized, filters, newPage)
   }
@@ -206,8 +206,8 @@ const BuscadorView = () => {
     const normalized = normalizeCiRif(query)
     if (!normalized) return
     const filters = {}
-    if (tipoPersona) filters.tipoPersona = tipoPersona
-    if (estadoDocumento) filters.estadoDocumento = estadoDocumento
+    if (tipoPersona) filters.tipo_persona = tipoPersona
+    if (estadoDocumento) filters.estado_documento = estadoDocumento
     if (categoria) filters.categoria = categoria
     ejecutarBusqueda(normalized, filters, page)
   }

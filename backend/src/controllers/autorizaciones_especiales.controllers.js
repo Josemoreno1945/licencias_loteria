@@ -66,7 +66,7 @@ export const crear_c_autorizacion_especial = async (req, res, next) => {
       return next(zodValidationError(parseAE.error));
     }
 
-    const rows = await crear_autorizacion_especial(data);
+    const rows = await crear_autorizacion_especial(parseAE.data);
     return res.json(rows);
   } catch (error) {
     next(error);
@@ -95,7 +95,7 @@ export const actualizar_autorizacion_especial = async (req, res, next) => {
       throwError(errors.autorizacion_no_encontrada);
     }
 
-    const rows = await actualizar_autorizacion_especial_id(id, data);
+    const rows = await actualizar_autorizacion_especial_id(id, parseAE.data);
     res.json(rows);
   } catch (error) {
     next(error);
