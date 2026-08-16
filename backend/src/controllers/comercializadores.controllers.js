@@ -126,13 +126,13 @@ export const actualizar_comercializador = async (req, res, next) => {
     }
     const comercializadorActual = comercializadorActualArray[0];
 
-    // VERIFICAMOS DUPLICADOS SOLO SI EL CAMPO CAMBIÓ
-    if (data.email !== comercializadorActual.email) {
+    // VERIFICAMOS DUPLICADOS SOLO SI EL CAMPO CAMBIÓ Y SE ENVÍA
+    if (data.email && data.email !== comercializadorActual.email) {
       const emailExiste = await get_comercializador_email(data.email);
       if (emailExiste) throwError(errors.comercializadora_email_duplicado);
     }
 
-    if (data.rif !== comercializadorActual.rif) {
+    if (data.rif && data.rif !== comercializadorActual.rif) {
       const rifExiste = await get_comercializador_rif(data.rif);
       if (rifExiste) throwError(errors.comercializadora_rif_duplicado);
     }

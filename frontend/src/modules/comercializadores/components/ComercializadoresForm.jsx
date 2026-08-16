@@ -19,7 +19,7 @@ import {
   cilHome,
 } from '@coreui/icons'
 
-const ComercializadoresForm = ({ formData, handleInputChange, onSubmit }) => {
+const ComercializadoresForm = ({ formData, handleInputChange, onSubmit, isEditMode }) => {
   return (
     <CForm onSubmit={onSubmit}>
       <CRow className="mb-4">
@@ -135,7 +135,7 @@ const ComercializadoresForm = ({ formData, handleInputChange, onSubmit }) => {
 
       <div className="d-flex justify-content-end mt-3">
         <CButton type="submit" color="primary" size="lg">
-          Registrar Comercializador
+          {isEditMode ? 'Guardar cambios' : 'Registrar Comercializador'}
         </CButton>
       </div>
     </CForm>

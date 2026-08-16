@@ -32,5 +32,5 @@ const base_comercializador_schema = z.object({
 // 2. Esquema para CREAR
 export const crear_comercializador_schema = base_comercializador_schema;
 
-// 3. Esquema para ACTUALIZAR
-export const actualizar_comercializador_schema = base_comercializador_schema;
+// 3. Esquema para ACTUALIZAR (actualización parcial: nada es obligatorio)
+export const actualizar_comercializador_schema = base_comercializador_schema.partial();

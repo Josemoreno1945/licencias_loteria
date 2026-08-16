@@ -18,5 +18,5 @@ const base_centros_apuesta_schema = z.object({
 // 2. Esquema para CREAR
 export const crear_centros_apuesta_schema = base_centros_apuesta_schema;
 
-// 3. Esquema para ACTUALIZAR
-export const actualizar_centros_apuesta_schema = base_centros_apuesta_schema;
+// 3. Esquema para ACTUALIZAR (actualización parcial: nada es obligatorio)
+export const actualizar_centros_apuesta_schema = base_centros_apuesta_schema.partial();

@@ -20,6 +20,8 @@ import useFetch from '../../../hooks/useFetch'
 import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
 import { useAuth } from '../../auth/store/AuthContext'
+import BancosDetalleModal from '../components/BancosDetalleModal'
+import BancosEditarModal from '../components/BancosEditarModal'
 import Buscador from '../../../components/Buscador'
 import Paginacion from '../../../components/Paginacion'
 
@@ -33,6 +35,8 @@ const BancosListaView = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { data: bancos, loading, error, refetch } = useFetch('/bancos')
+  const [modalVerId, setModalVerId] = React.useState(null)
+  const [modalEditarBancoId, setModalEditarBancoId] = React.useState(null)
   const [paginaActual, setPaginaActual] = React.useState(1)
   const [busqueda, setBusqueda] = React.useState('')
   const debouncedBusqueda = useDebounce(busqueda, 400)
@@ -53,6 +57,15 @@ const BancosListaView = () => {
 
   return (
     <CContainer fluid>
+      <BancosDetalleModal
+        idBanco={modalVerId}
+        onClose={() => setModalVerId(null)}
+      />
+      <BancosEditarModal
+        idBanco={modalEditarBancoId}
+        onClose={() => setModalEditarBancoId(null)}
+        onUpdated={refetch}
+      />
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
         <CCardHeader className="bg-white d-flex justify-content-between align-items-center pb-0">
           <div>
@@ -117,6 +130,7 @@ const BancosListaView = () => {
                       <CTableHeaderCell>Nombre</CTableHeaderCell>
                       <CTableHeaderCell>Codigo BCV</CTableHeaderCell>
                       <CTableHeaderCell>Estado</CTableHeaderCell>
+                      <CTableHeaderCell>Acciones</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
@@ -135,6 +149,25 @@ const BancosListaView = () => {
                           <CBadge color={banco.estado === 'activo' ? 'success' : 'secondary'}>
                             {banco.estado === 'activo' ? 'Activo' : 'Inactivo'}
                           </CBadge>
+                        </CTableDataCell>
+                        <CTableDataCell>
+                          <CButton
+                            size="sm"
+                            color="primary"
+                            variant="outline"
+                            className="me-1"
+                            onClick={() => setModalVerId(banco.id_banco)}
+                          >
+                            Ver
+                          </CButton>
+                          <CButton
+                            size="sm"
+                            color="warning"
+                            variant="outline"
+                            onClick={() => setModalEditarBancoId(banco.id_banco)}
+                          >
+                            Editar
+                          </CButton>
                         </CTableDataCell>
                       </CTableRow>
                     ))}

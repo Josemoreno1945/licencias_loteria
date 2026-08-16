@@ -11,7 +11,7 @@ import {
 
 import { errors, throwError, zodValidationError } from "../utils/errors.js";
 
-import { juegos_schema } from "../schemas/juegos.schemas.js";
+import { juegos_schema, actualizar_juegos_schema } from "../schemas/juegos.schemas.js";
 import { uuidRegex } from "../utils/validators.js";
 
 //get----------------------------------------------------------
@@ -114,7 +114,7 @@ export const actualizar_juegos = async (req, res, next) => {
     }
 
     const data = req.body;
-    const parseJ = juegos_schema.safeParse(data);
+    const parseJ = actualizar_juegos_schema.safeParse(data);
 
     if (!parseJ.success) {
       return next(zodValidationError(parseJ.error));
@@ -127,8 +127,8 @@ export const actualizar_juegos = async (req, res, next) => {
     }
     const juegosActual = juegosActualArray[0];
 
-    // VERIFICAMOS DUPLICADOS SOLO SI EL CAMPO CAMBIÓ
-    if (data.nombre !== juegosActual.nombre) {
+    // VERIFICAMOS DUPLICADOS SOLO SI EL CAMPO CAMBIÓ Y SE ENVÍA
+    if (data.nombre && data.nombre !== juegosActual.nombre) {
       const nombreExiste = await get_juegos_nombre(data.nombre);
       if (nombreExiste) throwError(errors.juegos_nombre_duplicado);
     }

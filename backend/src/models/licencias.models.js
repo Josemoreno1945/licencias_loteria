@@ -52,12 +52,13 @@ export const get_licencias_id = async (id) => {
     rep.razon_social     AS representante_legal,
     l.categoria,
     l.numero_lot,
-    l.id_centro,
-    l.id_representante,
-    u.nombre_usuario    AS emitido_por,
-    de.created_at,
-    de.updated_at,
-    pag.id_pago,
+     l.id_centro,
+     l.id_representante,
+     de.id_solicitud,
+     u.nombre_usuario    AS emitido_por,
+     de.created_at,
+     de.updated_at,
+     pag.id_pago,
     pag.num_referencia  AS pago_numero_referencia,
     pag.fecha_pago      AS pago_fecha_pago,
     pag.monto           AS pago_monto,
@@ -126,19 +127,25 @@ export const crear_licencia = async (data) => {
 
 //put---------------------------------------------------
 export const actualizar_licencia_id = async (id, data) => {
+  const allowed = ["id_persona", "id_comercializador", "id_centro", "id_representante", "categoria", "numero_lot"];
+  const fields = [];
+  const values = [];
+  let i = 1;
+
+  for (const col of allowed) {
+    if (data[col] !== undefined) {
+      fields.push(`${col} = $${i}`);
+      values.push(data[col] ?? null);
+      i++;
+    }
+  }
+
+  if (fields.length === 0) return [];
+
   const query = `
-    UPDATE licencias
-    SET id_persona = $1, id_comercializador = $2, id_centro = $3, id_representante = $4, categoria = $5, numero_lot = $6
-    WHERE id_documento = $7 RETURNING *`;
-  const values = [
-    data.id_persona,
-    data.id_comercializador ?? null,
-    data.id_centro ?? null,
-    data.id_representante ?? null,
-    data.categoria,
-    data.numero_lot ?? null,
-    id,
-  ];
+    UPDATE licencias SET ${fields.join(", ")}
+    WHERE id_documento = $${i} RETURNING *`;
+  values.push(id);
   const result = await pool.query(query, values);
   return result.rows;
 };

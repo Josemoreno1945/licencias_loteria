@@ -10,7 +10,7 @@ import {
 
 import { errors, throwError, zodValidationError } from "../utils/errors.js";
 
-import { bancos_schema } from "../schemas/bancos.schemas.js";
+import { bancos_schema, actualizar_bancos_schema } from "../schemas/bancos.schemas.js";
 import { uuidRegex } from "../utils/validators.js";
 
 //get----------------------------------------------------------
@@ -105,7 +105,7 @@ export const actualizar_banco = async (req, res, next) => {
     }
 
     const data = req.body;
-    const parseB = bancos_schema.safeParse(data);
+    const parseB = actualizar_bancos_schema.safeParse(data);
 
     if (!parseB.success) {
       return next(zodValidationError(parseB.error));
@@ -118,8 +118,8 @@ export const actualizar_banco = async (req, res, next) => {
     }
     const bancoActual = bancoActualArray[0];
 
-    // VERIFICAMOS DUPLICADOS SOLO SI EL CAMPO CAMBIÓ
-    if (data.nombre !== bancoActual.nombre) {
+    // VERIFICAMOS DUPLICADOS SOLO SI EL CAMPO CAMBIÓ Y SE ENVÍA
+    if (data.nombre && data.nombre !== bancoActual.nombre) {
       const nombreExiste = await get_banco_nombre(data.nombre);
       if (nombreExiste) throwError(errors.bancos_nombre_duplicado);
     }

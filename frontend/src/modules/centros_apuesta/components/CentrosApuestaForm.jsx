@@ -18,6 +18,7 @@ const CentrosApuestaForm = ({
   formData,
   handleInputChange,
   onSubmit,
+  isEditMode,
   comercializadores,
   personas,
   loadingDeps,
@@ -132,7 +133,7 @@ const CentrosApuestaForm = ({
 
           <div className="d-flex justify-content-end mt-3">
             <CButton type="submit" color="primary" size="lg">
-              Registrar Centro de Apuesta
+              {isEditMode ? 'Guardar cambios' : 'Registrar Centro de Apuesta'}
             </CButton>
           </div>
         </>

@@ -18,7 +18,7 @@ import {
 } from '@coreui/icons';
 import axiosInstance from '../../../api/axiosInstance';
 
-const JuegosForm = ({ formData, handleInputChange, onSubmit }) => {
+const JuegosForm = ({ formData, handleInputChange, onSubmit, isEditMode }) => {
   const [operadoras, setOperadoras] = useState([]);
   const [loadingOps, setLoadingOps] = useState(false);
 
@@ -86,7 +86,7 @@ const JuegosForm = ({ formData, handleInputChange, onSubmit }) => {
 
       <div className="d-flex justify-content-end mt-3">
         <CButton type="submit" color="primary" size="lg">
-          Registrar Juego
+          {isEditMode ? 'Guardar cambios' : 'Registrar Juego'}
         </CButton>
       </div>
     </CForm>

@@ -28,6 +28,8 @@ import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
 import axiosInstance from '../../../api/axiosInstance'
 import { useAuth } from '../../auth/store/AuthContext'
+import CentrosApuestaDetalleModal from '../components/CentrosApuestaDetalleModal'
+import CentrosApuestaEditarModal from '../components/CentrosApuestaEditarModal'
 import Buscador from '../../../components/Buscador'
 import Paginacion from '../../../components/Paginacion'
 
@@ -42,6 +44,8 @@ const CentrosApuestaListaView = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { data: centros, loading, error, refetch } = useFetch('/centros_apuesta')
+  const [modalVerId, setModalVerId] = React.useState(null)
+  const [modalEditarCentroId, setModalEditarCentroId] = React.useState(null)
   const [paginaActual, setPaginaActual] = React.useState(1)
   const [busqueda, setBusqueda] = React.useState('')
   const debouncedBusqueda = useDebounce(busqueda, 400)
@@ -83,6 +87,15 @@ const CentrosApuestaListaView = () => {
 
   return (
     <CContainer fluid>
+      <CentrosApuestaDetalleModal
+        idCentro={modalVerId}
+        onClose={() => setModalVerId(null)}
+      />
+      <CentrosApuestaEditarModal
+        idCentro={modalEditarCentroId}
+        onClose={() => setModalEditarCentroId(null)}
+        onUpdated={refetch}
+      />
       {/* Modal de Permisos de Juegos */}
       <CModal
         size="lg"
@@ -216,6 +229,7 @@ const CentrosApuestaListaView = () => {
                       <CTableHeaderCell>Dirección</CTableHeaderCell>
                       <CTableHeaderCell>Estado</CTableHeaderCell>
                       <CTableHeaderCell className="text-center">Juegos</CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">Acciones</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
@@ -251,17 +265,38 @@ const CentrosApuestaListaView = () => {
                             {centro.estado === 'activo' ? 'Activo' : 'Inactivo'}
                           </CBadge>
                         </CTableDataCell>
-                        <CTableDataCell className="text-center">
-                          <CButton
-                            color="success"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleVerPermisos(centro)}
-                          >
-                            <CIcon icon={cilGamepad} className="me-1" />
-                            Juegos
-                          </CButton>
-                        </CTableDataCell>
+                          <CTableDataCell className="text-center">
+                            <CButton
+                              color="success"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleVerPermisos(centro)}
+                            >
+                              <CIcon icon={cilGamepad} className="me-1" />
+                              Juegos
+                            </CButton>
+                          </CTableDataCell>
+                          <CTableDataCell className="text-center">
+                            <CButton
+                              size="sm"
+                              color="primary"
+                              variant="outline"
+                              className="me-1"
+                              onClick={() => setModalVerId(centro.id_centro)}
+                            >
+                              Ver
+                            </CButton>
+                            {user?.rol !== 'supervisor' && (
+                              <CButton
+                                size="sm"
+                                color="warning"
+                                variant="outline"
+                                onClick={() => setModalEditarCentroId(centro.id_centro)}
+                              >
+                                Editar
+                              </CButton>
+                            )}
+                          </CTableDataCell>
                       </CTableRow>
                     ))}
                   </CTableBody>

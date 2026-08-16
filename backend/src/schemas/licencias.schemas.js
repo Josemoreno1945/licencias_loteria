@@ -147,4 +147,4 @@ export const actualizar_licencia_schema = simple_licencia_schema.omit({
 }).extend({
   id_centro: optionalUuidField,
   id_representante: optionalUuidField,
-});
+}).partial();

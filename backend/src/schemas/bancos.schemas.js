@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // 1. Esquema base con lo que comparten POST y PUT
-export const bancos_schema = z.object({
+const bancos_schema = z.object({
   nombre: z
     .string({ required_error: "El nombre es requerido" })
     .min(1, "El nombre no puede estar vacio")
@@ -14,3 +14,8 @@ export const bancos_schema = z.object({
 
   estado: z.enum(["activo", "inactivo"]).default("activo"),
 });
+
+export { bancos_schema };
+
+// 2. Esquema para ACTUALIZAR (actualización parcial: nada es obligatorio)
+export const actualizar_bancos_schema = bancos_schema.partial();

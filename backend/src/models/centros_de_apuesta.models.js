@@ -13,7 +13,7 @@ export const get_centros_apuesta = async () => {
 
 export const get_centros_apuesta_id = async (id) => {
   const query = ` 
-  SELECT ca.id_centro, ca.id_comercializador, c.razon_social AS comercializador_razon_social, p.ci_rif AS persona_ci_rif, p.razon_social AS persona_razon_social, ca.nombre_agencia, ca.direccion, ca.estado
+  SELECT ca.id_centro, ca.id_comercializador, ca.id_persona, c.razon_social AS comercializador_razon_social, p.ci_rif AS persona_ci_rif, p.razon_social AS persona_razon_social, ca.nombre_agencia, ca.direccion, ca.estado
   FROM centros_apuesta AS ca
   JOIN comercializadores AS c ON ca.id_comercializador = c.id_comercializadores
   JOIN personas AS p ON ca.id_persona = p.id_persona
@@ -67,15 +67,25 @@ export const eliminar_centros_apuesta_id = async (id) => {
 
 //put---------------------------------------------------
 export const actualizar_centros_apuesta_id = async (id, data) => {
+  const allowed = ["nombre_agencia", "direccion", "estado"];
+  const fields = [];
+  const values = [];
+  let i = 1;
+
+  for (const col of allowed) {
+    if (data[col] !== undefined) {
+      fields.push(`${col} = $${i}`);
+      values.push(data[col]);
+      i++;
+    }
+  }
+
+  if (fields.length === 0) return [];
+
   const query = `
-      UPDATE centros_apuesta SET nombre_agencia = $1, direccion = $2, estado = $3
-      WHERE id_centro = $4 RETURNING *`;
-  const values = [
-    data.nombre_agencia,
-    data.direccion,
-    data.estado,
-    id,
-  ];
+    UPDATE centros_apuesta SET ${fields.join(", ")}
+    WHERE id_centro = $${i} RETURNING *`;
+  values.push(id);
   const result = await pool.query(query, values);
   return result.rows;
 };

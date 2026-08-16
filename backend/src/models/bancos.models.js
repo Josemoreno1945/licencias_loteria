@@ -53,10 +53,25 @@ export const eliminar_banco_id = async (id) => {
 
 //put---------------------------------------------------
 export const actualizar_banco_id = async (id, data) => {
+  const allowed = ["nombre", "codigo", "estado"];
+  const fields = [];
+  const values = [];
+  let i = 1;
+
+  for (const col of allowed) {
+    if (data[col] !== undefined) {
+      fields.push(`${col} = $${i}`);
+      values.push(data[col]);
+      i++;
+    }
+  }
+
+  if (fields.length === 0) return [];
+
   const query = `
-      UPDATE bancos SET nombre = $1, codigo = $2, estado = $3 
-      WHERE id_banco = $4 RETURNING *`;
-  const values = [data.nombre, data.codigo, data.estado, id];
+    UPDATE bancos SET ${fields.join(", ")}
+    WHERE id_banco = $${i} RETURNING *`;
+  values.push(id);
   const result = await pool.query(query, values);
   return result.rows;
 };

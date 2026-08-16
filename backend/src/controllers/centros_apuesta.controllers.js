@@ -118,6 +118,13 @@ export const actualizar_c_centros_apuesta = async (req, res, next) => {
     if (!centroActualArray || centroActualArray.length === 0) {
       throwError(errors.centros_apuesta_no_encontrada);
     }
+    const centroActual = centroActualArray[0];
+
+    // VERIFICAMOS DUPLICADOS SOLO SI EL CAMPO CAMBIÓ Y SE ENVÍA
+    if (data.nombre_agencia && data.nombre_agencia !== centroActual.nombre_agencia) {
+      const nombreExiste = await get_centros_apuesta_nombre(data.nombre_agencia);
+      if (nombreExiste) throwError(errors.centros_apuesta_nombre_duplicado);
+    }
 
     const rows = await actualizar_centros_apuesta_id(id, data);
     res.json(rows);

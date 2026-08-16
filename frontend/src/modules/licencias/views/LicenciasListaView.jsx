@@ -20,7 +20,9 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
 import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
+import { useAuth } from '../../auth/store/AuthContext'
 import LicenciaDetalleModal from '../components/LicenciaDetalleModal'
+import LicenciasEditarModal from '../components/LicenciasEditarModal'
 import Buscador from '../../../components/Buscador'
 import Paginacion from '../../../components/Paginacion'
 
@@ -36,10 +38,12 @@ const LICENCIAS_SEARCH_FIELDS = [
 
 const LicenciasListaView = () => {
   const navigate = useNavigate()
-  const { data: licencias, loading, error } = useFetch('/licencias')
+  const { user } = useAuth()
+  const { data: licencias, loading, error, refetch } = useFetch('/licencias')
 
   const location = useLocation()
   const [modalDataId, setModalDataId] = React.useState(null)
+  const [modalEditarId, setModalEditarId] = React.useState(null)
   const [paginaActual, setPaginaActual] = React.useState(1)
   const [busqueda, setBusqueda] = React.useState('')
   const debouncedBusqueda = useDebounce(busqueda, 400)
@@ -70,6 +74,11 @@ const LicenciasListaView = () => {
       <LicenciaDetalleModal 
         idLicencia={modalDataId} 
         onClose={() => setModalDataId(null)} 
+      />
+      <LicenciasEditarModal
+        idLicencia={modalEditarId}
+        onClose={() => setModalEditarId(null)}
+        onUpdated={refetch}
       />
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
         <CCardHeader className="bg-white d-flex justify-content-between align-items-center">
@@ -114,7 +123,7 @@ const LicenciasListaView = () => {
                   <CTableHeaderCell>Estado</CTableHeaderCell>
                   <CTableHeaderCell>Expedición</CTableHeaderCell>
                   <CTableHeaderCell>Vencimiento</CTableHeaderCell>
-                  <CTableHeaderCell>Acciones</CTableHeaderCell>
+                    <CTableHeaderCell>Acciones</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
               <CTableBody>
@@ -132,10 +141,21 @@ const LicenciasListaView = () => {
                         size="sm"
                         color="primary"
                         variant="outline"
+                        className="me-1"
                         onClick={() => setModalDataId(licencia.id_documento)}
                       >
                         Ver
                       </CButton>
+                      {user?.rol !== 'supervisor' && (
+                        <CButton
+                          size="sm"
+                          color="warning"
+                          variant="outline"
+                          onClick={() => setModalEditarId(licencia.id_documento)}
+                        >
+                          Editar
+                        </CButton>
+                      )}
                     </CTableDataCell>
                   </CTableRow>
                 ))}

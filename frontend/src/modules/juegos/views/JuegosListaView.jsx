@@ -20,6 +20,8 @@ import useFetch from '../../../hooks/useFetch';
 import useDebounce from '../../../hooks/useDebounce';
 import { filterBySearch } from '../../../utils/helpers';
 import { useAuth } from '../../auth/store/AuthContext';
+import JuegosDetalleModal from '../components/JuegosDetalleModal';
+import JuegosEditarModal from '../components/JuegosEditarModal';
 import Buscador from '../../../components/Buscador';
 import Paginacion from '../../../components/Paginacion';
 
@@ -33,6 +35,8 @@ const JuegosListaView = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: juegos, loading, error, refetch } = useFetch('/juegos');
+  const [modalVerId, setModalVerId] = React.useState(null);
+  const [modalEditarJuegoId, setModalEditarJuegoId] = React.useState(null);
   const [paginaActual, setPaginaActual] = React.useState(1);
   const [busqueda, setBusqueda] = React.useState('');
   const debouncedBusqueda = useDebounce(busqueda, 400);
@@ -53,6 +57,15 @@ const JuegosListaView = () => {
 
   return (
     <CContainer fluid>
+      <JuegosDetalleModal
+        idJuego={modalVerId}
+        onClose={() => setModalVerId(null)}
+      />
+      <JuegosEditarModal
+        idJuego={modalEditarJuegoId}
+        onClose={() => setModalEditarJuegoId(null)}
+        onUpdated={refetch}
+      />
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
         <CCardHeader className="bg-white d-flex justify-content-between align-items-center pb-0">
           <div>
@@ -115,6 +128,7 @@ const JuegosListaView = () => {
                         <CTableHeaderCell>Nombre del Juego</CTableHeaderCell>
                         <CTableHeaderCell>Operadora (Propietaria)</CTableHeaderCell>
                         <CTableHeaderCell>Estado</CTableHeaderCell>
+                        <CTableHeaderCell>Acciones</CTableHeaderCell>
                       </CTableRow>
                     </CTableHead>
                     <CTableBody>
@@ -129,11 +143,32 @@ const JuegosListaView = () => {
                           <CTableDataCell>
                             {juego.operadora_razon_social || juego.id_operadora}
                           </CTableDataCell>
-                          <CTableDataCell>
-                            <CBadge color={juego.estado === 'activo' ? 'success' : 'secondary'}>
-                              {juego.estado === 'activo' ? 'Activo' : 'Inactivo'}
-                            </CBadge>
-                          </CTableDataCell>
+                           <CTableDataCell>
+                             <CBadge color={juego.estado === 'activo' ? 'success' : 'secondary'}>
+                               {juego.estado === 'activo' ? 'Activo' : 'Inactivo'}
+                             </CBadge>
+                           </CTableDataCell>
+                           <CTableDataCell>
+                             <CButton
+                               size="sm"
+                               color="primary"
+                               variant="outline"
+                               className="me-1"
+                               onClick={() => setModalVerId(juego.id_juego)}
+                             >
+                               Ver
+                             </CButton>
+                             {user?.rol !== 'supervisor' && (
+                               <CButton
+                                 size="sm"
+                                 color="warning"
+                                 variant="outline"
+                                 onClick={() => setModalEditarJuegoId(juego.id_juego)}
+                               >
+                                 Editar
+                               </CButton>
+                             )}
+                           </CTableDataCell>
                         </CTableRow>
                       ))}
                     </CTableBody>

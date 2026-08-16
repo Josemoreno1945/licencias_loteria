@@ -13,7 +13,7 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilBank, cilCode } from '@coreui/icons'
 
-const BancosForm = ({ formData, handleInputChange, onSubmit }) => {
+const BancosForm = ({ formData, handleInputChange, onSubmit, isEditMode }) => {
   return (
     <CForm onSubmit={onSubmit}>
       <CRow className="mb-4">
@@ -77,7 +77,7 @@ const BancosForm = ({ formData, handleInputChange, onSubmit }) => {
 
       <div className="d-flex justify-content-end mt-3">
         <CButton type="submit" color="primary" size="lg">
-          Registrar Banco
+          {isEditMode ? 'Guardar cambios' : 'Registrar Banco'}
         </CButton>
       </div>
     </CForm>

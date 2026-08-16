@@ -55,12 +55,25 @@ export const eliminar_juegos_id = async (id) => {
 
 //put---------------------------------------------------
 export const actualizar_juegos_id = async (id, data) => {
+  const allowed = ["id_operadora", "nombre", "estado"];
+  const fields = [];
+  const values = [];
+  let i = 1;
+
+  for (const col of allowed) {
+    if (data[col] !== undefined) {
+      fields.push(`${col} = $${i}`);
+      values.push(data[col]);
+      i++;
+    }
+  }
+
+  if (fields.length === 0) return [];
+
   const query = `
-      UPDATE juegos
-      SET id_operadora = $1, nombre = $2, estado = $3
-      WHERE id_juego = $4
-      RETURNING *`;
-  const values = [data.id_operadora, data.nombre, data.estado, id];
+    UPDATE juegos SET ${fields.join(", ")}
+    WHERE id_juego = $${i} RETURNING *`;
+  values.push(id);
   const result = await pool.query(query, values);
   return result.rows;
 };

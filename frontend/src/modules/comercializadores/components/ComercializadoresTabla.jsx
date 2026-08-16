@@ -38,6 +38,7 @@ const ComercializadoresTabla = ({
   onNavegarRegistro,
   onVerRepresentantes,
   onVerPermisos,
+  onEditar,
   paginaActual,
   totalPaginas,
   onPageChange,
@@ -121,7 +122,7 @@ const ComercializadoresTabla = ({
                       <CTableHeaderCell>Teléfono</CTableHeaderCell>
                       <CTableHeaderCell>Email</CTableHeaderCell>
                       <CTableHeaderCell>Estado</CTableHeaderCell>
-                      <CTableHeaderCell className="text-center">Representantes</CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">Acciones</CTableHeaderCell>
                       <CTableHeaderCell className="text-center">Juegos</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
@@ -147,11 +148,22 @@ const ComercializadoresTabla = ({
                             color="info"
                             variant="outline"
                             size="sm"
+                            className="me-1"
                             onClick={() => onVerRepresentantes(com)}
                           >
                             <CIcon icon={cilPeople} className="me-1" />
                             Ver
                           </CButton>
+                          {user?.rol !== 'supervisor' && (
+                            <CButton
+                              color="warning"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onEditar(com.id_comercializadores)}
+                            >
+                              Editar
+                            </CButton>
+                          )}
                         </CTableDataCell>
                         <CTableDataCell className="text-center">
                           <CButton

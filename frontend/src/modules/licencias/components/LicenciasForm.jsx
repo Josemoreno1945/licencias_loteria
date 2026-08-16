@@ -37,6 +37,7 @@ const LicenciasForm = ({
   bancos,
   centrosApuesta,
   representantes,
+  isEditMode,
 }) => {
   return (
     <CForm onSubmit={onSubmit}>
@@ -58,7 +59,7 @@ const LicenciasForm = ({
               value={formData.id_solicitud}
               onChange={handleInputChange}
               required
-              disabled={loadingDeps}
+              disabled={loadingDeps || isEditMode}
             >
               <option value="">Seleccione una solicitud...</option>
               {solicitudes.map((solicitud) => (
@@ -76,12 +77,12 @@ const LicenciasForm = ({
             <CInputGroupText>
               <CIcon icon={cilGamepad} />
             </CInputGroupText>
-           <CFormSelect
-              name="juegos"
-              value={formData.juegos || []}
-              onChange={handleInputChange}
-              multiple
-              disabled={loadingDeps || juegos.length === 0}
+            <CFormSelect
+               name="juegos"
+               value={formData.juegos || []}
+               onChange={handleInputChange}
+               multiple
+               disabled={loadingDeps || juegos.length === 0 || isEditMode}
             >
               {juegos.map((juego) => (
                 <option key={juego.id_juego} value={juego.id_juego}>
@@ -338,7 +339,7 @@ const LicenciasForm = ({
 
       <div className="d-flex justify-content-end mt-4">
         <CButton type="submit" color="primary" disabled={loadingDeps} size="lg">
-          <CIcon icon={cilPlus} className="me-2" /> Emitir Licencia
+          <CIcon icon={cilPlus} className="me-2" /> {isEditMode ? 'Actualizar Licencia' : 'Emitir Licencia'}
         </CButton>
       </div>
     </CForm>
