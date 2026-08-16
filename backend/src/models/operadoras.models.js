@@ -58,16 +58,25 @@ export const eliminar_operadora_id = async (id) => {
 
 //put---------------------------------------------------
 export const actualizar_operadora_id = async (id, data) => {
+  const allowed = ["rif", "razon_social", "direccion_fiscal", "estado"];
+  const fields = [];
+  const values = [];
+  let i = 1;
+
+  for (const col of allowed) {
+    if (data[col] !== undefined) {
+      fields.push(`${col} = $${i}`);
+      values.push(data[col]);
+      i++;
+    }
+  }
+
+  if (fields.length === 0) return [];
+
   const query = `
-      UPDATE operadoras SET rif = $1, razon_social = $2, direccion_fiscal = $3, estado = $4
-      WHERE id_operadora = $5 RETURNING *`;
-  const values = [
-    data.rif,
-    data.razon_social,
-    data.direccion_fiscal,
-    data.estado,
-    id,
-  ];
+    UPDATE operadoras SET ${fields.join(", ")}
+    WHERE id_operadora = $${i} RETURNING *`;
+  values.push(id);
   const result = await pool.query(query, values);
   return result.rows;
 };

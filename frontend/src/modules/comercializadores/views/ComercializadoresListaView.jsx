@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
 import ComercializadoresTabla from '../components/ComercializadoresTabla'
 import ComercializadoresEditarModal from '../components/ComercializadoresEditarModal'
+import ComercializadoresDetalleModal from '../components/ComercializadoresDetalleModal'
 import RepresentantesModal from '../components/RepresentantesModal'
 import PermisosModal from '../components/PermisosModal'
 
@@ -22,6 +23,7 @@ const ComercializadoresListaView = () => {
 
   const [repModal, setRepModal] = useState({ visible: false, comercializador: null })
   const [permisosModal, setPermisosModal] = useState({ visible: false, comercializador: null })
+  const [modalVerDetalleId, setModalVerDetalleId] = useState(null)
   const [modalEditarComercializadorId, setModalEditarComercializadorId] = useState(null)
 
   const [paginaActual, setPaginaActual] = useState(1)
@@ -49,7 +51,11 @@ const ComercializadoresListaView = () => {
   }
 
   return (
-    <CContainer fluid>
+     <CContainer fluid>
+      <ComercializadoresDetalleModal
+        idComercializador={modalVerDetalleId}
+        onClose={() => setModalVerDetalleId(null)}
+      />
       <ComercializadoresEditarModal
         idComercializador={modalEditarComercializadorId}
         onClose={() => setModalEditarComercializadorId(null)}
@@ -63,8 +69,9 @@ const ComercializadoresListaView = () => {
           refetch={refetch}
           user={user}
           onNavegarRegistro={() => navigate('/comercializadores/registro')}
-          onVerRepresentantes={handleVerRepresentantes}
+           onVerRepresentantes={handleVerRepresentantes}
            onVerPermisos={handleVerPermisos}
+           onVerDetalle={(c) => setModalVerDetalleId(c.id_comercializadores)}
            onEditar={handleEditar}
            paginaActual={paginaActual}
           totalPaginas={totalPaginas}

@@ -23,5 +23,5 @@ const base_operadora_schema = z.object({
 // 2. Esquema para CREAR
 export const crear_operadora_schema = base_operadora_schema;
 
-// 3. Esquema para ACTUALIZAR
-export const actualizar_operadora_schema = base_operadora_schema;
+// 3. Esquema para ACTUALIZAR (actualización parcial: nada es obligatorio)
+export const actualizar_operadora_schema = base_operadora_schema.partial();

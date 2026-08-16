@@ -120,8 +120,8 @@ export const actualizar_operadora = async (req, res, next) => {
     }
     const operadoraActual = operadoraActualArray[0];
 
-    // VERIFICAMOS DUPLICADOS SOLO SI EL CAMPO CAMBIÓ
-    if (data.rif !== operadoraActual.rif) {
+    // VERIFICAMOS DUPLICADOS SOLO SI EL CAMPO CAMBIÓ Y SE ENVÍA
+    if (data.rif && data.rif !== operadoraActual.rif) {
       const rifExiste = await get_operadora_rif(data.rif);
       if (rifExiste) throwError(errors.operadora_rif_duplicado);
     }

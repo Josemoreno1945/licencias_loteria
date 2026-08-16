@@ -13,7 +13,7 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilAddressBook, cilBuilding, cilHome } from '@coreui/icons'
 
-const OperadorasForm = ({ formData, handleInputChange, onSubmit }) => {
+const OperadorasForm = ({ formData, handleInputChange, onSubmit, isEditMode }) => {
   return (
     <CForm onSubmit={onSubmit}>
       <CRow className="mb-4">
@@ -93,7 +93,7 @@ const OperadorasForm = ({ formData, handleInputChange, onSubmit }) => {
 
       <div className="d-flex justify-content-end mt-3">
         <CButton type="submit" color="primary" size="lg">
-          Registrar Operadora
+          {isEditMode ? 'Guardar cambios' : 'Registrar Operadora'}
         </CButton>
       </div>
     </CForm>

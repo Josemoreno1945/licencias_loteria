@@ -15,7 +15,7 @@ import {
   CButton,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilPeople, cilGamepad, cilPlus } from '@coreui/icons'
+import { cilPeople, cilGamepad, cilPlus, cilMagnifyingGlass } from '@coreui/icons'
 import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
 import Buscador from '../../../components/Buscador'
@@ -39,6 +39,7 @@ const ComercializadoresTabla = ({
   onVerRepresentantes,
   onVerPermisos,
   onEditar,
+  onVerDetalle,
   paginaActual,
   totalPaginas,
   onPageChange,
@@ -144,6 +145,16 @@ const ComercializadoresTabla = ({
                           </CBadge>
                         </CTableDataCell>
                         <CTableDataCell className="text-center">
+                          <CButton
+                            color="info"
+                            variant="outline"
+                            size="sm"
+                            className="me-1"
+                            onClick={() => onVerDetalle(com)}
+                          >
+                            <CIcon icon={cilMagnifyingGlass} className="me-1" />
+                            Detalle
+                          </CButton>
                           <CButton
                             color="info"
                             variant="outline"

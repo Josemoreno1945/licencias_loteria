@@ -20,6 +20,8 @@ import useFetch from '../../../hooks/useFetch'
 import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
 import { useAuth } from '../../auth/store/AuthContext'
+import OperadorasDetalleModal from '../components/OperadorasDetalleModal'
+import OperadorasEditarModal from '../components/OperadorasEditarModal'
 import Buscador from '../../../components/Buscador'
 import Paginacion from '../../../components/Paginacion'
 
@@ -35,6 +37,8 @@ const OperadorasListaView = () => {
   const { user } = useAuth()
   const { data: operadoras, loading, error, refetch } = useFetch('/operadoras')
 
+  const [modalVerId, setModalVerId] = React.useState(null)
+  const [modalEditarOperadoraId, setModalEditarOperadoraId] = React.useState(null)
   const [paginaActual, setPaginaActual] = React.useState(1)
   const [busqueda, setBusqueda] = React.useState('')
   const debouncedBusqueda = useDebounce(busqueda, 400)
@@ -55,6 +59,15 @@ const OperadorasListaView = () => {
 
   return (
     <CContainer fluid>
+      <OperadorasDetalleModal
+        idOperadora={modalVerId}
+        onClose={() => setModalVerId(null)}
+      />
+      <OperadorasEditarModal
+        idOperadora={modalEditarOperadoraId}
+        onClose={() => setModalEditarOperadoraId(null)}
+        onUpdated={refetch}
+      />
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
         <CCardHeader className="bg-white d-flex justify-content-between align-items-center pb-0">
           <div>
@@ -120,6 +133,7 @@ const OperadorasListaView = () => {
                       <CTableHeaderCell>Razón Social</CTableHeaderCell>
                       <CTableHeaderCell>Dirección Fiscal</CTableHeaderCell>
                       <CTableHeaderCell>Estado</CTableHeaderCell>
+                      <CTableHeaderCell>Acciones</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
@@ -135,12 +149,33 @@ const OperadorasListaView = () => {
                         <CTableDataCell>
                           {operadora.direccion_fiscal || <span className="text-muted">—</span>}
                         </CTableDataCell>
-                        <CTableDataCell>
-                          <CBadge color={operadora.estado === 'activo' ? 'success' : 'secondary'}>
-                            {operadora.estado === 'activo' ? 'Activo' : 'Inactivo'}
-                          </CBadge>
-                        </CTableDataCell>
-                      </CTableRow>
+                         <CTableDataCell>
+                           <CBadge color={operadora.estado === 'activo' ? 'success' : 'secondary'}>
+                             {operadora.estado === 'activo' ? 'Activo' : 'Inactivo'}
+                           </CBadge>
+                         </CTableDataCell>
+                         <CTableDataCell className="text-center">
+                           <CButton
+                             size="sm"
+                             color="primary"
+                             variant="outline"
+                             className="me-1"
+                             onClick={() => setModalVerId(operadora.id_operadora)}
+                           >
+                             Ver
+                           </CButton>
+                           {user?.rol !== 'supervisor' && (
+                             <CButton
+                               size="sm"
+                               color="warning"
+                               variant="outline"
+                               onClick={() => setModalEditarOperadoraId(operadora.id_operadora)}
+                             >
+                               Editar
+                             </CButton>
+                           )}
+                         </CTableDataCell>
+                       </CTableRow>
                     ))}
                   </CTableBody>
                 </CTable>
