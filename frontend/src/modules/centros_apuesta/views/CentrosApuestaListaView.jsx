@@ -21,7 +21,7 @@ import {
   CModalFooter,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilGamepad } from '@coreui/icons'
+import { cilGamepad, cilMagnifyingGlass, cilPencil } from '@coreui/icons'
 import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
 import useDebounce from '../../../hooks/useDebounce'
@@ -212,7 +212,7 @@ const CentrosApuestaListaView = () => {
           {/* Tabla */}
           {!loading && !error && (
             <>
-              {centrosFiltrados.length === 0 ? (
+              {centrosFiltrados?.length === 0 ? (
                 <CAlert color="info">
                   {centros?.length === 0
                     ? 'No hay centros de apuesta registrados aun.'
@@ -227,10 +227,11 @@ const CentrosApuestaListaView = () => {
                       <CTableHeaderCell>Comercializador</CTableHeaderCell>
                       <CTableHeaderCell>Encargado</CTableHeaderCell>
                       <CTableHeaderCell>Dirección</CTableHeaderCell>
-                      <CTableHeaderCell>Estado</CTableHeaderCell>
-                      <CTableHeaderCell className="text-center">Juegos</CTableHeaderCell>
-                      <CTableHeaderCell className="text-center">Acciones</CTableHeaderCell>
-                    </CTableRow>
+                       <CTableHeaderCell>Estado</CTableHeaderCell>
+                       <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
+                       <CTableHeaderCell className="text-center">Editar</CTableHeaderCell>
+                       
+                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
                     {centrosPaginados.map((centro, index) => (
@@ -264,28 +265,18 @@ const CentrosApuestaListaView = () => {
                           <CBadge color={centro.estado === 'activo' ? 'success' : 'secondary'}>
                             {centro.estado === 'activo' ? 'Activo' : 'Inactivo'}
                           </CBadge>
-                        </CTableDataCell>
-                          <CTableDataCell className="text-center">
-                            <CButton
-                              color="success"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleVerPermisos(centro)}
-                            >
-                              <CIcon icon={cilGamepad} className="me-1" />
-                              Juegos
-                            </CButton>
                           </CTableDataCell>
                           <CTableDataCell className="text-center">
                             <CButton
                               size="sm"
                               color="primary"
                               variant="outline"
-                              className="me-1"
                               onClick={() => setModalVerId(centro.id_centro)}
                             >
-                              Ver
+                              <CIcon icon={cilMagnifyingGlass} />
                             </CButton>
+                          </CTableDataCell>
+                          <CTableDataCell className="text-center">
                             {user?.rol !== 'supervisor' && (
                               <CButton
                                 size="sm"
@@ -293,10 +284,11 @@ const CentrosApuestaListaView = () => {
                                 variant="outline"
                                 onClick={() => setModalEditarCentroId(centro.id_centro)}
                               >
-                                Editar
+                                <CIcon icon={cilPencil} />
                               </CButton>
                             )}
                           </CTableDataCell>
+                          
                       </CTableRow>
                     ))}
                   </CTableBody>

@@ -15,7 +15,7 @@ import {
   CButton,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilPeople, cilGamepad, cilPlus, cilMagnifyingGlass } from '@coreui/icons'
+import { cilPeople, cilPlus, cilMagnifyingGlass,cilPencil ,cilGamepad} from '@coreui/icons'
 import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
 import Buscador from '../../../components/Buscador'
@@ -36,9 +36,8 @@ const ComercializadoresTabla = ({
   refetch,
   user,
   onNavegarRegistro,
-  onVerRepresentantes,
-  onVerPermisos,
-  onEditar,
+   onVerRepresentantes,
+   onEditar,
   onVerDetalle,
   paginaActual,
   totalPaginas,
@@ -77,7 +76,7 @@ const ComercializadoresTabla = ({
             size="sm"
             onClick={onNavegarRegistro}
           >
-            <CIcon icon={cilPlus} className="me-1" /> + Nuevo Comercializador
+            <CIcon icon={cilPlus} className="me-1" />Nuevo Comercializador
           </CButton>
         )}
       </CCardHeader>
@@ -115,18 +114,19 @@ const ComercializadoresTabla = ({
             ) : (
               <>
                 <CTable hover responsive striped align="middle" className="mb-0">
-                  <CTableHead>
-                    <CTableRow>
-                      <CTableHeaderCell>#</CTableHeaderCell>
-                      <CTableHeaderCell>RIF</CTableHeaderCell>
-                      <CTableHeaderCell>Razón Social</CTableHeaderCell>
-                      <CTableHeaderCell>Teléfono</CTableHeaderCell>
-                      <CTableHeaderCell>Email</CTableHeaderCell>
-                      <CTableHeaderCell>Estado</CTableHeaderCell>
-                      <CTableHeaderCell className="text-center">Acciones</CTableHeaderCell>
-                      <CTableHeaderCell className="text-center">Juegos</CTableHeaderCell>
-                    </CTableRow>
-                  </CTableHead>
+                   <CTableHead>
+                     <CTableRow>
+                       <CTableHeaderCell>#</CTableHeaderCell>
+                       <CTableHeaderCell>RIF</CTableHeaderCell>
+                       <CTableHeaderCell>Razón Social</CTableHeaderCell>
+                       <CTableHeaderCell>Teléfono</CTableHeaderCell>
+                       <CTableHeaderCell>Email</CTableHeaderCell>
+                       <CTableHeaderCell>Estado</CTableHeaderCell>
+                       <CTableHeaderCell className="text-center">Detalle</CTableHeaderCell>
+                       <CTableHeaderCell className="text-center">Representante</CTableHeaderCell>
+                       <CTableHeaderCell className="text-center">Editar</CTableHeaderCell>
+                     </CTableRow>
+                   </CTableHead>
                   <CTableBody>
                     {comercializadoresPaginados.map((com, index) => (
                       <CTableRow key={com.id_comercializadores}>
@@ -143,49 +143,41 @@ const ComercializadoresTabla = ({
                           <CBadge color={com.estado === 'activo' ? 'success' : 'secondary'}>
                             {com.estado === 'activo' ? 'Activo' : 'Inactivo'}
                           </CBadge>
-                        </CTableDataCell>
+                         </CTableDataCell>
+                         <CTableDataCell className="text-center">
+                           <CButton
+                             color="primary"
+                             variant="outline"
+                             size="sm"
+                             onClick={() => onVerDetalle(com)}
+                           >
+                             <CIcon icon={cilMagnifyingGlass} />
+                           </CButton>
+                         </CTableDataCell>
+                         <CTableDataCell className="text-center">
+                           <CButton
+                             color="info"
+                             variant="outline"
+                             size="sm"
+                             onClick={() => onVerRepresentantes(com)}
+                           >
+                             <CIcon icon={cilPeople} />
+                           </CButton>
+                         </CTableDataCell>
+                         <CTableDataCell className="text-center">
+                           {user?.rol !== 'supervisor' && (
+                             <CButton
+                               color="warning"
+                               variant="outline"
+                               size="sm"
+                               onClick={() => onEditar(com.id_comercializadores)}
+                             >
+                               <CIcon icon={cilPencil} />
+                             </CButton>
+                           )}
+                         </CTableDataCell>
                         <CTableDataCell className="text-center">
-                          <CButton
-                            color="info"
-                            variant="outline"
-                            size="sm"
-                            className="me-1"
-                            onClick={() => onVerDetalle(com)}
-                          >
-                            <CIcon icon={cilMagnifyingGlass} className="me-1" />
-                            Detalle
-                          </CButton>
-                          <CButton
-                            color="info"
-                            variant="outline"
-                            size="sm"
-                            className="me-1"
-                            onClick={() => onVerRepresentantes(com)}
-                          >
-                            <CIcon icon={cilPeople} className="me-1" />
-                            Ver
-                          </CButton>
-                          {user?.rol !== 'supervisor' && (
-                            <CButton
-                              color="warning"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => onEditar(com.id_comercializadores)}
-                            >
-                              Editar
-                            </CButton>
-                          )}
-                        </CTableDataCell>
-                        <CTableDataCell className="text-center">
-                          <CButton
-                            color="success"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => onVerPermisos(com)}
-                          >
-                            <CIcon icon={cilGamepad} className="me-1" />
-                            Juegos
-                          </CButton>
+                          
                         </CTableDataCell>
                       </CTableRow>
                     ))}

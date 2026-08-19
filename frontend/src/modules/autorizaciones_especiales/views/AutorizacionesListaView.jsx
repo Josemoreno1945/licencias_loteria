@@ -109,7 +109,7 @@ const AutorizacionesListaView = () => {
           {/* Tabla */}
           {!loading && !error && (
             <>
-              {autorizacionesFiltradas.length === 0 ? (
+              {autorizacionesFiltradas?.length === 0 ? (
                 <CAlert color="info">
                   {autorizaciones?.length === 0
                     ? 'No hay autorizaciones especiales registradas aun.'

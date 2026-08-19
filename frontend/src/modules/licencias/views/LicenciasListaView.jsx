@@ -15,7 +15,7 @@ import {
   CButton,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilPlus } from '@coreui/icons'
+import { cilPlus, cilMagnifyingGlass, cilPencil } from '@coreui/icons'
 import { useNavigate, useLocation } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
 import useDebounce from '../../../hooks/useDebounce'
@@ -105,14 +105,14 @@ const LicenciasListaView = () => {
             </div>
           )}
           {error && <CAlert color="danger">{error}</CAlert>}
-          {!loading && !error && licenciasFiltradas.length === 0 && (
+          {!loading && !error && licenciasFiltradas?.length === 0 && (
             <CAlert color="info">
               {licencias?.length === 0
                 ? 'No se encontraron licencias emitidas.'
                 : 'No se encontraron licencias.'}
             </CAlert>
           )}
-          {!loading && !error && licenciasFiltradas.length > 0 && (
+          {!loading && !error && licenciasFiltradas?.length > 0 && (
             <CTable hover responsive>
               <CTableHead>
                 <CTableRow>
@@ -122,8 +122,9 @@ const LicenciasListaView = () => {
                   <CTableHeaderCell>Categoría</CTableHeaderCell>
                   <CTableHeaderCell>Estado</CTableHeaderCell>
                   <CTableHeaderCell>Expedición</CTableHeaderCell>
-                  <CTableHeaderCell>Vencimiento</CTableHeaderCell>
-                    <CTableHeaderCell>Acciones</CTableHeaderCell>
+                   <CTableHeaderCell>Vencimiento</CTableHeaderCell>
+                     <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
+                     <CTableHeaderCell className="text-center">Editar</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
               <CTableBody>
@@ -136,27 +137,28 @@ const LicenciasListaView = () => {
                     <CTableDataCell>{licencia.estado_documento}</CTableDataCell>
                     <CTableDataCell>{licencia.fecha_expedicion?.slice(0, 10)}</CTableDataCell>
                     <CTableDataCell>{licencia.fecha_vencimiento?.slice(0, 10)}</CTableDataCell>
-                    <CTableDataCell>
-                      <CButton
-                        size="sm"
-                        color="primary"
-                        variant="outline"
-                        className="me-1"
-                        onClick={() => setModalDataId(licencia.id_documento)}
-                      >
-                        Ver
-                      </CButton>
-                      {user?.rol !== 'supervisor' && (
-                        <CButton
-                          size="sm"
-                          color="warning"
-                          variant="outline"
-                          onClick={() => setModalEditarId(licencia.id_documento)}
-                        >
-                          Editar
-                        </CButton>
-                      )}
-                    </CTableDataCell>
+                     <CTableDataCell>
+                       <CButton
+                         size="sm"
+                         color="primary"
+                         variant="outline"
+                         onClick={() => setModalDataId(licencia.id_documento)}
+                       >
+                         <CIcon icon={cilMagnifyingGlass} />
+                       </CButton>
+                     </CTableDataCell>
+                     <CTableDataCell>
+                       {user?.rol !== 'supervisor' && (
+                         <CButton
+                           size="sm"
+                           color="warning"
+                           variant="outline"
+                           onClick={() => setModalEditarId(licencia.id_documento)}
+                         >
+                           <CIcon icon={cilPencil} />
+                         </CButton>
+                       )}
+                     </CTableDataCell>
                   </CTableRow>
                 ))}
               </CTableBody>

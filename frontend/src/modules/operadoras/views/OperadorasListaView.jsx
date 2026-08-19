@@ -16,6 +16,8 @@ import {
   CButton,
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
+import CIcon from '@coreui/icons-react'
+import { cilMagnifyingGlass, cilPencil } from '@coreui/icons'
 import useFetch from '../../../hooks/useFetch'
 import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
@@ -118,7 +120,7 @@ const OperadorasListaView = () => {
           {/* Tabla */}
           {!loading && !error && (
             <>
-              {operadorasFiltradas.length === 0 ? (
+              {operadorasFiltradas?.length === 0 ? (
                 <CAlert color="info">
                   {operadoras?.length === 0
                     ? 'No hay operadoras registradas aun.'
@@ -132,9 +134,10 @@ const OperadorasListaView = () => {
                       <CTableHeaderCell>RIF</CTableHeaderCell>
                       <CTableHeaderCell>Razón Social</CTableHeaderCell>
                       <CTableHeaderCell>Dirección Fiscal</CTableHeaderCell>
-                      <CTableHeaderCell>Estado</CTableHeaderCell>
-                      <CTableHeaderCell>Acciones</CTableHeaderCell>
-                    </CTableRow>
+                       <CTableHeaderCell>Estado</CTableHeaderCell>
+                       <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
+                       <CTableHeaderCell className="text-center">Editar</CTableHeaderCell>
+                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
                     {operadorasPaginadas.map((operadora, index) => (
@@ -153,28 +156,29 @@ const OperadorasListaView = () => {
                            <CBadge color={operadora.estado === 'activo' ? 'success' : 'secondary'}>
                              {operadora.estado === 'activo' ? 'Activo' : 'Inactivo'}
                            </CBadge>
-                         </CTableDataCell>
-                         <CTableDataCell className="text-center">
-                           <CButton
-                             size="sm"
-                             color="primary"
-                             variant="outline"
-                             className="me-1"
-                             onClick={() => setModalVerId(operadora.id_operadora)}
-                           >
-                             Ver
-                           </CButton>
-                           {user?.rol !== 'supervisor' && (
-                             <CButton
-                               size="sm"
-                               color="warning"
-                               variant="outline"
-                               onClick={() => setModalEditarOperadoraId(operadora.id_operadora)}
-                             >
-                               Editar
-                             </CButton>
-                           )}
-                         </CTableDataCell>
+                          </CTableDataCell>
+                          <CTableDataCell className="text-center">
+                            <CButton
+                              size="sm"
+                              color="primary"
+                              variant="outline"
+                              onClick={() => setModalVerId(operadora.id_operadora)}
+                            >
+                              <CIcon icon={cilMagnifyingGlass} />
+                            </CButton>
+                          </CTableDataCell>
+                          <CTableDataCell className="text-center">
+                            {user?.rol !== 'supervisor' && (
+                              <CButton
+                                size="sm"
+                                color="warning"
+                                variant="outline"
+                                onClick={() => setModalEditarOperadoraId(operadora.id_operadora)}
+                              >
+                                <CIcon icon={cilPencil} />
+                              </CButton>
+                            )}
+                          </CTableDataCell>
                        </CTableRow>
                     ))}
                   </CTableBody>

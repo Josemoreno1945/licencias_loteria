@@ -16,6 +16,8 @@ import {
   CButton,
 } from '@coreui/react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import CIcon from '@coreui/icons-react';
+import { cilMagnifyingGlass } from '@coreui/icons';
 import useFetch from '../../../hooks/useFetch';
 import useDebounce from '../../../hooks/useDebounce';
 import { filterBySearch } from '../../../utils/helpers';
@@ -131,7 +133,7 @@ const SolicitudesListaView = () => {
 
           {!loading && !error && (
             <>
-              {solicitudesFiltradas.length === 0 ? (
+              {solicitudesFiltradas?.length === 0 ? (
                 <CAlert color="info">
                   {solicitudes?.length === 0
                     ? 'No hay solicitudes registradas aún.'
@@ -148,9 +150,9 @@ const SolicitudesListaView = () => {
                       <CTableHeaderCell>Tipo de Trámite</CTableHeaderCell>
                       <CTableHeaderCell>Categoría</CTableHeaderCell>
                       <CTableHeaderCell>Fecha</CTableHeaderCell>
-                      <CTableHeaderCell>Estado</CTableHeaderCell>
-                      <CTableHeaderCell>Acciones</CTableHeaderCell>
-                    </CTableRow>
+                       <CTableHeaderCell>Estado</CTableHeaderCell>
+                       <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
+                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
                     {solicitudesPaginadas.map((sol, index) => (
@@ -180,17 +182,17 @@ const SolicitudesListaView = () => {
                           <CBadge color={getEstadoBadge(sol.estado)}>
                             {sol.estado}
                           </CBadge>
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          <CButton
-                            size="sm"
-                            color="primary"
-                            variant="outline"
-                            onClick={() => setModalDataId(sol.id_solicitudes)}
-                          >
-                            Ver
-                          </CButton>
-                        </CTableDataCell>
+                         </CTableDataCell>
+                         <CTableDataCell className="text-center">
+                           <CButton
+                             size="sm"
+                             color="primary"
+                             variant="outline"
+                             onClick={() => setModalDataId(sol.id_solicitudes)}
+                           >
+                             <CIcon icon={cilMagnifyingGlass} />
+                           </CButton>
+                         </CTableDataCell>
                       </CTableRow>
                     ))}
                   </CTableBody>

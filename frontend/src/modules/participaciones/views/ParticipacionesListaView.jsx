@@ -94,7 +94,7 @@ const ParticipacionesListaView = () => {
           {/* Tabla */}
           {!loading && !error && (
             <>
-              {participacionesFiltradas.length === 0 ? (
+              {participacionesFiltradas?.length === 0 ? (
                 <CAlert color="info">
                   {participaciones?.length === 0
                     ? 'No hay participaciones registradas aun.'

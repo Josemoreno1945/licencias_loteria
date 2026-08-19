@@ -7,7 +7,6 @@ import ComercializadoresTabla from '../components/ComercializadoresTabla'
 import ComercializadoresEditarModal from '../components/ComercializadoresEditarModal'
 import ComercializadoresDetalleModal from '../components/ComercializadoresDetalleModal'
 import RepresentantesModal from '../components/RepresentantesModal'
-import PermisosModal from '../components/PermisosModal'
 
 const ComercializadoresListaView = () => {
   const navigate = useNavigate()
@@ -16,7 +15,6 @@ const ComercializadoresListaView = () => {
   const { data: comercializadores, loading, error, refetch } = useFetch('/comercializadores')
 
   const [repModal, setRepModal] = useState({ visible: false, comercializador: null })
-  const [permisosModal, setPermisosModal] = useState({ visible: false, comercializador: null })
   const [modalVerDetalleId, setModalVerDetalleId] = useState(null)
   const [modalEditarComercializadorId, setModalEditarComercializadorId] = useState(null)
 
@@ -28,15 +26,7 @@ const ComercializadoresListaView = () => {
     setRepModal({ visible: true, comercializador })
   }
 
-  const handleVerPermisos = (comercializador) => {
-    setPermisosModal({ visible: true, comercializador })
-  }
-
   const handleRepresentanteCreado = () => {
-    refetch()
-  }
-
-  const handlePermisoCreado = () => {
     refetch()
   }
 
@@ -63,9 +53,8 @@ const ComercializadoresListaView = () => {
           refetch={refetch}
           user={user}
           onNavegarRegistro={() => navigate('/comercializadores/registro')}
-           onVerRepresentantes={handleVerRepresentantes}
-           onVerPermisos={handleVerPermisos}
-           onVerDetalle={(c) => setModalVerDetalleId(c.id_comercializadores)}
+            onVerRepresentantes={handleVerRepresentantes}
+            onVerDetalle={(c) => setModalVerDetalleId(c.id_comercializadores)}
            onEditar={handleEditar}
            paginaActual={paginaActual}
           totalPaginas={totalPaginas}
@@ -73,20 +62,12 @@ const ComercializadoresListaView = () => {
         />
       </CCard>
 
-      <RepresentantesModal
+       <RepresentantesModal
         visible={repModal.visible}
         comercializador={repModal.comercializador}
         user={user}
         onClose={() => setRepModal({ visible: false, comercializador: null })}
         onRepresentanteCreado={handleRepresentanteCreado}
-      />
-
-      <PermisosModal
-        visible={permisosModal.visible}
-        comercializador={permisosModal.comercializador}
-        user={user}
-        onClose={() => setPermisosModal({ visible: false, comercializador: null })}
-        onPermisoCreado={handlePermisoCreado}
       />
     </CContainer>
   )

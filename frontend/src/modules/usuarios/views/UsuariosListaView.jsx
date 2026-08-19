@@ -16,6 +16,8 @@ import {
   CButton,
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
+import CIcon from '@coreui/icons-react'
+import { cilMagnifyingGlass, cilPencil } from '@coreui/icons'
 import useFetch from '../../../hooks/useFetch'
 import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
@@ -124,7 +126,7 @@ const UsuariosListaView = () => {
           {/* Tabla */}
           {!loading && !error && (
             <>
-              {usuariosFiltrados.length === 0 ? (
+              {usuariosFiltrados?.length === 0 ? (
                 <CAlert color="info">
                   {usuarios?.length === 0
                     ? 'No hay usuarios registrados aun.'
@@ -138,9 +140,10 @@ const UsuariosListaView = () => {
                        <CTableHeaderCell>Nombre de Usuario</CTableHeaderCell>
                        <CTableHeaderCell>Email</CTableHeaderCell>
                        <CTableHeaderCell>Rol</CTableHeaderCell>
-                       <CTableHeaderCell>Estado</CTableHeaderCell>
-                       <CTableHeaderCell>Acciones</CTableHeaderCell>
-                     </CTableRow>
+                        <CTableHeaderCell>Estado</CTableHeaderCell>
+                        <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
+                        <CTableHeaderCell className="text-center">Editar</CTableHeaderCell>
+                      </CTableRow>
                   </CTableHead>
                   <CTableBody>
                     {usuariosPaginados.map((usuario, index) => (
@@ -161,26 +164,27 @@ const UsuariosListaView = () => {
                            <CBadge color={usuario.estado === 'activo' ? 'success' : 'secondary'}>
                              {usuario.estado === 'activo' ? 'Activo' : 'Inactivo'}
                            </CBadge>
-                         </CTableDataCell>
-                         <CTableDataCell>
-                           <CButton
-                             size="sm"
-                             color="primary"
-                             variant="outline"
-                             className="me-1"
-                             onClick={() => setModalVerId(usuario.id_usuario)}
-                           >
-                             Ver
-                           </CButton>
-                           <CButton
-                             size="sm"
-                             color="warning"
-                             variant="outline"
-                             onClick={() => setModalEditarUsuarioId(usuario.id_usuario)}
-                           >
-                             Editar
-                           </CButton>
-                         </CTableDataCell>
+                          </CTableDataCell>
+                          <CTableDataCell className="text-center">
+                            <CButton
+                              size="sm"
+                              color="primary"
+                              variant="outline"
+                              onClick={() => setModalVerId(usuario.id_usuario)}
+                            >
+                              <CIcon icon={cilMagnifyingGlass} />
+                            </CButton>
+                          </CTableDataCell>
+                          <CTableDataCell className="text-center">
+                            <CButton
+                              size="sm"
+                              color="warning"
+                              variant="outline"
+                              onClick={() => setModalEditarUsuarioId(usuario.id_usuario)}
+                            >
+                              <CIcon icon={cilPencil} />
+                            </CButton>
+                          </CTableDataCell>
                        </CTableRow>
                     ))}
                   </CTableBody>

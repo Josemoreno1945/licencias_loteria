@@ -72,14 +72,14 @@ const PagosListaView = () => {
             </div>
           )}
           {error && <CAlert color="danger">{error}</CAlert>}
-          {!loading && !error && pagosFiltrados.length === 0 && (
+          {!loading && !error && pagosFiltrados?.length === 0 && (
             <CAlert color="info">
               {pagos?.length === 0
                 ? 'No hay pagos registrados todavía.'
                 : 'No se encontraron pagos.'}
             </CAlert>
           )}
-          {!loading && !error && pagosFiltrados.length > 0 && (
+          {!loading && !error && pagosFiltrados?.length > 0 && (
             <CTable hover responsive>
               <CTableHead>
                 <CTableRow>

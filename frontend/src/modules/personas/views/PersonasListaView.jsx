@@ -16,6 +16,8 @@ import {
   CButton,
 } from '@coreui/react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import CIcon from '@coreui/icons-react'
+import { cilMagnifyingGlass, cilPencil } from '@coreui/icons'
 import useFetch from '../../../hooks/useFetch'
 import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
@@ -128,7 +130,7 @@ const PersonasListaView = () => {
           {/* Tabla */}
           {!loading && !error && (
             <>
-              {personasFiltradas.length === 0 ? (
+              {personasFiltradas?.length === 0 ? (
                 <CAlert color="info">
                   {personas?.length === 0
                     ? 'No hay personas registradas aun.'
@@ -143,9 +145,11 @@ const PersonasListaView = () => {
                       <CTableHeaderCell>Nombre / Razon Social</CTableHeaderCell>
                       <CTableHeaderCell>Tipo</CTableHeaderCell>
                       <CTableHeaderCell>Telefono</CTableHeaderCell>
-                      <CTableHeaderCell>Email</CTableHeaderCell>
-                      <CTableHeaderCell>Acciones</CTableHeaderCell>
-                    </CTableRow>
+                       <CTableHeaderCell>Email</CTableHeaderCell>
+                       
+                       <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
+                       <CTableHeaderCell className="text-center">Editar</CTableHeaderCell>
+                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
                     {personasPaginadas.map((persona, index) => (
@@ -164,22 +168,23 @@ const PersonasListaView = () => {
                             {persona.tipo_persona === 'natural' ? 'Natural' : 'Juridica'}
                           </CBadge>
                         </CTableDataCell>
-                        <CTableDataCell>
-                          {persona.telefono || <span className="text-muted">—</span>}
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          {persona.email || <span className="text-muted">—</span>}
-                        </CTableDataCell>
                          <CTableDataCell>
+                           {persona.telefono || <span className="text-muted">—</span>}
+                         </CTableDataCell>
+                         <CTableDataCell>
+                           {persona.email || <span className="text-muted">—</span>}
+                         </CTableDataCell>
+                         <CTableDataCell className="text-center">
                            <CButton
                              size="sm"
                              color="primary"
                              variant="outline"
-                             className="me-1"
                              onClick={() => setModalDataId(persona.id_persona)}
                            >
-                             Ver
+                             <CIcon icon={cilMagnifyingGlass} />
                            </CButton>
+                         </CTableDataCell>
+                         <CTableDataCell className="text-center">
                            {user?.rol !== 'supervisor' && (
                              <CButton
                                size="sm"
@@ -187,7 +192,7 @@ const PersonasListaView = () => {
                                variant="outline"
                                onClick={() => setModalEditarPersonaId(persona.id_persona)}
                              >
-                               Editar
+                               <CIcon icon={cilPencil} />
                              </CButton>
                            )}
                          </CTableDataCell>

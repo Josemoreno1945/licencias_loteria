@@ -35,7 +35,10 @@ const RepresentantesModal = ({ visible, comercializador, user, onClose, onRepres
   const [loadingReps, setLoadingReps] = React.useState(false)
   const [errorReps, setErrorReps] = React.useState(null)
 
+  // Modal de asignación: cuando está abierto, el modal padre se oculta temporalmente
+  // para evitar solapamientos. parentVisible guarda el estado previo para restaurarlo.
   const [addRepModal, setAddRepModal] = React.useState(false)
+  const [parentVisible, setParentVisible] = React.useState(true)
   const [personas, setPersonas] = React.useState([])
   const [repFormData, setRepFormData] = React.useState({ id_persona: '', cargo: '', estado: 'activo' })
   const [feedbackModal, setFeedbackModal] = React.useState({ visible: false, type: '', message: '' })
@@ -61,6 +64,8 @@ const RepresentantesModal = ({ visible, comercializador, user, onClose, onRepres
 
   const handleAbrirAgregarRep = async () => {
     setRepFormData({ id_persona: '', cargo: '', estado: 'activo' })
+    // Ocultar el modal padre mientras se abre el de asignación (evita solapamiento)
+    setParentVisible(false)
     try {
       const res = await axiosInstance.get('/personas')
       setPersonas(res.data || [])
@@ -86,6 +91,8 @@ const RepresentantesModal = ({ visible, comercializador, user, onClose, onRepres
       }
       await axiosInstance.post('/representantes', payload)
       setFeedbackModal({ visible: true, type: 'success', message: 'Representante asignado exitosamente.' })
+      setAddRepModal(false)
+      setParentVisible(true)
       const res = await axiosInstance.get(`/representantes/comercializador/${comercializador.id_comercializadores}`)
       setRepresentantes(res.data || [])
       onRepresentanteCreado?.()
@@ -106,7 +113,7 @@ const RepresentantesModal = ({ visible, comercializador, user, onClose, onRepres
 
       <CModal
         size="lg"
-        visible={visible}
+        visible={visible && parentVisible}
         onClose={onClose}
         alignment="center"
         backdrop="static"
@@ -175,7 +182,7 @@ const RepresentantesModal = ({ visible, comercializador, user, onClose, onRepres
         </CModalFooter>
       </CModal>
 
-      <CModal visible={addRepModal} onClose={() => setAddRepModal(false)} alignment="center" backdrop="static" keyboard={false}>
+      <CModal visible={addRepModal} onClose={() => { setAddRepModal(false); setParentVisible(true) }} alignment="center" backdrop="static" keyboard={false}>
         <CModalHeader>
           <CModalTitle>
             <CIcon icon={cilAddressBook} className="me-2" />
@@ -226,7 +233,7 @@ const RepresentantesModal = ({ visible, comercializador, user, onClose, onRepres
             </CRow>
           </CModalBody>
           <CModalFooter>
-            <CButton color="secondary" variant="outline" onClick={() => setAddRepModal(false)}>
+            <CButton color="secondary" variant="outline" onClick={() => { setAddRepModal(false); setParentVisible(true) }}>
               Cancelar
             </CButton>
             <CButton type="submit" color="primary">

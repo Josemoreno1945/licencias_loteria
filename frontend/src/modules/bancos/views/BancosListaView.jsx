@@ -16,6 +16,8 @@ import {
   CButton,
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
+import CIcon from '@coreui/icons-react'
+import { cilMagnifyingGlass, cilPencil } from '@coreui/icons'
 import useFetch from '../../../hooks/useFetch'
 import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
@@ -116,7 +118,7 @@ const BancosListaView = () => {
           {/* Tabla */}
           {!loading && !error && (
             <>
-              {bancosFiltrados.length === 0 ? (
+              {bancosFiltrados?.length === 0 ? (
                 <CAlert color="info">
                   {bancos?.length === 0
                     ? 'No hay bancos registrados aun.'
@@ -129,9 +131,10 @@ const BancosListaView = () => {
                       <CTableHeaderCell>#</CTableHeaderCell>
                       <CTableHeaderCell>Nombre</CTableHeaderCell>
                       <CTableHeaderCell>Codigo BCV</CTableHeaderCell>
-                      <CTableHeaderCell>Estado</CTableHeaderCell>
-                      <CTableHeaderCell>Acciones</CTableHeaderCell>
-                    </CTableRow>
+                       <CTableHeaderCell>Estado</CTableHeaderCell>
+                       <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
+                       <CTableHeaderCell className="text-center">Editar</CTableHeaderCell>
+                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
                     {bancosPaginados.map((banco, index) => (
@@ -149,26 +152,27 @@ const BancosListaView = () => {
                           <CBadge color={banco.estado === 'activo' ? 'success' : 'secondary'}>
                             {banco.estado === 'activo' ? 'Activo' : 'Inactivo'}
                           </CBadge>
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          <CButton
-                            size="sm"
-                            color="primary"
-                            variant="outline"
-                            className="me-1"
-                            onClick={() => setModalVerId(banco.id_banco)}
-                          >
-                            Ver
-                          </CButton>
-                          <CButton
-                            size="sm"
-                            color="warning"
-                            variant="outline"
-                            onClick={() => setModalEditarBancoId(banco.id_banco)}
-                          >
-                            Editar
-                          </CButton>
-                        </CTableDataCell>
+                         </CTableDataCell>
+                         <CTableDataCell className="text-center">
+                           <CButton
+                             size="sm"
+                             color="primary"
+                             variant="outline"
+                             onClick={() => setModalVerId(banco.id_banco)}
+                           >
+                             <CIcon icon={cilMagnifyingGlass} />
+                           </CButton>
+                         </CTableDataCell>
+                         <CTableDataCell className="text-center">
+                           <CButton
+                             size="sm"
+                             color="warning"
+                             variant="outline"
+                             onClick={() => setModalEditarBancoId(banco.id_banco)}
+                           >
+                             <CIcon icon={cilPencil} />
+                           </CButton>
+                         </CTableDataCell>
                       </CTableRow>
                     ))}
                   </CTableBody>

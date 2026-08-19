@@ -16,6 +16,8 @@ import {
   CButton,
 } from '@coreui/react';
 import { useNavigate } from 'react-router-dom';
+import CIcon from '@coreui/icons-react';
+import { cilMagnifyingGlass, cilPencil } from '@coreui/icons';
 import useFetch from '../../../hooks/useFetch';
 import useDebounce from '../../../hooks/useDebounce';
 import { filterBySearch } from '../../../utils/helpers';
@@ -113,7 +115,7 @@ const JuegosListaView = () => {
 
           {!loading && !error && (
             <>
-              {juegosFiltrados.length === 0 ? (
+              {juegosFiltrados?.length === 0 ? (
                 <CAlert color="info">
                   {juegos?.length === 0
                     ? 'No hay juegos registrados aún.'
@@ -127,9 +129,10 @@ const JuegosListaView = () => {
                         <CTableHeaderCell>#</CTableHeaderCell>
                         <CTableHeaderCell>Nombre del Juego</CTableHeaderCell>
                         <CTableHeaderCell>Operadora (Propietaria)</CTableHeaderCell>
-                        <CTableHeaderCell>Estado</CTableHeaderCell>
-                        <CTableHeaderCell>Acciones</CTableHeaderCell>
-                      </CTableRow>
+                         <CTableHeaderCell>Estado</CTableHeaderCell>
+                         <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
+                         <CTableHeaderCell className="text-center">Editar</CTableHeaderCell>
+                       </CTableRow>
                     </CTableHead>
                     <CTableBody>
                       {juegosPaginados.map((juego, index) => (
@@ -148,16 +151,17 @@ const JuegosListaView = () => {
                                {juego.estado === 'activo' ? 'Activo' : 'Inactivo'}
                              </CBadge>
                            </CTableDataCell>
-                           <CTableDataCell>
+                           <CTableDataCell className="text-center">
                              <CButton
                                size="sm"
                                color="primary"
                                variant="outline"
-                               className="me-1"
                                onClick={() => setModalVerId(juego.id_juego)}
                              >
-                               Ver
+                               <CIcon icon={cilMagnifyingGlass} />
                              </CButton>
+                           </CTableDataCell>
+                           <CTableDataCell className="text-center">
                              {user?.rol !== 'supervisor' && (
                                <CButton
                                  size="sm"
@@ -165,7 +169,7 @@ const JuegosListaView = () => {
                                  variant="outline"
                                  onClick={() => setModalEditarJuegoId(juego.id_juego)}
                                >
-                                 Editar
+                                 <CIcon icon={cilPencil} />
                                </CButton>
                              )}
                            </CTableDataCell>
