@@ -50,9 +50,11 @@ import SolicitudesRegistroView from '../modules/solicitudes/views/SolicitudesReg
 
 // Participaciones
 import ParticipacionesListaView from '../modules/participaciones/views/ParticipacionesListaView'
+import ParticipacionesRegistroView from '../modules/participaciones/views/ParticipacionesRegistroView'
 
 // Autorizaciones Especiales
 import AutorizacionesListaView from '../modules/autorizaciones_especiales/views/AutorizacionesListaView'
+import AutorizacionesRegistroView from '../modules/autorizaciones_especiales/views/AutorizacionesRegistroView'
 
 // Buscador
 import BuscadorView from '../modules/buscador/views/BuscadorView'
@@ -137,10 +139,12 @@ const AppRouter = () => {
           {/* Participaciones */}
           <Route path="participaciones" element={<Navigate to="/participaciones/lista" replace />} />
           <Route path="participaciones/lista" element={<RoleRoute allowedRoles={TODOS}><ParticipacionesListaView /></RoleRoute>} />
+          <Route path="participaciones/registro" element={<RoleRoute allowedRoles={GESTORES}><ParticipacionesRegistroView /></RoleRoute>} />
 
           {/* Autorizaciones Especiales */}
           <Route path="autorizaciones" element={<Navigate to="/autorizaciones/lista" replace />} />
           <Route path="autorizaciones/lista" element={<RoleRoute allowedRoles={TODOS}><AutorizacionesListaView /></RoleRoute>} />
+          <Route path="autorizaciones/registro" element={<RoleRoute allowedRoles={GESTORES}><AutorizacionesRegistroView /></RoleRoute>} />
 
           {/* Buscador / Consultor */}
           <Route path="buscador" element={<RoleRoute allowedRoles={TODOS}><BuscadorView /></RoleRoute>} />

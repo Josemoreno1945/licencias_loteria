@@ -15,6 +15,9 @@ import {
   CAlert,
   CButton,
 } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilPlus } from '@coreui/icons'
+import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
 import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
@@ -32,6 +35,7 @@ const AUTORIZACIONES_SEARCH_FIELDS = [
 ]
 
 const AutorizacionesListaView = () => {
+  const navigate = useNavigate()
   const { data: autorizaciones, loading, error, refetch } = useFetch('/autorizaciones-especiales')
   const [paginaActual, setPaginaActual] = React.useState(1)
   const [busqueda, setBusqueda] = React.useState('')
@@ -76,6 +80,9 @@ const AutorizacionesListaView = () => {
               Autorizaciones especiales registradas en el sistema.
             </p>
           </div>
+          <CButton color="primary" onClick={() => navigate('/autorizaciones/registro')}>
+            <CIcon icon={cilPlus} className="me-2" /> Emitir Autorización
+          </CButton>
         </CCardHeader>
 
         <CCardBody>

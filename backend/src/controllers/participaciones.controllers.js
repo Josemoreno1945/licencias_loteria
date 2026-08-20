@@ -2,7 +2,6 @@ import {
   get_participaciones,
   get_participaciones_id,
   get_participaciones_vigentes,
-  crear_participacion,
   actualizar_participacion_id,
   buscar_participaciones_por_persona,
   buscar_participaciones_por_comercializador,
@@ -11,12 +10,13 @@ import {
   buscar_participaciones_proximas_a_vencer,
 } from "../models/participaciones.models.js";
 
+import { crear_participacion_completa } from "../services/participaciones.service.js";
 import { errors, throwError, zodValidationError } from "../utils/errors.js";
+import { uuidRegex } from "../utils/validators.js";
 import {
-  crear_participacion_schema,
+  emitir_participacion_schema,
   actualizar_participacion_schema,
 } from "../schemas/participaciones.schemas.js";
-import { uuidRegex } from "../utils/validators.js";
 
 //get----------------------------------------------------------
 export const get_c_participaciones = async (req, res, next) => {
@@ -57,17 +57,17 @@ export const get_c_participaciones_vigentes = async (req, res, next) => {
 };
 
 //post---------------------------------------------------------
-export const crear_c_participacion = async (req, res, next) => {
+export const crear_c_participacion_completa = async (req, res, next) => {
   try {
     const data = req.body;
 
-    const parsePar = crear_participacion_schema.safeParse(data);
+    const parsePar = emitir_participacion_schema.safeParse(data);
     if (!parsePar.success) {
       return next(zodValidationError(parsePar.error));
     }
 
-    const rows = await crear_participacion(parsePar.data);
-    return res.json(rows);
+    const result = await crear_participacion_completa(parsePar.data);
+    return res.json(result);
   } catch (error) {
     next(error);
   }

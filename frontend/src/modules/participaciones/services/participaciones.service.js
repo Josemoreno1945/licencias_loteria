@@ -1,0 +1,26 @@
+import axiosInstance from "../../../api/axiosInstance";
+
+export const emitirParticipacion = async (payload) => {
+  const resp = await axiosInstance.post("/participaciones/emitir", payload);
+  return resp.data;
+};
+
+export const getSolicitudesParticipacion = async () => {
+  const { data } = await axiosInstance.get("/solicitudes/por-tipo/Participacion");
+  return data;
+};
+
+export const getLicenciasVigentes = async () => {
+  const { data } = await axiosInstance.get("/licencias/vigentes");
+  return data;
+};
+
+export const getBancos = async () => {
+  const { data } = await axiosInstance.get("/bancos");
+  return data;
+};
+
+export const getRepresentantes = async () => {
+  const { data } = await axiosInstance.get("/representantes");
+  return data;
+};

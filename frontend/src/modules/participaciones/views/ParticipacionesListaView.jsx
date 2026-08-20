@@ -15,6 +15,9 @@ import {
   CAlert,
   CButton,
 } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilPlus } from '@coreui/icons'
+import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
 import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
@@ -32,6 +35,7 @@ const PARTICIPACIONES_SEARCH_FIELDS = [
 ]
 
 const ParticipacionesListaView = () => {
+  const navigate = useNavigate()
   const { data: participaciones, loading, error, refetch } = useFetch('/participaciones')
   const [paginaActual, setPaginaActual] = React.useState(1)
   const [busqueda, setBusqueda] = React.useState('')
@@ -61,6 +65,9 @@ const ParticipacionesListaView = () => {
               Participaciones registradas en el sistema.
             </p>
           </div>
+          <CButton color="primary" onClick={() => navigate('/participaciones/registro')}>
+            <CIcon icon={cilPlus} className="me-2" /> Emitir Participación
+          </CButton>
         </CCardHeader>
 
         <CCardBody>

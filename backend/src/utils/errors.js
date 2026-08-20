@@ -181,11 +181,31 @@ export const errors = {
     status: 404,
     message: "Autorizacion especial no encontrada",
   },
+  solicitud_no_es_autorizacion_especial: {
+    status: 400,
+    message: "La solicitud no corresponde a un tramite de Autorizacion_especial",
+  },
+  solicitud_sin_operadora: {
+    status: 400,
+    message: "La solicitud de autorizacion debe tener una operadora asociada",
+  },
 
   // Participaciones
   participacion_no_encontrada: {
     status: 404,
     message: "Participacion no encontrada",
+  },
+  solicitud_no_es_participacion: {
+    status: 400,
+    message: "La solicitud no corresponde a un tramite de Participacion",
+  },
+  solicitud_sin_comercializador: {
+    status: 400,
+    message: "La solicitud de participacion debe tener un comercializador asociado",
+  },
+  licencia_no_vigente: {
+    status: 400,
+    message: "La licencia seleccionada no se encuentra vigente",
   },
 
   // Pagos

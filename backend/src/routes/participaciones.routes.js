@@ -4,7 +4,7 @@ import {
   get_c_participaciones,
   get_c_participaciones_id,
   get_c_participaciones_vigentes,
-  crear_c_participacion,
+  crear_c_participacion_completa,
   actualizar_participacion,
   buscar_c_participaciones_por_persona,
   buscar_c_participaciones_por_comercializador,
@@ -36,7 +36,7 @@ router.get("/participaciones/por-nro-archivo/:nro_archivo", verifyToken, hasRole
 
 router.get("/participaciones/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), get_c_participaciones_id);
 
-router.post("/participaciones", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, crear_c_participacion);
+router.post("/participaciones/emitir", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, crear_c_participacion_completa);
 
 router.put("/participaciones/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites"), noSupervisorWrite, actualizar_participacion);
 

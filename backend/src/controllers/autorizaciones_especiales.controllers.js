@@ -2,7 +2,6 @@ import {
   get_autorizaciones_especiales,
   get_autorizaciones_especiales_id,
   get_autorizaciones_especiales_vigentes,
-  crear_autorizacion_especial,
   actualizar_autorizacion_especial_id,
   buscar_autorizaciones_por_persona,
   buscar_autorizaciones_por_operadora,
@@ -11,12 +10,13 @@ import {
   buscar_autorizaciones_proximas_a_vencer,
 } from "../models/autorizaciones_especiales.models.js";
 
+import { crear_autorizacion_completa } from "../services/autorizaciones_especiales.service.js";
 import { errors, throwError, zodValidationError } from "../utils/errors.js";
+import { uuidRegex } from "../utils/validators.js";
 import {
-  crear_autorizacion_especial_schema,
+  emitir_autorizacion_especial_schema,
   actualizar_autorizacion_especial_schema,
 } from "../schemas/autorizaciones_especiales.schemas.js";
-import { uuidRegex } from "../utils/validators.js";
 
 //get----------------------------------------------------------
 export const get_c_autorizaciones_especiales = async (req, res, next) => {
@@ -57,17 +57,17 @@ export const get_c_autorizaciones_especiales_vigentes = async (req, res, next) =
 };
 
 //post---------------------------------------------------------
-export const crear_c_autorizacion_especial = async (req, res, next) => {
+export const crear_c_autorizacion_completa = async (req, res, next) => {
   try {
     const data = req.body;
 
-    const parseAE = crear_autorizacion_especial_schema.safeParse(data);
+    const parseAE = emitir_autorizacion_especial_schema.safeParse(data);
     if (!parseAE.success) {
       return next(zodValidationError(parseAE.error));
     }
 
-    const rows = await crear_autorizacion_especial(parseAE.data);
-    return res.json(rows);
+    const result = await crear_autorizacion_completa(parseAE.data);
+    return res.json(result);
   } catch (error) {
     next(error);
   }
