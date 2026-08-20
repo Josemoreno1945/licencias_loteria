@@ -16,7 +16,8 @@ import {
   CButton,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilPlus } from '@coreui/icons'
+import { cilPlus, cilMagnifyingGlass } from '@coreui/icons'
+import AutorizacionesDetalleModal from '../components/AutorizacionesDetalleModal'
 import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
 import useDebounce from '../../../hooks/useDebounce'
@@ -39,6 +40,7 @@ const AutorizacionesListaView = () => {
   const { data: autorizaciones, loading, error, refetch } = useFetch('/autorizaciones-especiales')
   const [paginaActual, setPaginaActual] = React.useState(1)
   const [busqueda, setBusqueda] = React.useState('')
+  const [modalDetalleId, setModalDetalleId] = React.useState(null)
   const debouncedBusqueda = useDebounce(busqueda, 400)
 
   const autorizacionesFiltradas = React.useMemo(
@@ -72,6 +74,10 @@ const AutorizacionesListaView = () => {
 
   return (
     <CContainer fluid>
+      <AutorizacionesDetalleModal
+        idAutorizacion={modalDetalleId}
+        onClose={() => setModalDetalleId(null)}
+      />
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
         <CCardHeader className="bg-white d-flex justify-content-between align-items-center pb-0">
           <div>
@@ -134,7 +140,7 @@ const AutorizacionesListaView = () => {
                       <CTableHeaderCell>Agencia</CTableHeaderCell>
                       <CTableHeaderCell>Estado</CTableHeaderCell>
                       <CTableHeaderCell>Vencimiento</CTableHeaderCell>
-                      <CTableHeaderCell>Acciones</CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
@@ -164,7 +170,14 @@ const AutorizacionesListaView = () => {
                           {aut.fecha_vencimiento?.slice(0, 10)}
                         </CTableDataCell>
                         <CTableDataCell>
-                          <span className="text-muted small">—</span>
+                          <CButton
+                            size="sm"
+                            color="primary"
+                            variant="outline"
+                            onClick={() => setModalDetalleId(aut.id_documento)}
+                          >
+                            <CIcon icon={cilMagnifyingGlass} />
+                          </CButton>
                         </CTableDataCell>
                       </CTableRow>
                     ))}

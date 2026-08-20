@@ -32,6 +32,19 @@ const getEstadoDocColor = (estado) => {
   }
 }
 
+const getDetallesExtra = (val) => {
+  if (val == null) return 'No registrado'
+  try {
+    const obj = typeof val === 'string' ? JSON.parse(val) : val
+    if (obj && typeof obj === 'object' && obj.observaciones != null) {
+      return obj.observaciones || 'No registrado'
+    }
+    return JSON.stringify(obj)
+  } catch {
+    return String(val)
+  }
+}
+
 const LicenciaDetalleModal = ({ idLicencia, onClose }) => {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -123,6 +136,15 @@ const LicenciaDetalleModal = ({ idLicencia, onClose }) => {
                 <CFormLabel className="text-muted small fw-semibold mb-1">Emitido Por (Usuario)</CFormLabel>
                 <CFormInput type="text" value={data.emitido_por || '—'} readOnly className="bg-light" />
               </CCol>
+
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Número LOT</CFormLabel>
+                <CFormInput type="text" value={data.numero_lot || '—'} readOnly className="bg-light fw-bold" />
+              </CCol>
+              <CCol md={12}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Observaciones / Detalles Extra</CFormLabel>
+                <CFormInput type="text" value={getDetallesExtra(data.detalles_extra)} readOnly className="bg-light" />
+              </CCol>
             </CRow>
 
             <hr className="text-muted opacity-25 my-4" />
@@ -144,10 +166,15 @@ const LicenciaDetalleModal = ({ idLicencia, onClose }) => {
                  <CFormInput type="text" value={data.centro_apuesta || 'Ninguno'} readOnly className="bg-light" />
                </CCol>
 
-               <CCol md={6}>
-                 <CFormLabel className="text-muted small fw-semibold mb-1">Representante Legal</CFormLabel>
-                 <CFormInput type="text" value={data.representante_legal || 'Ninguno'} readOnly className="bg-light" />
-               </CCol>
+                <CCol md={6}>
+                  <CFormLabel className="text-muted small fw-semibold mb-1">Representante Legal</CFormLabel>
+                  <CFormInput type="text" value={data.representante_legal || 'Ninguno'} readOnly className="bg-light" />
+                </CCol>
+
+                <CCol md={12}>
+                  <CFormLabel className="text-muted small fw-semibold mb-1">Tipo de Persona</CFormLabel>
+                  <CFormInput type="text" value={data.tipo_persona || '—'} readOnly className="bg-light" />
+                </CCol>
                
                 <CCol md={12}>
                   <CFormLabel className="text-muted small fw-semibold mb-1">Dirección del Establecimiento</CFormLabel>

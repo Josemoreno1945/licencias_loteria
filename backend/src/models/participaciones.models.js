@@ -51,6 +51,9 @@ export const get_participaciones_id = async (id) => {
     rep.razon_social        AS representante,
     c.razon_social          AS comercializador,
     lic.numero_documento    AS numero_licencia,
+    p.tipo_persona          AS tipo_persona,
+    de.direccion_establecimiento,
+    de.detalles_extra,
     u.nombre_usuario        AS emitido_por,
     de.created_at,
     de.updated_at

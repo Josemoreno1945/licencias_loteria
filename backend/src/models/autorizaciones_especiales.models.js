@@ -47,6 +47,9 @@ export const get_autorizaciones_especiales_id = async (id) => {
     op.razon_social     AS operadora,
     ca.nombre_agencia   AS centro_apuesta,
     ae.agencia_texto,
+    p.tipo_persona      AS tipo_persona,
+    de.direccion_establecimiento,
+    de.detalles_extra,
     u.nombre_usuario    AS emitido_por,
     de.created_at,
     de.updated_at

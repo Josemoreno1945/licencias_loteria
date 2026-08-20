@@ -44,6 +44,7 @@ export const get_licencias_id = async (id) => {
     de.fecha_expedicion,
     de.fecha_vencimiento,
     de.direccion_establecimiento,
+    de.detalles_extra,
     p.ci_rif,
     p.razon_social      AS persona,
     p.tipo_persona,
