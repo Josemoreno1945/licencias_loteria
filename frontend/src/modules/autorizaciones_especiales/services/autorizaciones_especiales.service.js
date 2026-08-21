@@ -19,3 +19,8 @@ export const getBancos = async () => {
   const { data } = await axiosInstance.get("/bancos");
   return data;
 };
+
+export const getDocumentosPorTipo = async (tipo) => {
+  const { data } = await axiosInstance.get(`/documentos-emitidos/por-tipo/${tipo}`);
+  return data;
+};

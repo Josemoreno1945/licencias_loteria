@@ -63,7 +63,13 @@ const RepresentantesModal = ({ visible, comercializador, user, onClose, onRepres
   }, [visible, comercializador, handleVerRepresentantes])
 
   const handleAbrirAgregarRep = async () => {
-    setRepFormData({ id_persona: '', cargo: '', estado: 'activo' })
+    if (!comercializador) return
+    setRepFormData({
+      id_persona: '',
+      cargo: '',
+      estado: 'activo',
+      id_comercializador: comercializador.id_comercializadores,
+    })
     // Ocultar el modal padre mientras se abre el de asignación (evita solapamiento)
     setParentVisible(false)
     try {
@@ -87,13 +93,12 @@ const RepresentantesModal = ({ visible, comercializador, user, onClose, onRepres
     try {
       const payload = {
         ...repFormData,
-        id_comercializador: comercializador.id_comercializadores,
       }
       await axiosInstance.post('/representantes', payload)
       setFeedbackModal({ visible: true, type: 'success', message: 'Representante asignado exitosamente.' })
       setAddRepModal(false)
       setParentVisible(true)
-      const res = await axiosInstance.get(`/representantes/comercializador/${comercializador.id_comercializadores}`)
+      const res = await axiosInstance.get(`/representantes/comercializador/${repFormData.id_comercializador}`)
       setRepresentantes(res.data || [])
       onRepresentanteCreado?.()
     } catch (err) {

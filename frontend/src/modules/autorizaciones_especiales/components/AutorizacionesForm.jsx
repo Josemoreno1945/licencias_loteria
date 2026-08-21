@@ -14,7 +14,7 @@ import {
   CCardBody,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilClipboard, cilList, cilCalendar, cilPlus, cilCreditCard, cilLocationPin } from '@coreui/icons'
+import { cilClipboard, cilList, cilCalendar, cilPlus, cilCreditCard, cilLocationPin, cilFile } from '@coreui/icons'
 
 const SectionTitle = ({ icon, title }) => (
   <div className="d-flex align-items-center gap-2 mb-3 mt-4">
@@ -32,9 +32,11 @@ const AutorizacionesForm = ({
   handleInputChange,
   onSubmit,
   solicitudes,
-  centrosApuesta,
-  loadingDeps,
-  bancos,
+   centrosApuesta,
+   loadingDeps,
+   bancos,
+   documentosAnteriores,
+   loadingDocs,
   isEditMode,
 }) => {
   return (
@@ -137,6 +139,31 @@ const AutorizacionesForm = ({
             </CFormSelect>
           </CInputGroup>
         </CCol>
+
+        {formData.tipo_emision === 'Renovacion' && (
+          <CCol md={4} className="mb-3">
+            <CFormLabel>Documento Anterior</CFormLabel>
+            <CInputGroup>
+              <CInputGroupText>
+                <CIcon icon={cilFile} />
+              </CInputGroupText>
+              <CFormSelect
+                name="id_documento_anterior"
+                value={formData.id_documento_anterior || ''}
+                onChange={handleInputChange}
+                required
+                disabled={loadingDocs}
+              >
+                <option value="">Seleccione un documento anterior...</option>
+                {documentosAnteriores.map((doc) => (
+                  <option key={doc.id_documento} value={doc.id_documento}>
+                    {doc.numero_documento} — {doc.fecha_expedicion ? new Date(doc.fecha_expedicion).toLocaleDateString() : '—'}
+                  </option>
+                ))}
+              </CFormSelect>
+            </CInputGroup>
+          </CCol>
+        )}
 
         <CCol md={4} className="mb-3">
           <CFormLabel>Fecha de Expedición</CFormLabel>

@@ -9,6 +9,7 @@ import {
   getSolicitudesAutorizacion,
   getCentrosApuestaActivos,
   getBancos,
+  getDocumentosPorTipo,
 } from '../services/autorizaciones_especiales.service'
 
 const AutorizacionesRegistroView = () => {
@@ -37,7 +38,9 @@ const AutorizacionesRegistroView = () => {
   const [solicitudes, setSolicitudes] = useState([])
   const [centrosApuesta, setCentrosApuesta] = useState([])
   const [bancos, setBancos] = useState([])
+  const [documentosAnteriores, setDocumentosAnteriores] = useState([])
   const [loadingDeps, setLoadingDeps] = useState(false)
+  const [loadingDocs, setLoadingDocs] = useState(false)
   const [modalState, setModalState] = useState({ visible: false, type: '', message: '' })
   const [error, setError] = useState(null)
 
@@ -78,7 +81,29 @@ const AutorizacionesRegistroView = () => {
     loadDependencies()
   }, [])
 
-  const handleInputChange = (e) => {
+  useEffect(() => {
+    if (formData.tipo_emision === 'Renovacion') {
+      setLoadingDocs(true)
+      getDocumentosPorTipo('Autorizacion_especial')
+        .then((data) => {
+          setDocumentosAnteriores(data || [])
+        })
+        .catch(() => {
+          setDocumentosAnteriores([])
+        })
+        .finally(() => {
+          setLoadingDocs(false)
+        })
+     }
+   }, [formData.tipo_emision])
+
+   useEffect(() => {
+     if (formData.tipo_emision !== 'Renovacion') {
+       setFormData((prev) => ({ ...prev, id_documento_anterior: '' }))
+     }
+   }, [formData.tipo_emision])
+
+   const handleInputChange = (e) => {
     const { name, value, selectedOptions } = e.target
     if (e.target.multiple) {
       setFormData((prev) => ({
@@ -113,6 +138,12 @@ const AutorizacionesRegistroView = () => {
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
       if (!uuidRegex.test(formData.id_solicitud)) {
         setModalState({ visible: true, type: 'error', message: 'El id_solicitud no tiene formato UUID válido.' })
+        return
+      }
+
+      // Validar que id_documento_anterior se provee cuando tipo_emision es Renovacion
+      if (formData.tipo_emision === 'Renovacion' && !formData.id_documento_anterior) {
+        setModalState({ visible: true, type: 'error', message: 'Debe seleccionar un documento anterior para una renovación.' })
         return
       }
 
@@ -245,7 +276,9 @@ const AutorizacionesRegistroView = () => {
             solicitudes={solicitudes}
             centrosApuesta={centrosApuesta}
             bancos={bancos}
+            documentosAnteriores={documentosAnteriores}
             loadingDeps={loadingDeps}
+            loadingDocs={loadingDocs}
           />
           {loadingDeps && (
             <div className="text-center py-3">

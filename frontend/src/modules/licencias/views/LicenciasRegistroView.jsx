@@ -57,7 +57,7 @@ const LicenciasRegistroView = () => {
         const errorsList = []
 
         results[0].status === 'fulfilled'
-          ? setSolicitudes(results[0].value || [])
+          ? setSolicitudes((results[0].value || []).filter((s) => s.estado === 'Pendiente'))
           : errorsList.push(`No se pudieron cargar las solicitudes.`)
 
         results[1].status === 'fulfilled'
@@ -103,6 +103,12 @@ const LicenciasRegistroView = () => {
     const fetchJuegosFiltrados = async () => {
       try {
         const permisos = await getPermisosJuegosPorComercializador(solicitud.id_comercializador)
+        // Si el comercializador no tiene permisos de juego configurados,
+        // mostramos todos los juegos disponibles como fallback (no lista vacía).
+        if (!permisos || permisos.length === 0) {
+          setJuegosFiltrados(juegos)
+          return
+        }
         const idsAutorizados = permisos.map((p) => p.id_juego)
         setJuegosFiltrados(juegos.filter((j) => idsAutorizados.includes(j.id_juego)))
       } catch {

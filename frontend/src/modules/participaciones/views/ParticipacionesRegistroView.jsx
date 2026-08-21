@@ -9,7 +9,9 @@ import {
   getSolicitudesParticipacion,
   getLicenciasVigentes,
   getBancos,
-  getRepresentantes,
+  getRepresentantesByComercializador,
+  getComercializadoresActivos,
+  getDocumentosPorTipo,
 } from '../services/participaciones.service'
 
 const ParticipacionesRegistroView = () => {
@@ -25,6 +27,7 @@ const ParticipacionesRegistroView = () => {
     direccion_establecimiento: '',
     detalles_extra: '',
     nro_archivo: '',
+    id_comercializador: '',
     id_representante: '',
     id_licencia: '',
     id_banco: '',
@@ -35,10 +38,13 @@ const ParticipacionesRegistroView = () => {
     responsable_texto: '',
     observaciones_pago: '',
   })
-  const [solicitudes, setSolicitudes] = useState([])
+   const [solicitudes, setSolicitudes] = useState([])
   const [licencias, setLicencias] = useState([])
   const [bancos, setBancos] = useState([])
   const [representantes, setRepresentantes] = useState([])
+  const [comercializadores, setComercializadores] = useState([])
+  const [documentosAnteriores, setDocumentosAnteriores] = useState([])
+  const [loadingReps, setLoadingReps] = useState(false)
   const [loadingDeps, setLoadingDeps] = useState(false)
   const [modalState, setModalState] = useState({ visible: false, type: '', message: '' })
   const [error, setError] = useState(null)
@@ -53,7 +59,8 @@ const ParticipacionesRegistroView = () => {
           getSolicitudesParticipacion(),
           getLicenciasVigentes(),
           getBancos(),
-          getRepresentantes(),
+          getComercializadoresActivos(),
+          getDocumentosPorTipo('Participacion'),
         ])
 
         const errorsList = []
@@ -71,8 +78,12 @@ const ParticipacionesRegistroView = () => {
           : errorsList.push(`No se pudieron cargar los bancos.`)
 
         results[3].status === 'fulfilled'
-          ? setRepresentantes(results[3].value || [])
-          : errorsList.push(`No se pudieron cargar los representantes.`)
+          ? setComercializadores(results[3].value || [])
+          : errorsList.push(`No se pudieron cargar los comercializadores.`)
+
+        results[4].status === 'fulfilled'
+          ? setDocumentosAnteriores(results[4].value || [])
+          : errorsList.push(`No se pudieron cargar los documentos anteriores.`)
 
         if (errorsList.length > 0) {
           console.error('Errores cargando dependencias:', errorsList)
@@ -84,6 +95,51 @@ const ParticipacionesRegistroView = () => {
     }
     loadDependencies()
   }, [])
+
+  useEffect(() => {
+    if (!formData.id_solicitud) {
+      setFormData((prev) => ({ ...prev, id_comercializador: '' }))
+      setRepresentantes([])
+      return
+    }
+    const solicitud = solicitudes.find((s) => s.id_solicitudes === formData.id_solicitud)
+    if (solicitud && solicitud.id_comercializador) {
+      setFormData((prev) => ({ ...prev, id_comercializador: solicitud.id_comercializador }))
+    }
+  }, [formData.id_solicitud, solicitudes])
+
+  useEffect(() => {
+    if (formData.tipo_emision !== 'Renovacion') {
+      setFormData((prev) => ({ ...prev, id_documento_anterior: '' }))
+    }
+  }, [formData.tipo_emision])
+
+  useEffect(() => {
+    if (!formData.id_comercializador) {
+      setRepresentantes([])
+      return
+    }
+    let cancelled = false
+    setLoadingReps(true)
+    getRepresentantesByComercializador(formData.id_comercializador)
+      .then((data) => {
+        if (!cancelled) {
+          setRepresentantes(data || [])
+          const active = (data || []).find((r) => r.estado === 'activo')
+          setFormData((prev) => ({
+            ...prev,
+            id_representante: active ? active.id_persona : ((data || [])[0]?.id_persona || ''),
+          }))
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setRepresentantes([])
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingReps(false)
+      })
+    return () => { cancelled = true }
+  }, [formData.id_comercializador])
 
   const handleInputChange = (e) => {
     const { name, value, selectedOptions } = e.target
@@ -124,6 +180,12 @@ const ParticipacionesRegistroView = () => {
       }
       if (!uuidRegex.test(formData.id_licencia)) {
         setModalState({ visible: true, type: 'error', message: 'Debe seleccionar una licencia válida.' })
+        return
+      }
+
+      // Validar que id_documento_anterior se provee cuando tipo_emision es Renovacion
+      if (formData.tipo_emision === 'Renovacion' && !formData.id_documento_anterior) {
+        setModalState({ visible: true, type: 'error', message: 'Debe seleccionar un documento anterior para una renovación.' })
         return
       }
 
@@ -194,6 +256,7 @@ const ParticipacionesRegistroView = () => {
       console.log('Payload participacion:', JSON.stringify(payload, null, 2))
       await emitirParticipacion(payload)
       setModalState({ visible: true, type: 'success', message: 'Participación emitida correctamente.' })
+      setRepresentantes([])
       setFormData({
         id_solicitud: '',
         tipo_emision: 'Inscripcion',
@@ -205,6 +268,7 @@ const ParticipacionesRegistroView = () => {
         direccion_establecimiento: '',
         detalles_extra: '',
         nro_archivo: '',
+        id_comercializador: '',
         id_representante: '',
         id_licencia: '',
         id_banco: '',
@@ -255,7 +319,10 @@ const ParticipacionesRegistroView = () => {
             licencias={licencias}
             bancos={bancos}
             representantes={representantes}
-            loadingDeps={loadingDeps}
+            comercializadores={comercializadores}
+             documentosAnteriores={documentosAnteriores}
+             loadingDeps={loadingDeps}
+             loadingReps={loadingReps}
           />
           {loadingDeps && (
             <div className="text-center py-3">

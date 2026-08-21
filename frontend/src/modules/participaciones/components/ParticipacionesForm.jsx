@@ -14,7 +14,7 @@ import {
   CCardBody,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilClipboard, cilList, cilCalendar, cilPlus, cilCreditCard, cilUser } from '@coreui/icons'
+import { cilClipboard, cilList, cilCalendar, cilPlus, cilCreditCard, cilUser, cilBuilding } from '@coreui/icons'
 
 const SectionTitle = ({ icon, title }) => (
   <div className="d-flex align-items-center gap-2 mb-3 mt-4">
@@ -36,6 +36,9 @@ const ParticipacionesForm = ({
   loadingDeps,
   bancos,
   representantes,
+   comercializadores,
+   documentosAnteriores,
+   loadingReps,
   isEditMode,
 }) => {
   return (
@@ -87,6 +90,52 @@ const ParticipacionesForm = ({
               {licencias.map((licencia) => (
                 <option key={licencia.id_documento} value={licencia.id_documento}>
                   {licencia.numero_documento} — {licencia.persona}
+                </option>
+              ))}
+            </CFormSelect>
+          </CInputGroup>
+        </CCol>
+      </CRow>
+
+      <CRow className="mb-4">
+        <CCol md={6} className="mb-3">
+          <CFormLabel>Comercializador</CFormLabel>
+          <CInputGroup>
+            <CInputGroupText>
+              <CIcon icon={cilBuilding} />
+            </CInputGroupText>
+            <CFormSelect
+              name="id_comercializador"
+              value={formData.id_comercializador || ''}
+              onChange={handleInputChange}
+              disabled={loadingDeps || isEditMode}
+            >
+              <option value="">Seleccione un comercializador...</option>
+              {comercializadores.map((com) => (
+                <option key={com.id_comercializadores} value={com.id_comercializadores}>
+                  {com.razon_social} — {com.rif}
+                </option>
+              ))}
+            </CFormSelect>
+          </CInputGroup>
+        </CCol>
+
+        <CCol md={6} className="mb-3">
+          <CFormLabel>Representante Legal (Opcional)</CFormLabel>
+          <CInputGroup>
+            <CInputGroupText>
+              <CIcon icon={cilUser} />
+            </CInputGroupText>
+            <CFormSelect
+              name="id_representante"
+              value={formData.id_representante || ''}
+              onChange={handleInputChange}
+              disabled={loadingDeps || loadingReps || isEditMode}
+            >
+              <option value="">Ninguno / Sin representante</option>
+              {representantes.map((rep) => (
+                <option key={rep.id_persona} value={rep.id_persona}>
+                  {rep.persona_razon_social} — {rep.persona_ci_rif || '—'}
                 </option>
               ))}
             </CFormSelect>
@@ -161,60 +210,65 @@ const ParticipacionesForm = ({
         </CCol>
       </CRow>
 
-      <CRow className="mb-4">
-        <CCol md={4} className="mb-3">
-          <CFormLabel>Fecha de Expedición</CFormLabel>
-          <CInputGroup>
-            <CInputGroupText>
-              <CIcon icon={cilCalendar} />
-            </CInputGroupText>
-            <CFormInput
-              name="fecha_expedicion"
-              type="date"
-              value={formData.fecha_expedicion || ''}
-              onChange={handleInputChange}
-              required
-            />
-          </CInputGroup>
-        </CCol>
+      {(formData.tipo_emision === 'Renovacion') && (
+        <CRow className="mb-4">
+          <CCol md={12} className="mb-3">
+            <CFormLabel>Documento Anterior (obligatorio para renovación)</CFormLabel>
+            <CInputGroup>
+              <CInputGroupText>
+                <CIcon icon={cilList} />
+              </CInputGroupText>
+              <CFormSelect
+                name="id_documento_anterior"
+                value={formData.id_documento_anterior || ''}
+                onChange={handleInputChange}
+                required
+                disabled={loadingDeps || isEditMode}
+              >
+                <option value="">Seleccione un documento anterior...</option>
+                {documentosAnteriores.map((doc) => (
+                  <option key={doc.id_documento} value={doc.id_documento}>
+                    {doc.numero_documento} — {doc.estado_documento}
+                  </option>
+                ))}
+              </CFormSelect>
+            </CInputGroup>
+          </CCol>
+        </CRow>
+      )}
 
-        <CCol md={4} className="mb-3">
-          <CFormLabel>Fecha de Vencimiento</CFormLabel>
-          <CInputGroup>
-            <CInputGroupText>
-              <CIcon icon={cilCalendar} />
-            </CInputGroupText>
-            <CFormInput
-              name="fecha_vencimiento"
-              type="date"
-              value={formData.fecha_vencimiento || ''}
-              onChange={handleInputChange}
-            />
-          </CInputGroup>
-        </CCol>
+    <CRow className="mb-4">
+      <CCol md={6} className="mb-3">
+        <CFormLabel>Fecha de Expedición</CFormLabel>
+        <CInputGroup>
+          <CInputGroupText>
+            <CIcon icon={cilCalendar} />
+          </CInputGroupText>
+          <CFormInput
+            name="fecha_expedicion"
+            type="date"
+            value={formData.fecha_expedicion || ''}
+            onChange={handleInputChange}
+            required
+          />
+        </CInputGroup>
+      </CCol>
 
-        <CCol md={4} className="mb-3">
-          <CFormLabel>Representante Legal (Opcional)</CFormLabel>
-          <CInputGroup>
-            <CInputGroupText>
-              <CIcon icon={cilUser} />
-            </CInputGroupText>
-            <CFormSelect
-              name="id_representante"
-              value={formData.id_representante || ''}
-              onChange={handleInputChange}
-              disabled={loadingDeps || isEditMode}
-            >
-              <option value="">Ninguno / Sin representante</option>
-              {representantes.map((rep) => (
-                <option key={rep.id_persona} value={rep.id_persona}>
-                  {rep.persona_razon_social} — {rep.comercializador_razon_social}
-                </option>
-              ))}
-            </CFormSelect>
-          </CInputGroup>
-        </CCol>
-      </CRow>
+      <CCol md={6} className="mb-3">
+        <CFormLabel>Fecha de Vencimiento</CFormLabel>
+        <CInputGroup>
+          <CInputGroupText>
+            <CIcon icon={cilCalendar} />
+          </CInputGroupText>
+          <CFormInput
+            name="fecha_vencimiento"
+            type="date"
+            value={formData.fecha_vencimiento || ''}
+            onChange={handleInputChange}
+          />
+        </CInputGroup>
+      </CCol>
+    </CRow>
 
       <CRow className="mb-4">
         <CCol md={12} className="mb-3">
