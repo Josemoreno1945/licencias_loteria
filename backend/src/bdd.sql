@@ -57,7 +57,18 @@ CREATE TYPE tipo_emision_enum AS ENUM (
     'Renovacion'
 );
 
+CREATE TYPE tipo_participacion_enum AS ENUM (
+    'Archivo',
+    'Certificacion',
+    'Rectificacion',
+    'Nulidad'
+);
 
+CREATE TYPE tipo_autorizacion_especial_enum AS ENUM (
+    'Movil',
+    'Localidad',
+    'Mesa'
+);
 
 CREATE TYPE nivel_permiso_juego_enum AS ENUM (
     'comercializador',
@@ -247,6 +258,35 @@ COMMENT ON COLUMN centros_apuesta.id_persona IS 'Encargado o dueño local del ce
 CREATE INDEX idx_centros_nombre          ON centros_apuesta (nombre_agencia);
 CREATE INDEX idx_centros_comercializador ON centros_apuesta (id_comercializador);
 
+-- -------------------------------------------------------
+
+CREATE TABLE centros_apuesta_representantes (
+    id_ca_representante UUID     PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_centro           UUID     NOT NULL,
+    id_persona          UUID     NOT NULL,
+    cargo               VARCHAR(100),
+    estado              estado   NOT NULL DEFAULT 'activo',
+
+    CONSTRAINT fk_car_centro
+        FOREIGN KEY (id_centro)
+        REFERENCES centros_apuesta (id_centro)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+
+    CONSTRAINT fk_car_persona
+        FOREIGN KEY (id_persona)
+        REFERENCES personas (id_persona)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+
+    CONSTRAINT uq_centro_representante
+        UNIQUE (id_centro, id_persona)
+);
+
+COMMENT ON TABLE  centros_apuesta_representantes      IS 'Representantes legales vinculados a un centro de apuesta (pueden ser varios).';
+COMMENT ON COLUMN centros_apuesta_representantes.cargo IS 'Cargo del representante dentro del centro (ej. Gerente, Apoderado).';
+
+CREATE INDEX idx_centros_representantes_centro   ON centros_apuesta_representantes (id_centro);
+CREATE INDEX idx_centros_representantes_persona  ON centros_apuesta_representantes (id_persona);
+
 
 -- ============================================================
 -- JERARQUÍA DE PERMISOS DE JUEGO
@@ -327,6 +367,8 @@ CREATE TABLE solicitudes (
     justificacion_no_logrado TEXT,
     descripcion_tramite      TEXT,
     observaciones            TEXT,
+    tipo_emision             tipo_emision_enum,          -- Inscripcion/Renovacion (aplica en Licencia)
+    numero_autorizacion_conalot VARCHAR(50),             -- Nro CONALOT (aplica en Participacion)
     registrado_por     UUID                    NOT NULL,
     created_at         TIMESTAMP               DEFAULT now(),
     updated_at         TIMESTAMP               DEFAULT now(),
@@ -366,6 +408,89 @@ CREATE INDEX idx_solicitudes_tipo           ON solicitudes (tipo_tramite);
 CREATE INDEX idx_solicitudes_estado         ON solicitudes (estado);
 CREATE INDEX idx_solicitudes_persona        ON solicitudes (id_persona);
 CREATE INDEX idx_solicitudes_registrado_por ON solicitudes (registrado_por);
+CREATE INDEX idx_solicitudes_conalot        ON solicitudes (numero_autorizacion_conalot);
+
+-- -------------------------------------------------------
+-- TABLAS PUENTE DE SOLICITUDES (N:M)
+-- -------------------------------------------------------
+
+CREATE TABLE solicitud_representantes (
+    id_solicitud_representante UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_solicitud               UUID    NOT NULL,
+    id_persona                 UUID    NOT NULL,
+    rol                        VARCHAR(30) NOT NULL,   -- 'comercializador' | 'centro' | 'legal'
+    cargo                      VARCHAR(100),
+    estado                     estado  NOT NULL DEFAULT 'activo',
+
+    CONSTRAINT fk_sr_solicitud
+        FOREIGN KEY (id_solicitud)
+        REFERENCES solicitudes (id_solicitudes)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+
+    CONSTRAINT fk_sr_persona
+        FOREIGN KEY (id_persona)
+        REFERENCES personas (id_persona)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+
+    CONSTRAINT uq_solicitud_representante
+        UNIQUE (id_solicitud, id_persona, rol)
+);
+
+COMMENT ON TABLE  solicitud_representantes IS 'Representantes legales vinculados a una solicitud (varios por rol).';
+COMMENT ON COLUMN solicitud_representantes.rol IS 'Rol del representante: comercializador, centro o legal.';
+
+CREATE INDEX idx_sol_rep_solicitud ON solicitud_representantes (id_solicitud);
+CREATE INDEX idx_sol_rep_persona   ON solicitud_representantes (id_persona);
+
+-- -------------------------------------------------------
+
+CREATE TABLE solicitud_centros (
+    id_solicitud_centro UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_solicitud        UUID NOT NULL,
+    id_centro           UUID NOT NULL,
+
+    CONSTRAINT fk_sc_solicitud
+        FOREIGN KEY (id_solicitud)
+        REFERENCES solicitudes (id_solicitudes)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+
+    CONSTRAINT fk_sc_centro
+        FOREIGN KEY (id_centro)
+        REFERENCES centros_apuesta (id_centro)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+
+    CONSTRAINT uq_solicitud_centro UNIQUE (id_solicitud, id_centro)
+);
+
+COMMENT ON TABLE solicitud_centros IS 'Centros de apuesta vinculados a una solicitud (varios).';
+
+CREATE INDEX idx_sol_centro_solicitud ON solicitud_centros (id_solicitud);
+CREATE INDEX idx_sol_centro_centro    ON solicitud_centros (id_centro);
+
+-- -------------------------------------------------------
+
+CREATE TABLE solicitud_juegos (
+    id_solicitud_juego UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_solicitud       UUID NOT NULL,
+    id_juego           UUID NOT NULL,
+
+    CONSTRAINT fk_sj_solicitud
+        FOREIGN KEY (id_solicitud)
+        REFERENCES solicitudes (id_solicitudes)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+
+    CONSTRAINT fk_sj_juego
+        FOREIGN KEY (id_juego)
+        REFERENCES juegos (id_juego)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+
+    CONSTRAINT uq_solicitud_juego UNIQUE (id_solicitud, id_juego)
+);
+
+COMMENT ON TABLE solicitud_juegos IS 'Juegos solicitados dentro de una solicitud (relación N:M).';
+
+CREATE INDEX idx_sol_juego_solicitud ON solicitud_juegos (id_solicitud);
+CREATE INDEX idx_sol_juego_juego     ON solicitud_juegos (id_juego);
 
 
 -- ============================================================
@@ -385,6 +510,7 @@ CREATE TABLE documentos_emitidos (
     fecha_vencimiento     DATE                  NOT NULL,
     direccion_establecimiento TEXT,
     detalles_extra        JSONB,
+    observaciones         TEXT,
     emitido_por           UUID                  NOT NULL,
     created_at            TIMESTAMP             DEFAULT now(),
     updated_at            TIMESTAMP             DEFAULT now(),
@@ -474,7 +600,6 @@ CREATE TABLE licencias (
     id_persona         UUID                    NOT NULL,
     id_comercializador UUID,
     id_centro          UUID,
-    id_representante   UUID,
     categoria          categoria_licencia_enum NOT NULL,
     numero_lot         VARCHAR(30),
 
@@ -496,11 +621,6 @@ CREATE TABLE licencias (
     CONSTRAINT fk_lic_centro
         FOREIGN KEY (id_centro)
         REFERENCES centros_apuesta (id_centro)
-        ON DELETE RESTRICT ON UPDATE CASCADE,
-
-    CONSTRAINT fk_lic_representante
-        FOREIGN KEY (id_representante)
-        REFERENCES personas (id_persona)
         ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
@@ -510,27 +630,62 @@ COMMENT ON COLUMN licencias.id_comercializador IS
     'Nullable: no toda licencia pertenece a un comercializador.';
 COMMENT ON COLUMN licencias.id_centro IS
     'Centro de apuesta específico al que aplica esta licencia.';
-COMMENT ON COLUMN licencias.id_representante IS
-    'Persona representante legal que gestionó/firmó esta licencia (auditoría).';
+COMMENT ON COLUMN licencias.id_persona IS
+    'Titular; razón social y dirección fiscal se obtienen por JOIN desde la solicitud (personas/comercializadores).';
 
 CREATE INDEX idx_licencias_persona              ON licencias (id_persona);
 CREATE INDEX idx_licencias_comercializador      ON licencias (id_comercializador);
 CREATE INDEX idx_licencias_centro               ON licencias (id_centro);
-CREATE INDEX idx_licencias_representante        ON licencias (id_representante);
 CREATE INDEX idx_licencias_categoria            ON licencias (categoria);
 CREATE INDEX idx_licencias_persona_categoria    ON licencias (id_persona, categoria);
+
+-- -------------------------------------------------------
+-- Puente: Representantes de la Licencia (N:M)
+-- -------------------------------------------------------
+
+CREATE TABLE licencias_representantes (
+    id_lic_representante UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_documento         UUID    NOT NULL,
+    id_persona           UUID    NOT NULL,
+    rol                  VARCHAR(30),            -- 'comercializador' | 'centro' | 'legal'
+    cargo                VARCHAR(100),
+
+    CONSTRAINT fk_lr_documento
+        FOREIGN KEY (id_documento)
+        REFERENCES licencias (id_documento)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+
+    CONSTRAINT fk_lr_persona
+        FOREIGN KEY (id_persona)
+        REFERENCES personas (id_persona)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+
+    CONSTRAINT uq_licencia_representante UNIQUE (id_documento, id_persona)
+);
+
+COMMENT ON TABLE licencias_representantes IS 'Representantes legales que figuran en la licencia emitida (varios).';
+
+CREATE INDEX idx_lic_rep_documento ON licencias_representantes (id_documento);
+CREATE INDEX idx_lic_rep_persona   ON licencias_representantes (id_persona);
 
 -- ------------------------------------------------------------
 -- AUTORIZACIONES ESPECIALES
 -- ------------------------------------------------------------
 
 CREATE TABLE autorizaciones_especiales (
-    id_documento  UUID         PRIMARY KEY,
-    nro_mesa      INTEGER      NOT NULL,
-    id_persona    UUID         NOT NULL,
-    id_operadora  UUID         NOT NULL,
-    id_centro     UUID,
-    agencia_texto VARCHAR(200),
+    id_documento              UUID                             PRIMARY KEY,
+    nro_mesa                  INTEGER,                         -- Solo aplica cuando tipo = 'Mesa'
+    tipo                      tipo_autorizacion_especial_enum NOT NULL DEFAULT 'Mesa',
+    id_persona                UUID                             NOT NULL,
+    id_operadora              UUID                             NOT NULL,
+    id_comercializador        UUID,                           -- Comercializador asignado
+    id_centro                 UUID,
+    agencia_texto             VARCHAR(200),
+    numero_lot                VARCHAR(30),
+    direccion_centro_asignado TEXT,                           -- Dirección del centro de apuesta asignado
+    direccion_localidad       TEXT,                           -- Dirección de la localidad (tipo Localidad)
+    direccion_responsable     TEXT,                           -- Dirección del responsable
+    otros                     JSONB,                          -- Campos libres ("otros")
 
     CONSTRAINT fk_aut_documento
         FOREIGN KEY (id_documento)
@@ -547,34 +702,85 @@ CREATE TABLE autorizaciones_especiales (
         REFERENCES operadoras (id_operadora)
         ON DELETE RESTRICT ON UPDATE CASCADE,
 
+    CONSTRAINT fk_aut_comercializador
+        FOREIGN KEY (id_comercializador)
+        REFERENCES comercializadores (id_comercializadores)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+
     CONSTRAINT fk_aut_centro
         FOREIGN KEY (id_centro)
         REFERENCES centros_apuesta (id_centro)
-        ON DELETE RESTRICT ON UPDATE CASCADE
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+
+    CONSTRAINT ck_aut_mesa_xor CHECK (
+        tipo <> 'Mesa' OR nro_mesa IS NOT NULL
+    )
 );
 
 COMMENT ON TABLE  autorizaciones_especiales           IS
     'Detalle de documentos de tipo ''Autorizacion_especial''. PK = FK 1:1 con documentos_emitidos.';
+COMMENT ON COLUMN autorizaciones_especiales.tipo      IS
+    'Catálogo: Movil, Localidad o Mesa.';
+COMMENT ON COLUMN autorizaciones_especiales.nro_mesa  IS
+    'Obligatorio solo cuando tipo = ''Mesa''.';
 COMMENT ON COLUMN autorizaciones_especiales.id_centro IS
     'Nullable: se usa agencia_texto cuando la agencia no está catalogada.';
+COMMENT ON COLUMN autorizaciones_especiales.id_comercializador IS
+    'Comercializador asignado a la autorización especial.';
 
 CREATE INDEX idx_autorizaciones_mesa              ON autorizaciones_especiales (nro_mesa);
 CREATE INDEX idx_autorizaciones_persona           ON autorizaciones_especiales (id_persona);
 CREATE INDEX idx_autorizaciones_operadora         ON autorizaciones_especiales (id_operadora);
+CREATE INDEX idx_autorizaciones_comercializador   ON autorizaciones_especiales (id_comercializador);
 CREATE INDEX idx_autorizaciones_centro            ON autorizaciones_especiales (id_centro);
+CREATE INDEX idx_autorizaciones_tipo              ON autorizaciones_especiales (tipo);
 CREATE INDEX idx_autorizaciones_operadora_mesa    ON autorizaciones_especiales (id_operadora, nro_mesa);
+
+-- -------------------------------------------------------
+-- Puente: Representantes de la Autorización Especial (N:M)
+-- -------------------------------------------------------
+
+CREATE TABLE autorizaciones_representantes (
+    id_aut_representante UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_documento         UUID    NOT NULL,
+    id_persona           UUID    NOT NULL,
+    rol                  VARCHAR(30),            -- 'comercializador' | 'centro' | 'legal'
+    cargo                VARCHAR(100),
+
+    CONSTRAINT fk_ar_documento
+        FOREIGN KEY (id_documento)
+        REFERENCES autorizaciones_especiales (id_documento)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+
+    CONSTRAINT fk_ar_persona
+        FOREIGN KEY (id_persona)
+        REFERENCES personas (id_persona)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+
+    CONSTRAINT uq_autorizacion_representante UNIQUE (id_documento, id_persona)
+);
+
+COMMENT ON TABLE autorizaciones_representantes IS 'Representantes legales que figuran en la autorización especial (varios).';
+
+CREATE INDEX idx_aut_rep_documento ON autorizaciones_representantes (id_documento);
+CREATE INDEX idx_aut_rep_persona   ON autorizaciones_representantes (id_persona);
 
 -- ------------------------------------------------------------
 -- PARTICIPACIONES
 -- ------------------------------------------------------------
 
 CREATE TABLE participaciones (
-    id_documento       UUID        PRIMARY KEY,
-    nro_archivo        VARCHAR(30) NOT NULL,
-    id_persona         UUID        NOT NULL,
-    id_representante   UUID,
-    id_comercializador UUID        NOT NULL,
-    id_licencia        UUID        NOT NULL,
+    id_documento          UUID                    PRIMARY KEY,
+    nro_archivo           VARCHAR(30)             NOT NULL,
+    id_persona            UUID                    NOT NULL,
+    id_comercializador    UUID                    NOT NULL,
+    id_licencia           UUID,                   -- Licencia previa (una de las dos debe existir)
+    id_autorizacion_previa UUID,                  -- Autorización especial previa (una de las dos debe existir)
+    tipo                  tipo_participacion_enum NOT NULL,
+    numero_lot            VARCHAR(30),
+    fecha_solicitud       DATE,
+    territorio            TEXT,
+    observaciones         TEXT,
 
     CONSTRAINT fk_par_documento
         FOREIGN KEY (id_documento)
@@ -586,11 +792,6 @@ CREATE TABLE participaciones (
         REFERENCES personas (id_persona)
         ON DELETE RESTRICT ON UPDATE CASCADE,
 
-    CONSTRAINT fk_par_representante
-        FOREIGN KEY (id_representante)
-        REFERENCES personas (id_persona)
-        ON DELETE RESTRICT ON UPDATE CASCADE,
-
     CONSTRAINT fk_par_comercializador
         FOREIGN KEY (id_comercializador)
         REFERENCES comercializadores (id_comercializadores)
@@ -599,21 +800,67 @@ CREATE TABLE participaciones (
     CONSTRAINT fk_par_licencia
         FOREIGN KEY (id_licencia)
         REFERENCES licencias (id_documento)
-        ON DELETE RESTRICT ON UPDATE CASCADE
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+
+    CONSTRAINT fk_par_autorizacion_previa
+        FOREIGN KEY (id_autorizacion_previa)
+        REFERENCES autorizaciones_especiales (id_documento)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+
+    CONSTRAINT ck_par_previa_xor CHECK (
+        id_licencia IS NOT NULL OR id_autorizacion_previa IS NOT NULL
+    )
 );
 
 COMMENT ON TABLE  participaciones             IS
     'Detalle de documentos de tipo ''Participacion''. PK = FK 1:1 con documentos_emitidos.';
-COMMENT ON COLUMN participaciones.id_representante IS
-    'Nullable: aplica cuando la persona titular es jurídica y tiene representante legal.';
-COMMENT ON COLUMN participaciones.id_licencia      IS
-    'Licencia padre que habilita esta participación. Sin ella, la participación carece de respaldo legal.';
+COMMENT ON COLUMN participaciones.tipo        IS
+    'Catálogo: Archivo, Certificacion, Rectificacion, Nulidad.';
+COMMENT ON COLUMN participaciones.id_licencia IS
+    'Licencia padre que habilita esta participación (una de dos previas posibles).';
+COMMENT ON COLUMN participaciones.id_autorizacion_previa IS
+    'Autorización especial previa que habilita esta participación (una de dos previas posibles).';
+COMMENT ON COLUMN participaciones.territorio  IS
+    'Territorio de alcance de la participación según el documento físico.';
+COMMENT ON COLUMN participaciones.fecha_solicitud IS
+    'Fecha de solicitud según el documento físico.';
 
 CREATE INDEX idx_participaciones_licencia             ON participaciones (id_licencia);
 CREATE INDEX idx_participaciones_persona              ON participaciones (id_persona);
 CREATE INDEX idx_participaciones_comercializador      ON participaciones (id_comercializador);
 CREATE INDEX idx_participaciones_archivo              ON participaciones (nro_archivo);
+CREATE INDEX idx_participaciones_tipo                 ON participaciones (tipo);
+CREATE INDEX idx_participaciones_autorizacion_previa  ON participaciones (id_autorizacion_previa);
 CREATE INDEX idx_participaciones_licencia_persona     ON participaciones (id_licencia, id_persona);
+
+-- -------------------------------------------------------
+-- Puente: Representantes de la Participación (N:M)
+-- -------------------------------------------------------
+
+CREATE TABLE participaciones_representantes (
+    id_par_representante UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_documento         UUID    NOT NULL,
+    id_persona           UUID    NOT NULL,
+    rol                  VARCHAR(30),
+    cargo                VARCHAR(100),
+
+    CONSTRAINT fk_pr_documento
+        FOREIGN KEY (id_documento)
+        REFERENCES participaciones (id_documento)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+
+    CONSTRAINT fk_pr_persona
+        FOREIGN KEY (id_persona)
+        REFERENCES personas (id_persona)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+
+    CONSTRAINT uq_participacion_representante UNIQUE (id_documento, id_persona)
+);
+
+COMMENT ON TABLE participaciones_representantes IS 'Representantes legales que figuran en la participación emitida (varios).';
+
+CREATE INDEX idx_par_rep_documento ON participaciones_representantes (id_documento);
+CREATE INDEX idx_par_rep_persona   ON participaciones_representantes (id_persona);
 
 
 -- ============================================================
