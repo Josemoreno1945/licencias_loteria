@@ -28,7 +28,7 @@ const LicenciasEditarModal = ({ idLicencia, onClose, onUpdated }) => {
     numero_lot: '',
     juegos: [],
     id_centro: '',
-    id_representante: '',
+    representantes: [],
     id_banco: '',
     num_referencia: '',
     monto: '',
@@ -90,7 +90,10 @@ const LicenciasEditarModal = ({ idLicencia, onClose, onUpdated }) => {
           numero_lot: licencia.numero_lot || '',
           juegos: licencia.juegos || [],
           id_centro: licencia.id_centro || '',
-          id_representante: licencia.id_representante || '',
+          representantes: Array.isArray(licencia.representantes)
+            ? licencia.representantes.map(r => r.id_persona).filter(Boolean)
+            : [],
+           observaciones_documento: licencia.observaciones_documento || '',
           id_banco: '',
           num_referencia: licencia.pago_numero_referencia || '',
           monto: licencia.pago_monto || '',
@@ -142,7 +145,7 @@ const LicenciasEditarModal = ({ idLicencia, onClose, onUpdated }) => {
 
     try {
       const payload = {}
-      const editableFields = ['numero_lot', 'id_centro', 'id_representante']
+      const editableFields = ['numero_lot', 'id_centro']
 
       editableFields.forEach((key) => {
         const val = formData[key]
@@ -150,6 +153,11 @@ const LicenciasEditarModal = ({ idLicencia, onClose, onUpdated }) => {
           payload[key] = val
         }
       })
+
+      // Representantes legales (N:M): array de UUIDs
+      if (Array.isArray(formData.representantes) && formData.representantes.length > 0) {
+        payload.representantes = formData.representantes
+      }
 
       const response = await axiosInstance.put(`/licencias/${idLicencia}`, payload)
 

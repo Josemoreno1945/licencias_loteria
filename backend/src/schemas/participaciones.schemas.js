@@ -39,6 +39,12 @@ const optionalUuidField = z.preprocess(
   uuidSchema.optional().nullable(), // ← corrección Zod v3
 );
 
+const optionalUuidArrayField = z.preprocess(
+  (value) =>
+    value === "" || value === null || value === undefined ? undefined : value,
+  z.array(uuidSchema).optional().nullable(),
+);
+
 const base_participacion_schema = z.object({
   id_documento: uuidSchema,
 
@@ -47,23 +53,44 @@ const base_participacion_schema = z.object({
     .min(1, "El numero de archivo no puede estar vacio")
     .max(30, "El numero de archivo no puede exceder los 30 caracteres"),
 
-  id_persona: uuidSchema,
+  id_persona: optionalUuidField,
 
-  id_representante: uuidSchema.optional().nullable(),
+  id_comercializador: optionalUuidField,
 
-  id_comercializador: uuidSchema,
+  id_licencia: optionalUuidField,
 
-  id_licencia: uuidSchema,
+  id_autorizacion_previa: optionalUuidField,
+
+  tipo: z.enum(["Archivo", "Certificacion", "Rectificacion", "Nulidad"], {
+    required_error: "El tipo de participacion es requerido",
+  }),
+
+  numero_lot: optionalStringField(
+    z.string().max(30, "El numero_lot no puede exceder los 30 caracteres"),
+  ),
+
+  fecha_solicitud: optionalDateField,
+
+  territorio: optionalStringField(
+    z.string().max(200, "El territorio no puede exceder los 200 caracteres"),
+  ),
+
+  observaciones: optionalStringField(
+    z.string().max(500, "Las observaciones no pueden exceder los 500 caracteres"),
+  ),
+
+  representantes: optionalUuidArrayField,
 });
 
 export const actualizar_participacion_schema = base_participacion_schema.omit({
   id_documento: true,
-});
+}).partial();
 
 /**
  * Schema para la emisión (alta) de una participación.
  * Reproduce el patrón de emitir_licencia_schema: crea el documento
  * emitido, el pago y el detalle de participaciones de forma transaccional.
+ * id_persona e id_comercializador se obtienen de la solicitud asociiada.
  */
 export const emitir_participacion_schema = z.object({
   id_solicitud: uuidSchema,
@@ -111,9 +138,29 @@ export const emitir_participacion_schema = z.object({
     .min(1, "El numero de archivo no puede estar vacio")
     .max(30, "El numero de archivo no puede exceder los 30 caracteres"),
 
-  id_representante: optionalUuidField,
+  id_licencia: optionalUuidField,
 
-  id_licencia: uuidSchema,
+  id_autorizacion_previa: optionalUuidField,
+
+  tipo: z.enum(["Archivo", "Certificacion", "Rectificacion", "Nulidad"], {
+    required_error: "El tipo de participacion es requerido",
+  }),
+
+  numero_lot: optionalStringField(
+    z.string().max(30, "El numero_lot no puede exceder los 30 caracteres"),
+  ),
+
+  fecha_solicitud: optionalDateField,
+
+  territorio: optionalStringField(
+    z.string().max(200, "El territorio no puede exceder los 200 caracteres"),
+  ),
+
+  observaciones: optionalStringField(
+    z.string().max(500, "Las observaciones no pueden exceder los 500 caracteres"),
+  ),
+
+  representantes: optionalUuidArrayField,
 
   pago: z.object({
     id_banco: uuidSchema,

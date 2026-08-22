@@ -106,12 +106,20 @@ const AutorizacionesDetalleModal = ({ idAutorizacion, onClose }) => {
               </CCol>
 
               <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Nº de Mesa</CFormLabel>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Nº de Mesa / ID</CFormLabel>
                 <CFormInput type="text" value={data.nro_mesa || '—'} readOnly className="bg-light" />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Tipo de Autorización</CFormLabel>
+                <CFormInput type="text" value={data.tipo || '—'} readOnly className="bg-light fw-bold" />
               </CCol>
               <CCol md={6}>
                 <CFormLabel className="text-muted small fw-semibold mb-1">Tipo de Emisión</CFormLabel>
                 <CFormInput type="text" value={data.tipo_emision || '—'} readOnly className="bg-light" />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Número LOT</CFormLabel>
+                <CFormInput type="text" value={data.numero_lot || '—'} readOnly className="bg-light fw-bold" />
               </CCol>
 
               <CCol md={6}>
@@ -141,15 +149,10 @@ const AutorizacionesDetalleModal = ({ idAutorizacion, onClose }) => {
             <hr className="text-muted opacity-25 my-4" />
 
              <h5 className="text-primary fw-semibold mb-3">Asignaciones & Dirección</h5>
-             <CRow className="gy-3 mb-2">
+              <CRow className="gy-3 mb-2">
                <CCol md={12}>
                  <CFormLabel className="text-muted small fw-semibold mb-1">Persona Titular</CFormLabel>
                  <CFormInput type="text" value={`${data.ci_rif} — ${data.persona}`} readOnly className="bg-light fw-semibold" />
-               </CCol>
-
-               <CCol md={12}>
-                 <CFormLabel className="text-muted small fw-semibold mb-1">Operadora</CFormLabel>
-                 <CFormInput type="text" value={data.operadora || 'Ninguno'} readOnly className="bg-light" />
                </CCol>
 
                <CCol md={6}>
@@ -168,9 +171,23 @@ const AutorizacionesDetalleModal = ({ idAutorizacion, onClose }) => {
                </CCol>
 
                <CCol md={12}>
-                 <CFormLabel className="text-muted small fw-semibold mb-1">Dirección del Establecimiento</CFormLabel>
-                 <CFormInput type="text" value={data.direccion_establecimiento || 'No registrada'} readOnly className="bg-light" />
+                 <CFormLabel className="text-muted small fw-semibold mb-1">Dirección del Establecimiento (Centro Asignado)</CFormLabel>
+                 <CFormInput type="text" value={data.direccion_centro_asignado || data.direccion_establecimiento || 'No registrada'} readOnly className="bg-light" />
                </CCol>
+
+               {data.direccion_localidad && (
+                 <CCol md={12}>
+                   <CFormLabel className="text-muted small fw-semibold mb-1">Dirección de la Localidad</CFormLabel>
+                   <CFormInput type="text" value={data.direccion_localidad} readOnly className="bg-light" />
+                 </CCol>
+               )}
+
+               {data.direccion_responsable && (
+                 <CCol md={12}>
+                   <CFormLabel className="text-muted small fw-semibold mb-1">Dirección del Responsable</CFormLabel>
+                   <CFormInput type="text" value={data.direccion_responsable} readOnly className="bg-light" />
+                 </CCol>
+               )}
              </CRow>
 
              <hr className="text-muted opacity-25 my-4" />

@@ -103,3 +103,54 @@ export const get_centros_apuesta_nombre = async (email) => {
   const result = await pool.query(query, [email]);
   return !!result.rows[0];
 };
+
+// Centros activos filtrados por comercializador (para el Select del formulario)
+export const get_centros_por_comercializador = async (id_comercializador) => {
+  const query = `
+  SELECT ca.id_centro, ca.nombre_agencia, ca.direccion, ca.estado
+  FROM centros_apuesta AS ca
+  WHERE ca.id_comercializador = $1 AND ca.estado = 'activo'
+  ORDER BY ca.nombre_agencia
+  `;
+  const result = await pool.query(query, [id_comercializador]);
+  return result.rows;
+};
+
+// Detalle completo: datos del centro + sus representantes activos
+export const get_centro_detalle_completo = async (id) => {
+  // Datos del centro y su dueño/titular
+  const centroQuery = `
+  SELECT ca.id_centro, ca.id_comercializador, ca.nombre_agencia, ca.direccion, ca.estado,
+         p.id_persona, p.ci_rif, p.razon_social
+  FROM centros_apuesta AS ca
+  JOIN personas AS p ON ca.id_persona = p.id_persona
+  WHERE ca.id_centro = $1
+  `;
+  const centroResult = await pool.query(centroQuery, [id]);
+  if (!centroResult.rows[0]) return null;
+
+  const centro = centroResult.rows[0];
+
+  // Representantes activos adicionales del centro
+  const repQuery = `
+  SELECT car.id_ca_representante, car.id_persona, car.cargo, car.estado,
+         p.razon_social, p.ci_rif, p.telefono, p.email
+  FROM centros_apuesta_representantes AS car
+  JOIN personas AS p ON car.id_persona = p.id_persona
+  WHERE car.id_centro = $1 AND car.estado = 'activo'
+  ORDER BY p.razon_social
+  `;
+  const repResult = await pool.query(repQuery, [id]);
+
+  const titular = {
+    id_persona: centro.id_persona,
+    ci_rif: centro.ci_rif,
+    razon_social: centro.razon_social,
+    cargo: 'Dueño / Titular'
+  };
+
+  return {
+    ...centro,
+    representantes: [titular, ...repResult.rows],
+  };
+};

@@ -102,3 +102,31 @@ export const get_comercializador_rif = async (rif) => {
   const result = await pool.query(query, [rif]);
   return !!result.rows[0];
 };
+
+// Detalle completo: datos del comercializador + sus representantes activos
+export const get_comercializador_detalle_completo = async (id) => {
+  // Datos del comercializador
+  const comQuery = `
+  SELECT id_comercializadores, rif, razon_social, direccion_fiscal, telefono, email, estado
+  FROM comercializadores
+  WHERE id_comercializadores = $1
+  `;
+  const comResult = await pool.query(comQuery, [id]);
+  if (!comResult.rows[0]) return null;
+
+  // Representantes activos vinculados
+  const repQuery = `
+  SELECT cr.id_c_representantes, cr.id_persona, cr.cargo, cr.estado,
+         p.razon_social, p.ci_rif, p.telefono, p.email
+  FROM comercializadores_representantes AS cr
+  JOIN personas AS p ON cr.id_persona = p.id_persona
+  WHERE cr.id_comercializador = $1 AND cr.estado = 'activo'
+  ORDER BY p.razon_social
+  `;
+  const repResult = await pool.query(repQuery, [id]);
+
+  return {
+    ...comResult.rows[0],
+    representantes: repResult.rows,
+  };
+};

@@ -7,6 +7,7 @@ import {
   actualizar_comercializador_id,
   get_comercializador_email,
   get_comercializador_rif,
+  get_comercializador_detalle_completo,
 } from "../models/comercializadores.models.js";
 
 import { errors, throwError, zodValidationError } from "../utils/errors.js";
@@ -139,6 +140,27 @@ export const actualizar_comercializador = async (req, res, next) => {
 
     const rows = await actualizar_comercializador_id(id, data);
     res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Detalle completo: comercializador + representantes activos (para autocompletado)
+export const get_c_comercializador_detalle_completo = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+
+    if (!uuidRegex.test(id)) {
+      throwError(errors.invalidData);
+    }
+
+    const data = await get_comercializador_detalle_completo(id);
+
+    if (!data) {
+      throwError(errors.comercializadora_no_encontrada);
+    }
+
+    res.json(data);
   } catch (error) {
     next(error);
   }

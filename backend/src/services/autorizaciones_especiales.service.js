@@ -4,6 +4,13 @@ import crypto from "crypto";
 import { errors, throwError } from "../utils/errors.js";
 import { buildDateString } from "../utils/validators.js";
 
+const normalizeRepresentantes = (representantes) => {
+  if (!representantes) return [];
+  return representantes
+    .map((r) => (r && typeof r === "object" ? r : { id_persona: r }))
+    .filter((r) => r && r.id_persona);
+};
+
 export const crear_autorizacion_completa = async (data) => {
   let client;
   try {
@@ -13,7 +20,7 @@ export const crear_autorizacion_completa = async (data) => {
 
     // 1. Validar la solicitud de trámite
     const solicitudRes = await client.query(
-      `SELECT tipo_tramite, id_persona, id_operadora, estado
+      `SELECT tipo_tramite, id_persona, id_operadora, id_comercializador, estado
        FROM solicitudes
        WHERE id_solicitudes = $1`,
       [data.id_solicitud],
@@ -73,7 +80,24 @@ export const crear_autorizacion_completa = async (data) => {
       }
     }
 
-    // 5. Validar el banco del pago
+    // 5. Validar representantes (personas) si se proveen
+    const representantes = normalizeRepresentantes(data.representantes);
+    if (representantes.length > 0) {
+      const valuesList = representantes.map((_, idx) => `($${idx + 1})`).join(", ");
+      const valuesFlat = representantes.map((r) => r.id_persona);
+      const repCheck = await client.query(
+        `SELECT id_persona FROM personas WHERE id_persona IN (${valuesList})`,
+        valuesFlat,
+      );
+      const found = new Set(repCheck.rows.map((r) => r.id_persona));
+      for (const rep of representantes) {
+        if (!found.has(rep.id_persona)) {
+          throwError(errors.persona_no_encontrada);
+        }
+      }
+    }
+
+    // 6. Validar el banco del pago
     const bancoExiste = await client.query(
       `SELECT 1 FROM bancos WHERE id_banco = $1`,
       [data.pago.id_banco],
@@ -94,7 +118,7 @@ export const crear_autorizacion_completa = async (data) => {
     // Generamos el UUID del documento ANTES de insertar
     const documentoId = crypto.randomUUID();
 
-    // 6. Crear el pago (vinculado a la autorización que vamos a crear)
+    // 7. Crear el pago (vinculado a la autorización que vamos a crear)
     let pagoId = null;
     if (data.pago) {
       const pagoResult = await client.query(
@@ -121,15 +145,15 @@ export const crear_autorizacion_completa = async (data) => {
       pagoId = pagoResult.rows[0].id_pago;
     }
 
-    // 7. Crear el documento emitido (tabla paraguas)
+    // 8. Crear el documento emitido (tabla paraguas)
     const documentoResult = await client.query(
       `INSERT INTO documentos_emitidos (
          id_documento, id_solicitud, tipo, tipo_emision, id_documento_anterior,
          numero_documento, papel_seguridad, estado_documento,
          fecha_expedicion, fecha_vencimiento,
-         direccion_establecimiento, detalles_extra, emitido_por
+         direccion_establecimiento, detalles_extra, observaciones, emitido_por
        )
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
        RETURNING *`,
       [
         documentoId,
@@ -144,27 +168,48 @@ export const crear_autorizacion_completa = async (data) => {
         fecha_vencimiento,
         data.direccion_establecimiento ?? null,
         data.detalles_extra ? JSON.stringify({ observaciones: data.detalles_extra }) : null,
+        data.observaciones ?? null,
         data.emitido_por,
       ],
     );
 
     const documento = documentoResult.rows[0];
 
-    // 8. Crear el detalle de autorizaciones_especiales
+    // 9. Crear el detalle de autorizaciones_especiales
     const autorizacionResult = await client.query(
-      `INSERT INTO autorizaciones_especiales (id_documento, nro_mesa, id_persona, id_operadora, id_centro, agencia_texto)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      `INSERT INTO autorizaciones_especiales (
+         id_documento, nro_mesa, tipo, id_persona, id_operadora,
+         id_comercializador, id_centro, agencia_texto, numero_lot,
+         direccion_centro_asignado, direccion_localidad, direccion_responsable, otros
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
       [
         documento.id_documento,
-        data.nro_mesa,
+        data.nro_mesa ?? null,
+        data.tipo ?? "Mesa",
         solicitud.id_persona,
         solicitud.id_operadora,
+        data.id_comercializador ?? solicitud.id_comercializador ?? null,
         data.id_centro ?? null,
         data.agencia_texto ?? null,
+        data.numero_lot ?? null,
+        data.direccion_centro_asignado ?? null,
+        data.direccion_localidad ?? null,
+        data.direccion_responsable ?? null,
+        data.otros ?? null,
       ],
     );
 
-    // 9. Marcar la solicitud como Aprobado si estaba Pendiente
+    // 10. Insertar representantes legales (N:M) si se proveen
+    for (const rep of representantes) {
+      await client.query(
+        `INSERT INTO autorizaciones_representantes (id_documento, id_persona, rol, cargo)
+         VALUES ($1, $2, $3, $4)`,
+        [documento.id_documento, rep.id_persona, rep.rol ?? null, rep.cargo ?? null],
+      );
+    }
+
+    // 11. Marcar la solicitud como Aprobado si estaba Pendiente
     if (solicitud.estado === "Pendiente") {
       await client.query(
         `UPDATE solicitudes SET estado = 'Aprobado' WHERE id_solicitudes = $1`,

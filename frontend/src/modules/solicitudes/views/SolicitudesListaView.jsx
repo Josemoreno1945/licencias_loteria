@@ -30,7 +30,6 @@ const SOLICITUDES_SEARCH_FIELDS = [
   'ci_rif',
   'persona',
   'comercializador',
-  'operadora',
   'tipo_tramite',
   'categoria_licencia',
   'estado',
@@ -146,13 +145,12 @@ const SolicitudesListaView = () => {
                       <CTableHeaderCell>#</CTableHeaderCell>
                       <CTableHeaderCell>Solicitante</CTableHeaderCell>
                       <CTableHeaderCell>Comercializador</CTableHeaderCell>
-                      <CTableHeaderCell>Operadora</CTableHeaderCell>
                       <CTableHeaderCell>Tipo de Trámite</CTableHeaderCell>
                       <CTableHeaderCell>Categoría</CTableHeaderCell>
                       <CTableHeaderCell>Fecha</CTableHeaderCell>
-                       <CTableHeaderCell>Estado</CTableHeaderCell>
-                       <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
-                     </CTableRow>
+                      <CTableHeaderCell>Estado</CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
+                    </CTableRow>
                   </CTableHead>
                   <CTableBody>
                     {solicitudesPaginadas.map((sol, index) => (
@@ -167,9 +165,6 @@ const SolicitudesListaView = () => {
                           {sol.comercializador || <span className="text-muted">—</span>}
                         </CTableDataCell>
                         <CTableDataCell>
-                          {sol.operadora || <span className="text-muted">—</span>}
-                        </CTableDataCell>
-                        <CTableDataCell>
                           {sol.tipo_tramite}
                         </CTableDataCell>
                         <CTableDataCell>
@@ -182,17 +177,17 @@ const SolicitudesListaView = () => {
                           <CBadge color={getEstadoBadge(sol.estado)}>
                             {sol.estado}
                           </CBadge>
-                         </CTableDataCell>
-                         <CTableDataCell className="text-center">
-                           <CButton
-                             size="sm"
-                             color="primary"
-                             variant="outline"
-                             onClick={() => setModalDataId(sol.id_solicitudes)}
-                           >
-                             <CIcon icon={cilMagnifyingGlass} />
-                           </CButton>
-                         </CTableDataCell>
+                        </CTableDataCell>
+                        <CTableDataCell className="text-center">
+                          <CButton
+                            size="sm"
+                            color="primary"
+                            variant="outline"
+                            onClick={() => setModalDataId(sol.id_solicitudes)}
+                          >
+                            <CIcon icon={cilMagnifyingGlass} />
+                          </CButton>
+                        </CTableDataCell>
                       </CTableRow>
                     ))}
                   </CTableBody>

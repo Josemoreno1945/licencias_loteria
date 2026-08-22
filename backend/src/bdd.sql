@@ -369,6 +369,10 @@ CREATE TABLE solicitudes (
     observaciones            TEXT,
     tipo_emision             tipo_emision_enum,          -- Inscripcion/Renovacion (aplica en Licencia)
     numero_autorizacion_conalot VARCHAR(50),             -- Nro CONALOT (aplica en Participacion)
+    fecha_emision_conalot    DATE,                       -- Fecha emision CONALOT (aplica en Participacion)
+    fecha_vencimiento_conalot DATE,                      -- Fecha vencimiento CONALOT (aplica en Participacion)
+    numero_licencia_loteriatachira VARCHAR(100),         -- N° de Licencia emitida por Loteria (aplica en Participacion)
+    direccion_autorizacion_especial TEXT,                -- Direccion de la Mesa/Localidad (aplica en Autorizacion Especial)
     registrado_por     UUID                    NOT NULL,
     created_at         TIMESTAMP               DEFAULT now(),
     updated_at         TIMESTAMP               DEFAULT now(),

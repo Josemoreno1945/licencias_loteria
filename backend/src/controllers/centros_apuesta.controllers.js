@@ -6,6 +6,8 @@ import {
   eliminar_centros_apuesta_id,
   actualizar_centros_apuesta_id,
   get_centros_apuesta_nombre,
+  get_centros_por_comercializador,
+  get_centro_detalle_completo,
 } from "../models/centros_de_apuesta.models.js";
 
 import { errors, throwError, zodValidationError } from "../utils/errors.js";
@@ -128,6 +130,40 @@ export const actualizar_c_centros_apuesta = async (req, res, next) => {
 
     const rows = await actualizar_centros_apuesta_id(id, data);
     res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Centros activos filtrados por id_comercializador (para el Select del formulario)
+export const get_c_centros_por_comercializador = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    if (!uuidRegex.test(id)) {
+      throwError(errors.invalidData);
+    }
+    const rows = await get_centros_por_comercializador(id);
+    res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Detalle completo: centro + representantes activos (para autocompletado)
+export const get_c_centro_detalle_completo = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    if (!uuidRegex.test(id)) {
+      throwError(errors.invalidData);
+    }
+
+    const data = await get_centro_detalle_completo(id);
+
+    if (!data) {
+      throwError(errors.centros_apuesta_no_encontrada);
+    }
+
+    res.json(data);
   } catch (error) {
     next(error);
   }

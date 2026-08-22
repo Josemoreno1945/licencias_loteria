@@ -39,6 +39,12 @@ const optionalUuidField = z.preprocess(
   uuidSchema.optional().nullable(), // ← corrección Zod v3
 );
 
+const optionalUuidArrayField = z.preprocess(
+  (value) =>
+    value === "" || value === null || value === undefined ? undefined : value,
+  z.array(uuidSchema).optional().nullable(),
+);
+
 const simple_licencia_schema = z.object({
   id_documento: uuidSchema,
 
@@ -104,13 +110,19 @@ const emitir_licencia_schema = z.object({
       .max(500, "Las observaciones no pueden exceder los 500 caracteres"),
   ),
 
+  observaciones: optionalStringField(
+    z
+      .string()
+      .max(500, "Las observaciones no pueden exceder los 500 caracteres"),
+  ),
+
   numero_lot: optionalStringField(
     z.string().max(30, "El numero_lot no puede exceder los 30 caracteres"),
   ),
 
   id_centro: optionalUuidField,
 
-  id_representante: optionalUuidField,
+  representantes: optionalUuidArrayField,
 
   juegos: z
     .array(z.string().uuid("Cada ID de juego debe ser un UUID válido"))
@@ -146,5 +158,5 @@ export const actualizar_licencia_schema = simple_licencia_schema.omit({
   id_documento: true,
 }).extend({
   id_centro: optionalUuidField,
-  id_representante: optionalUuidField,
+  representantes: optionalUuidArrayField,
 }).partial();

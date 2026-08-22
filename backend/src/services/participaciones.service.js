@@ -4,6 +4,13 @@ import crypto from "crypto";
 import { errors, throwError } from "../utils/errors.js";
 import { buildDateString } from "../utils/validators.js";
 
+const normalizeRepresentantes = (representantes) => {
+  if (!representantes) return [];
+  return representantes
+    .map((r) => (r && typeof r === "object" ? r : { id_persona: r }))
+    .filter((r) => r && r.id_persona);
+};
+
 export const crear_participacion_completa = async (data) => {
   let client;
   try {
@@ -62,32 +69,58 @@ export const crear_participacion_completa = async (data) => {
       throwError(errors.documento_papel_duplicado);
     }
 
-    // 4. Validar que la licencia exista y esté vigente
-    const licenciaRes = await client.query(
-      `SELECT de.id_documento, de.estado_documento, de.fecha_expedicion, de.fecha_vencimiento
-       FROM licencias AS l
-       JOIN documentos_emitidos AS de ON l.id_documento = de.id_documento
-       WHERE l.id_documento = $1`,
-      [data.id_licencia],
-    );
-
-    if (!licenciaRes.rows[0]) {
-      throwError(errors.licencia_no_encontrada);
-    }
-
-    const licencia = licenciaRes.rows[0];
-    if (licencia.estado_documento !== "vigente") {
-      throwError(errors.licencia_no_vigente);
-    }
-
-    // 5. Validar representante (persona) si se provee
-    if (data.id_representante) {
-      const repExiste = await client.query(
-        `SELECT 1 FROM personas WHERE id_persona = $1`,
-        [data.id_representante],
+    // 4. Validar licencia previa O autorización especial previa (XOR)
+    if (data.id_licencia) {
+      const licenciaRes = await client.query(
+        `SELECT de.id_documento, de.estado_documento, de.fecha_expedicion, de.fecha_vencimiento
+         FROM licencias AS l
+         JOIN documentos_emitidos AS de ON l.id_documento = de.id_documento
+         WHERE l.id_documento = $1`,
+        [data.id_licencia],
       );
-      if (!repExiste.rows[0]) {
-        throwError(errors.persona_no_encontrada);
+
+      if (!licenciaRes.rows[0]) {
+        throwError(errors.licencia_no_encontrada);
+      }
+
+      const licencia = licenciaRes.rows[0];
+      if (licencia.estado_documento !== "vigente") {
+        throwError(errors.licencia_no_vigente);
+      }
+    }
+
+    if (data.id_autorizacion_previa) {
+      const autRes = await client.query(
+        `SELECT de.id_documento, de.estado_documento
+         FROM autorizaciones_especiales AS ae
+         JOIN documentos_emitidos AS de ON ae.id_documento = de.id_documento
+         WHERE ae.id_documento = $1`,
+        [data.id_autorizacion_previa],
+      );
+
+      if (!autRes.rows[0]) {
+        throwError(errors.autorizacion_no_encontrada);
+      }
+    }
+
+    if (!data.id_licencia && !data.id_autorizacion_previa) {
+      throwError(errors.invalidData);
+    }
+
+    // 5. Validar representantes (personas) si se proveen
+    const representantes = normalizeRepresentantes(data.representantes);
+    if (representantes.length > 0) {
+      const valuesList = representantes.map((_, idx) => `($${idx + 1})`).join(", ");
+      const valuesFlat = representantes.map((r) => r.id_persona);
+      const repCheck = await client.query(
+        `SELECT id_persona FROM personas WHERE id_persona IN (${valuesList})`,
+        valuesFlat,
+      );
+      const found = new Set(repCheck.rows.map((r) => r.id_persona));
+      for (const rep of representantes) {
+        if (!found.has(rep.id_persona)) {
+          throwError(errors.persona_no_encontrada);
+        }
       }
     }
 
@@ -118,9 +151,9 @@ export const crear_participacion_completa = async (data) => {
       const pagoResult = await client.query(
         `INSERT INTO pagos (
            id_banco, num_referencia, fecha_pago, monto, tasa_dia,
-           responsable_texto, id_licencia, id_participacion, observaciones, registrado_por
+           responsable_texto, id_licencia, id_autorizacion, id_participacion, observaciones, registrado_por
          )
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
          RETURNING id_pago`,
         [
           data.pago.id_banco,
@@ -129,6 +162,7 @@ export const crear_participacion_completa = async (data) => {
           data.pago.monto,
           data.pago.tasa_dia,
           data.pago.responsable_texto ?? null,
+          data.id_licencia ?? null,
           null,
           documentoId,
           data.pago.observaciones ?? null,
@@ -144,9 +178,9 @@ export const crear_participacion_completa = async (data) => {
          id_documento, id_solicitud, tipo, tipo_emision, id_documento_anterior,
          numero_documento, papel_seguridad, estado_documento,
          fecha_expedicion, fecha_vencimiento,
-         direccion_establecimiento, detalles_extra, emitido_por
+         direccion_establecimiento, detalles_extra, observaciones, emitido_por
        )
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
        RETURNING *`,
       [
         documentoId,
@@ -161,6 +195,7 @@ export const crear_participacion_completa = async (data) => {
         fecha_vencimiento,
         data.direccion_establecimiento ?? null,
         data.detalles_extra ? JSON.stringify({ observaciones: data.detalles_extra }) : null,
+        data.observaciones ?? null,
         data.emitido_por,
       ],
     );
@@ -169,19 +204,37 @@ export const crear_participacion_completa = async (data) => {
 
     // 9. Crear el detalle de la participación
     const participacionResult = await client.query(
-      `INSERT INTO participaciones (id_documento, nro_archivo, id_persona, id_representante, id_comercializador, id_licencia)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      `INSERT INTO participaciones (
+         id_documento, nro_archivo, id_persona, id_comercializador,
+         id_licencia, id_autorizacion_previa, tipo, numero_lot,
+         fecha_solicitud, territorio, observaciones
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
       [
         documento.id_documento,
         data.nro_archivo,
         solicitud.id_persona,
-        data.id_representante ?? null,
         solicitud.id_comercializador,
-        data.id_licencia,
+        data.id_licencia ?? null,
+        data.id_autorizacion_previa ?? null,
+        data.tipo,
+        data.numero_lot ?? null,
+        data.fecha_solicitud ? buildDateString(data.fecha_solicitud) : null,
+        data.territorio ?? null,
+        data.observaciones ?? null,
       ],
     );
 
-    // 10. Marcar la solicitud como Aprobado si estaba Pendiente
+    // 10. Insertar representantes legales (N:M) si se proveen
+    for (const rep of representantes) {
+      await client.query(
+        `INSERT INTO participaciones_representantes (id_documento, id_persona, rol, cargo)
+         VALUES ($1, $2, $3, $4)`,
+        [documento.id_documento, rep.id_persona, rep.rol ?? null, rep.cargo ?? null],
+      );
+    }
+
+    // 11. Marcar la solicitud como Aprobado si estaba Pendiente
     if (solicitud.estado === "Pendiente") {
       await client.query(
         `UPDATE solicitudes SET estado = 'Aprobado' WHERE id_solicitudes = $1`,

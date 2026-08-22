@@ -1,5 +1,5 @@
-import {
-  get_licencias,
+import { pool } from "../db.js";
+import { get_licencias,
   get_licencias_id,
   get_licencias_vigentes,
   actualizar_licencia_id,
@@ -122,10 +122,17 @@ export const actualizar_licencia = async (req, res, next) => {
       }
     }
 
-    if (parsed.id_representante) {
-      const representanteExiste = await get_personas_id(parsed.id_representante);
-      if (!representanteExiste || representanteExiste.length === 0) {
-        throwError(errors.persona_no_encontrada);
+    if (Array.isArray(parsed.representantes) && parsed.representantes.length > 0) {
+      const valuesList = parsed.representantes.map((_, idx) => `($${idx + 1})`).join(", ");
+      const repCheck = await pool.query(
+        `SELECT id_persona FROM personas WHERE id_persona IN (${valuesList})`,
+        parsed.representantes,
+      );
+      const found = repCheck.rows.map((r) => r.id_persona);
+      for (const id_persona of parsed.representantes) {
+        if (!found.includes(id_persona)) {
+          throwError(errors.persona_no_encontrada);
+        }
       }
     }
 

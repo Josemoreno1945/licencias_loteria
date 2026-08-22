@@ -161,15 +161,36 @@ const LicenciaDetalleModal = ({ idLicencia, onClose }) => {
                  <CFormInput type="text" value={data.comercializador || 'Ninguno'} readOnly className="bg-light" />
                </CCol>
 
-               <CCol md={6}>
-                 <CFormLabel className="text-muted small fw-semibold mb-1">Centro de Apuesta</CFormLabel>
-                 <CFormInput type="text" value={data.centro_apuesta || 'Ninguno'} readOnly className="bg-light" />
-               </CCol>
-
                 <CCol md={6}>
-                  <CFormLabel className="text-muted small fw-semibold mb-1">Representante Legal</CFormLabel>
-                  <CFormInput type="text" value={data.representante_legal || 'Ninguno'} readOnly className="bg-light" />
+                  <CFormLabel className="text-muted small fw-semibold mb-1">Centro de Apuesta</CFormLabel>
+                  <CFormInput type="text" value={data.centro_apuesta || 'Ninguno'} readOnly className="bg-light" />
                 </CCol>
+
+                {data.representantes && data.representantes.length > 0 && (
+                  <CCol md={12} className="mt-2">
+                    <CFormLabel className="text-muted small fw-semibold mb-1">Representantes Legales</CFormLabel>
+                    <CTable hover responsive striped className="mb-0">
+                      <CTableHead>
+                        <CTableRow>
+                          <CTableHeaderCell>Cédula/RIF</CTableHeaderCell>
+                          <CTableHeaderCell>Razón Social</CTableHeaderCell>
+                          <CTableHeaderCell>Cargo</CTableHeaderCell>
+                          <CTableHeaderCell>Rol</CTableHeaderCell>
+                        </CTableRow>
+                      </CTableHead>
+                      <CTableBody>
+                        {data.representantes.map((rep) => (
+                          <CTableRow key={rep.id_persona}>
+                            <CTableDataCell>{rep.ci_rif || '—'}</CTableDataCell>
+                            <CTableDataCell>{rep.razon_social || '—'}</CTableDataCell>
+                            <CTableDataCell>{rep.cargo || '—'}</CTableDataCell>
+                            <CTableDataCell>{rep.rol || '—'}</CTableDataCell>
+                          </CTableRow>
+                        ))}
+                      </CTableBody>
+                    </CTable>
+                  </CCol>
+                )}
 
                 <CCol md={12}>
                   <CFormLabel className="text-muted small fw-semibold mb-1">Tipo de Persona</CFormLabel>
@@ -178,9 +199,14 @@ const LicenciaDetalleModal = ({ idLicencia, onClose }) => {
                
                 <CCol md={12}>
                   <CFormLabel className="text-muted small fw-semibold mb-1">Dirección del Establecimiento</CFormLabel>
-                  <CFormInput type="text" value={data.direccion_establecimiento || 'No registrada'} readOnly className="bg-light" />
-                </CCol>
-              </CRow>
+                   <CFormInput type="text" value={data.direccion_establecimiento || 'No registrada'} readOnly className="bg-light" />
+                 </CCol>
+
+                 <CCol md={12}>
+                   <CFormLabel className="text-muted small fw-semibold mb-1">Observaciones del Documento</CFormLabel>
+                   <CFormInput type="text" value={data.observaciones_documento || 'Sin observaciones'} readOnly className="bg-light" />
+                 </CCol>
+               </CRow>
 
               <hr className="text-muted opacity-25 my-4" />
 
@@ -235,7 +261,6 @@ const LicenciaDetalleModal = ({ idLicencia, onClose }) => {
                     <CTableRow>
                       <CTableHeaderCell>#</CTableHeaderCell>
                       <CTableHeaderCell>Juego</CTableHeaderCell>
-                      <CTableHeaderCell>Operadora</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
@@ -243,7 +268,6 @@ const LicenciaDetalleModal = ({ idLicencia, onClose }) => {
                       <CTableRow key={j.id_juego}>
                         <CTableDataCell className="text-muted small">{index + 1}</CTableDataCell>
                         <CTableDataCell className="fw-semibold">{j.nombre_juego || '—'}</CTableDataCell>
-                        <CTableDataCell>{j.operadora || '—'}</CTableDataCell>
                       </CTableRow>
                     ))}
                   </CTableBody>

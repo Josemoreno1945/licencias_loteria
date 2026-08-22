@@ -115,6 +115,24 @@ const ParticipacionesDetalleModal = ({ idParticipacion, onClose }) => {
               </CCol>
 
               <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Tipo de Participación</CFormLabel>
+                <CFormInput type="text" value={data.tipo || '—'} readOnly className="bg-light fw-bold" />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Número LOT</CFormLabel>
+                <CFormInput type="text" value={data.numero_lot || '—'} readOnly className="bg-light fw-bold" />
+              </CCol>
+
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Fecha de Solicitud</CFormLabel>
+                <CFormInput type="text" value={data.fecha_solicitud ? new Date(data.fecha_solicitud).toLocaleDateString() : '—'} readOnly className="bg-light" />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Territorio</CFormLabel>
+                <CFormInput type="text" value={data.territorio || '—'} readOnly className="bg-light" />
+              </CCol>
+
+              <CCol md={6}>
                 <CFormLabel className="text-muted small fw-semibold mb-1">Expedición</CFormLabel>
                 <CFormInput type="text" value={data.fecha_expedicion ? new Date(data.fecha_expedicion).toLocaleDateString() : '—'} readOnly className="bg-light" />
               </CCol>
@@ -136,6 +154,10 @@ const ParticipacionesDetalleModal = ({ idParticipacion, onClose }) => {
                 <CFormLabel className="text-muted small fw-semibold mb-1">Observaciones / Detalles Extra</CFormLabel>
                 <CFormInput type="text" value={getDetallesExtra(data.detalles_extra)} readOnly className="bg-light" />
               </CCol>
+              <CCol md={12}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Observaciones de la Participación</CFormLabel>
+                <CFormInput type="text" value={data.observaciones || 'Sin observaciones'} readOnly className="bg-light" />
+              </CCol>
             </CRow>
 
             <hr className="text-muted opacity-25 my-4" />
@@ -152,9 +174,13 @@ const ParticipacionesDetalleModal = ({ idParticipacion, onClose }) => {
                  <CFormInput type="text" value={data.comercializador || 'Ninguno'} readOnly className="bg-light" />
                </CCol>
 
-               <CCol md={12}>
-                 <CFormLabel className="text-muted small fw-semibold mb-1">Licencia Padre</CFormLabel>
-                 <CFormInput type="text" value={data.numero_licencia || 'Ninguno'} readOnly className="bg-light" />
+               <CCol md={6}>
+                 <CFormLabel className="text-muted small fw-semibold mb-1">Licencia Previa</CFormLabel>
+                 <CFormInput type="text" value={data.numero_licencia || 'Ninguna'} readOnly className="bg-light" />
+               </CCol>
+               <CCol md={6}>
+                 <CFormLabel className="text-muted small fw-semibold mb-1">Autorización Previa</CFormLabel>
+                 <CFormInput type="text" value={data.numero_autorizacion_previa || 'Ninguna'} readOnly className="bg-light" />
                </CCol>
 
                <CCol md={12}>

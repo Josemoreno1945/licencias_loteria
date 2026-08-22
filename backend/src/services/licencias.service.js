@@ -10,6 +10,13 @@ const buildDateString = (value) => {
   return date.toISOString().slice(0, 10);
 };
 
+const normalizeRepresentantes = (representantes) => {
+  if (!representantes) return [];
+  return representantes
+    .map((r) => (r && typeof r === "object" ? r : { id_persona: r }))
+    .filter((r) => r && r.id_persona);
+};
+
 export const crear_licencia_completa = async (data) => {
   let client;
   try {
@@ -74,8 +81,25 @@ export const crear_licencia_completa = async (data) => {
           ),
         );
 
+    // Validar representantes legales (personas) si se proveen
+    const representantes = normalizeRepresentantes(data.representantes);
+    if (representantes.length > 0) {
+      const valuesList = representantes.map((_, idx) => `($${idx + 1})`).join(", ");
+      const valuesFlat = representantes.map((r) => r.id_persona);
+      const repCheck = await client.query(
+        `SELECT id_persona FROM personas WHERE id_persona IN (${valuesList})`,
+        valuesFlat,
+      );
+      const found = new Set(repCheck.rows.map((r) => r.id_persona));
+      for (const rep of representantes) {
+        if (!found.has(rep.id_persona)) {
+          throwError(errors.persona_no_encontrada);
+        }
+      }
+    }
+
     // Generamos el UUID del documento ANTES de insertar
-    const documentoId = crypto.randomUUID()
+    const documentoId = crypto.randomUUID();
 
     // 1. Crear el pago PRIMERO (requerido por el trigger)
     let pagoId = null;
@@ -116,9 +140,9 @@ export const crear_licencia_completa = async (data) => {
          id_documento, id_solicitud, tipo, tipo_emision, id_documento_anterior,
          numero_documento, papel_seguridad, estado_documento,
          fecha_expedicion, fecha_vencimiento,
-         direccion_establecimiento, detalles_extra, emitido_por
+         direccion_establecimiento, detalles_extra, observaciones, emitido_por
        )
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
        RETURNING *`,
       [
         documentoId,
@@ -133,6 +157,7 @@ export const crear_licencia_completa = async (data) => {
         fecha_vencimiento,
         data.direccion_establecimiento ?? null,
         data.detalles_extra ? JSON.stringify({ observaciones: data.detalles_extra }) : null,
+        data.observaciones ?? null,
         data.emitido_por,
       ],
     );
@@ -140,18 +165,26 @@ export const crear_licencia_completa = async (data) => {
     const documento = documentoResult.rows[0];
 
     const licenciaResult = await client.query(
-      `INSERT INTO licencias (id_documento, id_persona, id_comercializador, id_centro, id_representante, categoria, numero_lot)
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      `INSERT INTO licencias (id_documento, id_persona, id_comercializador, id_centro, categoria, numero_lot)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
       [
         documento.id_documento,
         solicitud.id_persona,
         solicitud.id_comercializador ?? null,
         data.id_centro ?? null,
-        data.id_representante ?? null,
         solicitud.categoria_licencia,
         data.numero_lot ?? null,
       ],
     );
+
+    // Insertar representantes legales (N:M) si se proveen
+    for (const rep of representantes) {
+      await client.query(
+        `INSERT INTO licencias_representantes (id_documento, id_persona, rol, cargo)
+         VALUES ($1, $2, $3, $4)`,
+        [documento.id_documento, rep.id_persona, rep.rol ?? null, rep.cargo ?? null],
+      );
+    }
 
     if (Array.isArray(data.juegos) && data.juegos.length > 0) {
       const uniqueJuegos = [...new Set(data.juegos)];

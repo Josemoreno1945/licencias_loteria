@@ -10,6 +10,11 @@ export const getSolicitudesLicencia = async () => {
   return data;
 };
 
+export const getSolicitudDetalle = async (id_solicitud) => {
+  const { data } = await axiosInstance.get(`/solicitudes/${id_solicitud}`);
+  return Array.isArray(data) ? data[0] : data;
+};
+
 export const getJuegosActivos = async () => {
   const { data } = await axiosInstance.get("/juegos/activas");
   return data;
@@ -22,6 +27,11 @@ export const getBancos = async () => {
 
 export const getCentrosApuestaActivos = async () => {
   const { data } = await axiosInstance.get("/centros_apuesta/activos");
+  return data;
+};
+
+export const getCentrosPorComercializador = async (id_comercializador) => {
+  const { data } = await axiosInstance.get(`/centros_apuesta/por-comercializador/${id_comercializador}`);
   return data;
 };
 

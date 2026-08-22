@@ -30,7 +30,6 @@ const AUTORIZACIONES_SEARCH_FIELDS = [
   'nro_mesa',
   'ci_rif',
   'persona',
-  'operadora',
   'centro_apuesta',
   'agencia_texto',
 ]
@@ -136,7 +135,6 @@ const AutorizacionesListaView = () => {
                       <CTableHeaderCell>Nro. Documento</CTableHeaderCell>
                       <CTableHeaderCell>Nro. Mesa</CTableHeaderCell>
                       <CTableHeaderCell>Persona</CTableHeaderCell>
-                      <CTableHeaderCell>Operadora</CTableHeaderCell>
                       <CTableHeaderCell>Agencia</CTableHeaderCell>
                       <CTableHeaderCell>Estado</CTableHeaderCell>
                       <CTableHeaderCell>Vencimiento</CTableHeaderCell>
@@ -157,7 +155,6 @@ const AutorizacionesListaView = () => {
                           <div className="fw-semibold">{aut.ci_rif}</div>
                           <div className="text-muted small">{aut.persona}</div>
                         </CTableDataCell>
-                        <CTableDataCell>{aut.operadora || <span className="text-muted">—</span>}</CTableDataCell>
                         <CTableDataCell>
                           {aut.centro_apuesta || aut.agencia_texto || <span className="text-muted">—</span>}
                         </CTableDataCell>
