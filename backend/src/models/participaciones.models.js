@@ -14,7 +14,8 @@ export const get_participaciones = async () => {
     par.tipo,
     par.numero_lot,
     par.nro_archivo,
-    par.id_licencia,
+    par.licencia_autorizacion,
+    par.territorio,
     p.ci_rif,
     p.razon_social      AS persona,
     c.razon_social      AS comercializador,
@@ -47,8 +48,8 @@ export const get_participaciones_id = async (id) => {
     par.tipo,
     par.numero_lot,
     par.nro_archivo,
-    par.id_licencia,
-    de_lic.numero_documento AS licencia_numero,
+    par.licencia_autorizacion,
+    par.territorio,
     par.id_centro,
     p.ci_rif,
     p.razon_social      AS persona,
@@ -81,7 +82,6 @@ export const get_participaciones_id = async (id) => {
   LEFT JOIN comercializadores AS c ON par.id_comercializador = c.id_comercializadores
   LEFT JOIN centros_apuesta AS ca ON par.id_centro = ca.id_centro
   LEFT JOIN personas        AS p_ca ON ca.id_persona = p_ca.id_persona
-  LEFT JOIN documentos_emitidos AS de_lic ON par.id_licencia = de_lic.id_documento
   LEFT JOIN pagos AS pag ON pag.id_participacion = par.id_documento
   LEFT JOIN bancos AS b ON pag.id_banco = b.id_banco
   WHERE par.id_documento = $1
@@ -101,7 +101,8 @@ export const get_participaciones_vigentes = async () => {
     de.fecha_vencimiento,
     par.tipo,
     par.nro_archivo,
-    par.id_licencia,
+    par.licencia_autorizacion,
+    par.territorio,
     p.ci_rif,
     p.razon_social      AS persona,
     c.razon_social      AS comercializador,
@@ -121,15 +122,16 @@ export const get_participaciones_vigentes = async () => {
 //post------------------------------------------------------------
 export const crear_participacion = async (data) => {
   const query = `
-    INSERT INTO participaciones (id_documento, tipo, id_persona, id_comercializador, id_centro, id_licencia, numero_lot, nro_archivo)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`;
+    INSERT INTO participaciones (id_documento, tipo, id_persona, id_comercializador, id_centro, licencia_autorizacion, territorio, numero_lot, nro_archivo)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`;
   const values = [
     data.id_documento,
     data.tipo,
     data.id_persona,
     data.id_comercializador ?? null,
     data.id_centro ?? null,
-    data.id_licencia ?? null,
+    data.licencia_autorizacion,
+    data.territorio,
     data.numero_lot ?? null,
     data.nro_archivo ?? null,
   ];
@@ -144,7 +146,8 @@ export const actualizar_participacion_id = async (id, data) => {
     "id_persona",
     "id_comercializador",
     "id_centro",
-    "id_licencia",
+    "licencia_autorizacion",
+    "territorio",
     "numero_lot",
     "nro_archivo",
   ];
@@ -160,7 +163,7 @@ export const actualizar_participacion_id = async (id, data) => {
     }
   }
 
-  if (fields.length === 0 && !data.representantes) {
+  if (fields.length === 0) {
     return [];
   }
 
@@ -170,23 +173,6 @@ export const actualizar_participacion_id = async (id, data) => {
        WHERE id_documento = $${i} RETURNING *`,
       [...values, id],
     );
-  }
-
-  // Representantes legales (N:M): se reemplazan por completo
-  if (data.representantes) {
-    const reps = (Array.isArray(data.representantes) ? data.representantes : [])
-      .map((r) => (r && r.id_persona ? r : { id_persona: r }))
-      .filter((r) => r.id_persona);
-
-    await pool.query(`DELETE FROM participaciones_representantes WHERE id_documento = $1`, [id]);
-
-    for (const rep of reps) {
-      await pool.query(
-        `INSERT INTO participaciones_representantes (id_documento, id_persona, rol, cargo)
-         VALUES ($1, $2, $3, $4)`,
-        [id, rep.id_persona, rep.rol ?? null, rep.cargo ?? null],
-      );
-    }
   }
 
   return get_participaciones_id(id);

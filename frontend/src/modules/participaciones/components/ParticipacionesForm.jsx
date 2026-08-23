@@ -59,10 +59,6 @@ const ParticipacionesForm = ({
   loadingDeps,
   loadingDetalleSolicitud,
   bancos,
-  licencias,
-  documentosAnteriores,
-  representantes,
-  loadingReps,
   isEditMode,
 }) => {
 
@@ -129,7 +125,7 @@ const ParticipacionesForm = ({
       {/* ── Panel autocompletado: datos heredados de la solicitud ── */}
       {!loadingDetalleSolicitud && solicitudSeleccionada && (
         <>
-          {/* Datos de la Comercializadora + Representante */}
+          {/* Datos de la Comercializadora + Representante + Tipo de Participación */}
           <InfoCard
             titulo="📋 Comercializadora"
             campos={[
@@ -140,6 +136,17 @@ const ParticipacionesForm = ({
               { label: 'Email', value: solicitudSeleccionada.comercializador_email },
             ]}
           >
+            {/* Tipo de Participación heredado de la solicitud */}
+            {solicitudSeleccionada.tipo_participacion && (
+              <div className="mt-2 pt-2 border-top">
+                <p className="text-info fw-semibold small mb-1" style={{ letterSpacing: '0.05em' }}>
+                  🗂️ Tipo de Participación
+                </p>
+                <CBadge color="primary" shape="rounded-pill" className="px-3 py-1 fs-6">
+                  {solicitudSeleccionada.tipo_participacion}
+                </CBadge>
+              </div>
+            )}
             <div className="mt-3 pt-2 border-top">
               <p className="text-info fw-semibold small mb-2" style={{ letterSpacing: '0.05em' }}>
                 👤 Representante Legal Titular (Firmante)
@@ -215,28 +222,46 @@ const ParticipacionesForm = ({
         2. Datos del Documento
       </h6>
 
-      {/* Fila: Tipo, N° de Archivo y N° de Documento */}
+      {/* Fila 1: Licencia/Autorización + Territorio */}
       <CRow className="mb-3">
-        <CCol md={4} className="mb-3">
-          <CFormLabel>Tipo de Participación <span className="text-danger">*</span></CFormLabel>
+        <CCol md={6} className="mb-3">
+          <CFormLabel>Licencia o Autorización <span className="text-danger">*</span></CFormLabel>
           <CInputGroup>
             <CInputGroupText><CIcon icon={cilList} /></CInputGroupText>
             <CFormSelect
-              name="tipo"
-              value={formData.tipo || ''}
+              name="licencia_autorizacion"
+              value={formData.licencia_autorizacion || ''}
               onChange={handleInputChange}
               required
-              disabled={loadingDeps || isEditMode}
             >
-              <option value="">Seleccione un tipo...</option>
-              <option value="Archivo">Archivo</option>
-              <option value="Certificacion">Certificación</option>
-              <option value="Rectificacion">Rectificación</option>
-              <option value="Nulidad">Nulidad</option>
+              <option value="">Seleccione...</option>
+              <option value="Licencia">Licencia</option>
+              <option value="Autorizacion Especial">Autorización Especial</option>
             </CFormSelect>
           </CInputGroup>
         </CCol>
 
+        <CCol md={6} className="mb-3">
+          <CFormLabel>Territorio <span className="text-danger">*</span></CFormLabel>
+          <CInputGroup>
+            <CInputGroupText><CIcon icon={cilList} /></CInputGroupText>
+            <CFormSelect
+              name="territorio"
+              value={formData.territorio || ''}
+              onChange={handleInputChange}
+              required
+            >
+              <option value="">Seleccione territorio...</option>
+              <option value="Nacional">Nacional</option>
+              <option value="Estadal">Estadal</option>
+              <option value="Municipal">Municipal</option>
+            </CFormSelect>
+          </CInputGroup>
+        </CCol>
+      </CRow>
+
+      {/* Fila 2: N° Archivo + N° Documento + Papel de Seguridad */}
+      <CRow className="mb-3">
         <CCol md={4} className="mb-3">
           <CFormLabel>N° de Archivo <span className="text-danger">*</span></CFormLabel>
           <CInputGroup>
@@ -264,20 +289,37 @@ const ParticipacionesForm = ({
             />
           </CInputGroup>
         </CCol>
+
+        <CCol md={4} className="mb-3">
+          <CFormLabel>Papel de Seguridad <span className="text-danger">*</span></CFormLabel>
+          <CInputGroup>
+            <CInputGroupText><CIcon icon={cilClipboard} /></CInputGroupText>
+            <CFormInput
+              name="papel_seguridad"
+              value={formData.papel_seguridad}
+              onChange={handleInputChange}
+              placeholder="Código del papel"
+              required
+            />
+          </CInputGroup>
+        </CCol>
       </CRow>
 
-      {/* Fila: Tipo de Emisión y Fechas */}
+      {/* Fila 3: Tipo Emisión + Fecha Expedición + Fecha Vencimiento */}
       <CRow className="mb-3">
         <CCol md={4} className="mb-3">
           <CFormLabel>Tipo de Emisión <span className="text-danger">*</span></CFormLabel>
-          <CFormSelect
-            name="tipo_emision"
-            value={formData.tipo_emision}
-            onChange={handleInputChange}
-          >
-            <option value="Inscripcion">Inscripción (nueva)</option>
-            <option value="Renovacion">Renovación</option>
-          </CFormSelect>
+          <CInputGroup>
+            <CInputGroupText><CIcon icon={cilList} /></CInputGroupText>
+            <CFormSelect
+              name="tipo_emision"
+              value={formData.tipo_emision}
+              onChange={handleInputChange}
+            >
+              <option value="Inscripcion">Inscripción (nueva)</option>
+              <option value="Renovacion">Renovación</option>
+            </CFormSelect>
+          </CInputGroup>
         </CCol>
 
         <CCol md={4} className="mb-3">
@@ -308,20 +350,9 @@ const ParticipacionesForm = ({
         </CCol>
       </CRow>
 
-      {/* Fila: Papel de Seguridad y Dirección */}
+      {/* Fila 4: Dirección del Establecimiento */}
       <CRow className="mb-3">
-        <CCol md={4} className="mb-3">
-          <CFormLabel>Papel de Seguridad <span className="text-danger">*</span></CFormLabel>
-          <CFormInput
-            name="papel_seguridad"
-            value={formData.papel_seguridad}
-            onChange={handleInputChange}
-            placeholder="Código del papel"
-            required
-          />
-        </CCol>
-
-        <CCol md={8} className="mb-3">
+        <CCol md={12} className="mb-3">
           <CFormLabel>Dirección del Establecimiento</CFormLabel>
           <CFormInput
             name="direccion_establecimiento"
@@ -332,80 +363,7 @@ const ParticipacionesForm = ({
         </CCol>
       </CRow>
 
-      {/* Fila: Licencia de Soporte Legal */}
-      <CRow className="mb-3">
-        <CCol md={12} className="mb-3">
-          <CFormLabel>Licencia (Soporte Legal) <span className="text-danger">*</span></CFormLabel>
-          <CInputGroup>
-            <CInputGroupText><CIcon icon={cilBuilding} /></CInputGroupText>
-            <CFormSelect
-              name="id_licencia"
-              value={formData.id_licencia || ''}
-              onChange={handleInputChange}
-              required
-              disabled={loadingDeps || isEditMode}
-            >
-              <option value="">Seleccione la licencia de soporte...</option>
-              {licencias.map((licencia) => (
-                <option key={licencia.id_documento} value={licencia.id_documento}>
-                  {licencia.numero_documento} — {licencia.persona}
-                </option>
-              ))}
-            </CFormSelect>
-          </CInputGroup>
-        </CCol>
-      </CRow>
-
-      {/* Fila: Documento Anterior (solo Renovación) */}
-      {formData.tipo_emision === 'Renovacion' && (
-        <CRow className="mb-3">
-          <CCol md={12} className="mb-3">
-            <CFormLabel>Documento Anterior <span className="text-danger">*</span></CFormLabel>
-            <CInputGroup>
-              <CInputGroupText><CIcon icon={cilList} /></CInputGroupText>
-              <CFormSelect
-                name="id_documento_anterior"
-                value={formData.id_documento_anterior || ''}
-                onChange={handleInputChange}
-                required
-                disabled={loadingDeps || isEditMode}
-              >
-                <option value="">Seleccione un documento anterior...</option>
-                {documentosAnteriores.map((doc) => (
-                  <option key={doc.id_documento} value={doc.id_documento}>
-                    {doc.numero_documento} — {doc.estado_documento}
-                  </option>
-                ))}
-              </CFormSelect>
-            </CInputGroup>
-          </CCol>
-        </CRow>
-      )}
-
-      {/* Fila: Representante Legal (dato propio, autocargado desde la solicitud) */}
-      <CRow className="mb-3">
-        <CCol md={12} className="mb-3">
-          <CFormLabel>Representante Legal (Opcional)</CFormLabel>
-          <CInputGroup>
-            <CInputGroupText><CIcon icon={cilList} /></CInputGroupText>
-            <CFormSelect
-              name="id_representante"
-              value={formData.id_representante || ''}
-              onChange={handleInputChange}
-              disabled={loadingDeps || loadingReps || isEditMode}
-            >
-              <option value="">Ninguno / Sin representante</option>
-              {representantes.map((rep) => (
-                <option key={rep.id_persona} value={rep.id_persona}>
-                  {rep.persona_razon_social} — {rep.persona_ci_rif || '—'}
-                </option>
-              ))}
-            </CFormSelect>
-          </CInputGroup>
-        </CCol>
-      </CRow>
-
-      {/* Observaciones del documento */}
+      {/* Fila 5: Observaciones del documento */}
       <CRow className="mb-3">
         <CCol md={12}>
           <CFormLabel>Observaciones del Documento (Opcional)</CFormLabel>

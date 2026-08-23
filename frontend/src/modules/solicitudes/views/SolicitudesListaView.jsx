@@ -69,14 +69,18 @@ const SolicitudesListaView = () => {
 
   const getEstadoBadge = (estado) => {
     switch (estado) {
-      case 'Aprobado':
-        return 'success';
-      case 'Rechazada':
-        return 'danger';
+      case 'Aprobado':  return 'success';
+      case 'Rechazada': return 'danger';
       case 'Pendiente':
-      default:
-        return 'warning';
+      default:          return 'warning';
     }
+  };
+
+  const TIPO_LABEL = {
+    Licencia:              'Licencia',
+    Participacion:         'Participación',
+    Autorizacion_especial: 'Autorización Esp.',
+    Otro:                  'Otro',
   };
 
   return (
@@ -165,10 +169,14 @@ const SolicitudesListaView = () => {
                           {sol.comercializador || <span className="text-muted">—</span>}
                         </CTableDataCell>
                         <CTableDataCell>
-                          {sol.tipo_tramite}
+                          {TIPO_LABEL[sol.tipo_tramite] ?? sol.tipo_tramite}
                         </CTableDataCell>
                         <CTableDataCell>
-                          {sol.categoria_licencia || <span className="text-muted">—</span>}
+                          {sol.categoria_licencia
+                            ? sol.categoria_licencia
+                            : sol.tipo_participacion
+                              ? <span>{sol.tipo_participacion}</span>
+                              : <span className="text-muted">—</span>}
                         </CTableDataCell>
                         <CTableDataCell>
                           {new Date(sol.created_at).toLocaleDateString()}

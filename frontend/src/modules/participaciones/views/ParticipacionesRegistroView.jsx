@@ -25,8 +25,8 @@ const INITIAL_FORM = {
   direccion_establecimiento:'',
   detalles_extra:           '',
   nro_archivo:              '',
-  id_licencia:              '',
-  id_representante:         '',
+  licencia_autorizacion:    '',
+  territorio:               '',
   id_banco:                 '',
   num_referencia:           '',
   monto:                    '',
@@ -51,10 +51,6 @@ const ParticipacionesRegistroView = () => {
   // ── Detalle de la solicitud seleccionada (autocompletado) ──
   const [solicitudSeleccionada, setSolicitudSeleccionada] = useState(null)
   const [loadingDetalleSolicitud, setLoadingDetalleSolicitud] = useState(false)
-
-  // ── Representantes legales (dato propio, derivado de la solicitud) ──
-  const [representantes, setRepresentantes] = useState([])
-  const [loadingReps, setLoadingReps]       = useState(false)
 
   // ── UI ──
   const [loadingDeps, setLoadingDeps]   = useState(false)
@@ -93,18 +89,6 @@ const ParticipacionesRegistroView = () => {
           errorsList.push('No se pudieron cargar los bancos.')
         }
 
-        if (results[2].status === 'fulfilled') {
-          setLicencias(results[2].value || [])
-        } else {
-          errorsList.push('No se pudieron cargar las licencias vigentes.')
-        }
-
-        if (results[3].status === 'fulfilled') {
-          setDocumentosAnteriores(results[3].value || [])
-        } else {
-          errorsList.push('No se pudieron cargar los documentos anteriores.')
-        }
-
         if (errorsList.length > 0) setError(errorsList.join(' '))
       } finally {
         setLoadingDeps(false)
@@ -117,7 +101,6 @@ const ParticipacionesRegistroView = () => {
   useEffect(() => {
     if (!formData.id_solicitud) {
       setSolicitudSeleccionada(null)
-      setRepresentantes([])
       return
     }
 
@@ -127,12 +110,13 @@ const ParticipacionesRegistroView = () => {
         const detalle = await getSolicitudDetalle(formData.id_solicitud)
         setSolicitudSeleccionada(detalle)
 
-        // Autocompletar tipo_emision y dirección desde la solicitud
+        // Autocompletar tipo_emision, dirección y tipo de participación desde la solicitud
         setFormData((prev) => ({
           ...prev,
           tipo_emision: detalle.tipo_emision || prev.tipo_emision,
           direccion_establecimiento:
             detalle.comercializador_direccion || prev.direccion_establecimiento,
+          tipo: detalle.tipo_participacion || prev.tipo,
         }))
       } catch (err) {
         console.error('Error cargando detalle de solicitud:', err)
@@ -145,43 +129,7 @@ const ParticipacionesRegistroView = () => {
     fetchDetalle()
   }, [formData.id_solicitud])
 
-  // ── 3. Cargar representantes legales según la comercializadora de la solicitud ──
-  useEffect(() => {
-    const idComercializador = solicitudSeleccionada?.id_comercializador
-    if (!idComercializador) {
-      setRepresentantes([])
-      setFormData((prev) => ({ ...prev, id_representante: '' }))
-      return
-    }
 
-    let cancelled = false
-    setLoadingReps(true)
-    getRepresentantesByComercializador(idComercializador)
-      .then((data) => {
-        if (!cancelled) {
-          setRepresentantes(data || [])
-          const active = (data || []).find((r) => r.estado === 'activo')
-          setFormData((prev) => ({
-            ...prev,
-            id_representante: active ? active.id_persona : ((data || [])[0]?.id_persona || ''),
-          }))
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setRepresentantes([])
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingReps(false)
-      })
-    return () => { cancelled = true }
-  }, [solicitudSeleccionada])
-
-  // ── 4. Limpiar documento anterior si no es renovación ──
-  useEffect(() => {
-    if (formData.tipo_emision !== 'Renovacion') {
-      setFormData((prev) => ({ ...prev, id_documento_anterior: '' }))
-    }
-  }, [formData.tipo_emision])
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleInputChange = useCallback((e) => {
@@ -209,7 +157,7 @@ const ParticipacionesRegistroView = () => {
       }
 
       // Validaciones obligatorias
-      const requiredFields = ['id_solicitud', 'tipo', 'numero_documento', 'papel_seguridad', 'fecha_expedicion', 'nro_archivo', 'id_licencia']
+      const requiredFields = ['id_solicitud', 'tipo', 'numero_documento', 'papel_seguridad', 'fecha_expedicion', 'nro_archivo', 'licencia_autorizacion', 'territorio']
       for (const f of requiredFields) {
         if (!formData[f] || formData[f].toString().trim() === '') {
           setModalState({ visible: true, type: 'error', message: 'Complete todos los campos obligatorios antes de emitir.' })
@@ -217,14 +165,10 @@ const ParticipacionesRegistroView = () => {
         }
       }
 
-      // Validar UUID de id_solicitud e id_licencia
+      // Validar UUID de id_solicitud
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
       if (!uuidRegex.test(formData.id_solicitud)) {
         setModalState({ visible: true, type: 'error', message: 'La solicitud seleccionada no tiene un formato válido.' })
-        return
-      }
-      if (!uuidRegex.test(formData.id_licencia)) {
-        setModalState({ visible: true, type: 'error', message: 'Debe seleccionar una licencia de soporte válida.' })
         return
       }
 
@@ -234,12 +178,6 @@ const ParticipacionesRegistroView = () => {
           setModalState({ visible: true, type: 'error', message: 'La fecha de vencimiento debe ser posterior a la fecha de expedición.' })
           return
         }
-      }
-
-      // Validar documento anterior en renovación
-      if (formData.tipo_emision === 'Renovacion' && !formData.id_documento_anterior) {
-        setModalState({ visible: true, type: 'error', message: 'Debe seleccionar un documento anterior para una renovación.' })
-        return
       }
 
       const emitterId = user?.id_usuario ?? user?.id
@@ -267,12 +205,11 @@ const ParticipacionesRegistroView = () => {
         fecha_expedicion:formData.fecha_expedicion,
         tipo:            formData.tipo,
         nro_archivo:     formData.nro_archivo,
-        id_licencia:     formData.id_licencia,
-        ...(formData.id_documento_anterior?.trim() ? { id_documento_anterior: formData.id_documento_anterior } : {}),
+        licencia_autorizacion: formData.licencia_autorizacion,
+        territorio:      formData.territorio,
         ...(formData.fecha_vencimiento                   ? { fecha_vencimiento:        formData.fecha_vencimiento }        : {}),
         ...(formData.direccion_establecimiento?.trim()   ? { direccion_establecimiento: formData.direccion_establecimiento } : {}),
         ...(formData.detalles_extra?.trim()              ? { detalles_extra:           formData.detalles_extra }           : {}),
-        ...(formData.id_representante?.trim()            ? { representantes: [formData.id_representante] } : {}),
         pago: {
           id_banco:       formData.id_banco,
           num_referencia: formData.num_referencia,
@@ -288,7 +225,6 @@ const ParticipacionesRegistroView = () => {
       setModalState({ visible: true, type: 'success', message: 'Participación emitida correctamente.' })
       setFormData(INITIAL_FORM)
       setSolicitudSeleccionada(null)
-      setRepresentantes([])
 
     } catch (err) {
       console.error('Error emitir participacion:', err)
@@ -330,12 +266,8 @@ const ParticipacionesRegistroView = () => {
             solicitudes={solicitudes}
             solicitudSeleccionada={solicitudSeleccionada}
             bancos={bancos}
-            licencias={licencias}
-            documentosAnteriores={documentosAnteriores}
-            representantes={representantes}
             loadingDeps={loadingDeps}
             loadingDetalleSolicitud={loadingDetalleSolicitud}
-            loadingReps={loadingReps}
           />
         </CCardBody>
       </CCard>

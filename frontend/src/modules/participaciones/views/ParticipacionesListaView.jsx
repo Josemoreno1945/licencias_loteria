@@ -30,9 +30,8 @@ const PARTICIPACIONES_SEARCH_FIELDS = [
   'nro_archivo',
   'ci_rif',
   'persona',
-  'representante',
   'comercializador',
-  'id_licencia',
+  'tipo',
 ]
 
 const ParticipacionesListaView = () => {
@@ -122,7 +121,7 @@ const ParticipacionesListaView = () => {
                       <CTableHeaderCell>Nro. Archivo</CTableHeaderCell>
                       <CTableHeaderCell>Persona</CTableHeaderCell>
                       <CTableHeaderCell>Comercializador</CTableHeaderCell>
-                      <CTableHeaderCell>Licencia</CTableHeaderCell>
+                      <CTableHeaderCell>Tipo</CTableHeaderCell>
                       <CTableHeaderCell>Estado</CTableHeaderCell>
                       <CTableHeaderCell>Vencimiento</CTableHeaderCell>
                       <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
@@ -143,7 +142,20 @@ const ParticipacionesListaView = () => {
                           <div className="text-muted small">{par.persona}</div>
                         </CTableDataCell>
                         <CTableDataCell>{par.comercializador || <span className="text-muted">—</span>}</CTableDataCell>
-                        <CTableDataCell>{par.id_licencia ? `${par.id_licencia.slice(0, 8)}...` : <span className="text-muted">—</span>}</CTableDataCell>
+                        <CTableDataCell>
+                          <CBadge
+                            color={
+                              par.tipo === 'Archivo' ? 'primary' :
+                              par.tipo === 'Certificacion' ? 'info' :
+                              par.tipo === 'Rectificacion' ? 'warning' :
+                              par.tipo === 'Nulidad' ? 'danger' : 'secondary'
+                            }
+                            shape="rounded-pill"
+                            className="px-2"
+                          >
+                            {par.tipo ?? <span className="text-muted">—</span>}
+                          </CBadge>
+                        </CTableDataCell>
                         <CTableDataCell>
                           <CBadge color={par.estado_documento === 'vigente' ? 'success' : par.estado_documento === 'vencido' ? 'warning' : 'danger'}>
                             {par.estado_documento}

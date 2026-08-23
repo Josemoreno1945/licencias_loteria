@@ -5,7 +5,6 @@ import {
   actualizar_participacion_id,
   buscar_participaciones_por_persona,
   buscar_participaciones_por_comercializador,
-  buscar_participaciones_por_licencia,
   buscar_participaciones_por_nro_archivo,
   buscar_participaciones_proximas_a_vencer,
 } from "../models/participaciones.models.js";
@@ -129,18 +128,7 @@ export const buscar_c_participaciones_por_comercializador = async (req, res, nex
   }
 };
 
-export const buscar_c_participaciones_por_licencia = async (req, res, next) => {
-  try {
-    const id = req.params.id;
-    if (!uuidRegex.test(id)) {
-      throwError(errors.invalidData);
-    }
-    const rows = await buscar_participaciones_por_licencia(id);
-    res.json(rows);
-  } catch (error) {
-    next(error);
-  }
-};
+
 
 export const buscar_c_participaciones_por_nro_archivo = async (req, res, next) => {
   try {

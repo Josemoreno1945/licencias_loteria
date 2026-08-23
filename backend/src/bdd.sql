@@ -780,7 +780,8 @@ CREATE TABLE participaciones (
     id_comercializador    UUID,
     id_centro             UUID,
     numero_lot            VARCHAR(30),
-    id_licencia           UUID,
+    licencia_autorizacion VARCHAR(50),
+    territorio            VARCHAR(50),
     nro_archivo           VARCHAR(50),
 
     CONSTRAINT fk_par_documento
@@ -801,11 +802,6 @@ CREATE TABLE participaciones (
     CONSTRAINT fk_par_centro
         FOREIGN KEY (id_centro)
         REFERENCES centros_apuesta (id_centro)
-        ON DELETE RESTRICT ON UPDATE CASCADE,
-
-    CONSTRAINT fk_par_licencia
-        FOREIGN KEY (id_licencia)
-        REFERENCES licencias (id_documento)
         ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
@@ -819,8 +815,6 @@ COMMENT ON COLUMN participaciones.id_centro   IS
     'Centro de apuesta heredado de la solicitud; nullable.';
 COMMENT ON COLUMN participaciones.numero_lot   IS
     'Número LOT (Lotería de Táchira) asignado al documento emitido.';
-COMMENT ON COLUMN participaciones.id_licencia  IS
-    'Licencia a la que hace referencia esta participación (Archivo, Certificación, etc.).';
 COMMENT ON COLUMN participaciones.nro_archivo  IS
     'Número de archivo interno de la participación.';
 
@@ -829,7 +823,6 @@ CREATE INDEX idx_participaciones_comercializador      ON participaciones (id_com
 CREATE INDEX idx_participaciones_centro               ON participaciones (id_centro);
 CREATE INDEX idx_participaciones_tipo                 ON participaciones (tipo);
 CREATE INDEX idx_participaciones_persona_tipo         ON participaciones (id_persona, tipo);
-CREATE INDEX idx_participaciones_licencia             ON participaciones (id_licencia);
 
 -- -------------------------------------------------------
 -- Puente: Representantes de la Participación (N:M)

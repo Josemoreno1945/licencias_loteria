@@ -13,6 +13,7 @@ export const get_solicitudes = async () => {
     op.razon_social     AS operadora,
     s.tipo_tramite,
     s.categoria_licencia,
+    s.tipo_participacion,
     s.estado,
     s.descripcion_tramite,
     s.observaciones,
@@ -25,8 +26,8 @@ export const get_solicitudes = async () => {
   FROM solicitudes AS s
   JOIN personas       AS p  ON s.id_persona         = p.id_persona
   JOIN usuarios       AS u  ON s.registrado_por      = u.id_usuario
-  LEFT JOIN comercializadores AS c  ON s.id_comercializador = c.id_comercializadores
-  LEFT JOIN operadoras        AS op ON s.id_operadora       = op.id_operadora
+  LEFT JOIN comercializadores  AS c   ON s.id_comercializador = c.id_comercializadores
+  LEFT JOIN operadoras         AS op  ON s.id_operadora       = op.id_operadora
   ORDER BY s.created_at DESC`;
   const result = await pool.query(query);
   return result.rows;
@@ -64,6 +65,7 @@ export const get_solicitudes_id = async (id) => {
     s.fecha_vencimiento_conalot,
     s.numero_licencia_loteriatachira,
     s.direccion_autorizacion_especial,
+    s.tipo_participacion,
     u.nombre_usuario    AS registrado_por,
     s.created_at,
     s.updated_at,
@@ -132,20 +134,21 @@ export const crear_solicitud = async (data) => {
     const solicitudQuery = `
       INSERT INTO solicitudes (
         id_persona, id_comercializador, id_operadora,
-        tipo_tramite, categoria_licencia, estado,
+        tipo_tramite, categoria_licencia, tipo_participacion, estado,
         descripcion_tramite, observaciones, justificacion_no_logrado,
         tipo_emision, numero_autorizacion_conalot,
         fecha_emision_conalot, fecha_vencimiento_conalot,
         numero_licencia_loteriatachira, direccion_autorizacion_especial,
         registrado_por
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *`;
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *`;
     const solicitudValues = [
       data.id_persona,
       data.id_comercializador ?? null,
       data.id_operadora ?? null,
       data.tipo_tramite,
       data.categoria_licencia ?? null,
+      data.tipo_participacion ?? null,
       data.estado ?? "Pendiente",
       data.descripcion_tramite ?? null,
       data.observaciones ?? null,
@@ -202,23 +205,25 @@ export const actualizar_solicitud_id = async (id, data) => {
       id_operadora                = $3,
       tipo_tramite                = $4,
       categoria_licencia          = $5,
-      estado                      = $6,
-      descripcion_tramite         = $7,
-      observaciones               = $8,
-      justificacion_no_logrado    = $9,
-      tipo_emision                = $10,
-      numero_autorizacion_conalot = $11,
-      fecha_emision_conalot       = $12,
-      fecha_vencimiento_conalot   = $13,
-      numero_licencia_loteriatachira = $14,
-      direccion_autorizacion_especial = $15
-    WHERE id_solicitudes = $16 RETURNING *`;
+      tipo_participacion          = $6,
+      estado                      = $7,
+      descripcion_tramite         = $8,
+      observaciones               = $9,
+      justificacion_no_logrado    = $10,
+      tipo_emision                = $11,
+      numero_autorizacion_conalot = $12,
+      fecha_emision_conalot       = $13,
+      fecha_vencimiento_conalot   = $14,
+      numero_licencia_loteriatachira = $15,
+      direccion_autorizacion_especial = $16
+    WHERE id_solicitudes = $17 RETURNING *`;
   const values = [
     data.id_persona,
     data.id_comercializador ?? null,
     data.id_operadora ?? null,
     data.tipo_tramite,
     data.categoria_licencia ?? null,
+    data.tipo_participacion ?? null,
     data.estado,
     data.descripcion_tramite ?? null,
     data.observaciones ?? null,

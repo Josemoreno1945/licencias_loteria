@@ -130,6 +130,7 @@ const SolicitudDetalleModal = ({ idSolicitud, onClose }) => {
 
               {esParticipacion && (
                 <>
+                  <Campo label="Tipo de Participación" value={data.tipo_participacion} md={6} bold />
                   <Campo label="N° de Autorización CONALOT" value={data.numero_autorizacion_conalot} md={6} bold />
                   <Campo
                     label="Fecha de Emisión CONALOT"

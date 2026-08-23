@@ -66,8 +66,6 @@ const base_participacion_schema = z.object({
 
   id_centro: optionalUuidField,
 
-  id_licencia: optionalUuidField,
-
   numero_lot: optionalStringField(
     z.string().max(30, "El numero_lot no puede exceder los 30 caracteres"),
   ),
@@ -75,6 +73,14 @@ const base_participacion_schema = z.object({
   nro_archivo: optionalStringField(
     z.string().max(50, "El nro_archivo no puede exceder los 50 caracteres"),
   ),
+
+  licencia_autorizacion: z.enum(["Licencia", "Autorizacion Especial"], {
+    required_error: "Debe seleccionar Licencia o Autorización Especial",
+  }),
+
+  territorio: z.enum(["Nacional", "Estadal", "Municipal"], {
+    required_error: "El territorio es requerido",
+  }),
 });
 
 export const crear_participacion_schema = base_participacion_schema;
@@ -100,8 +106,6 @@ export const emitir_participacion_schema = z.object({
     .enum(["Inscripcion", "Renovacion"])
     .optional()
     .default("Inscripcion"),
-
-  id_documento_anterior: optionalUuidField,
 
   numero_documento: z
     .string({ required_error: "El numero de documento es requerido" })
@@ -144,13 +148,17 @@ export const emitir_participacion_schema = z.object({
 
   id_centro: optionalUuidField,
 
-  id_licencia: optionalUuidField,
-
   nro_archivo: optionalStringField(
     z.string().max(50, "El nro_archivo no puede exceder los 50 caracteres"),
   ),
 
-  representantes: optionalUuidArrayField,
+  licencia_autorizacion: z.enum(["Licencia", "Autorizacion Especial"], {
+    required_error: "Debe seleccionar Licencia o Autorización Especial",
+  }),
+
+  territorio: z.enum(["Nacional", "Estadal", "Municipal"], {
+    required_error: "El territorio es requerido",
+  }),
 
   /* DATO PROPIO de la Participación */
   tipo: z.enum(tipos_participacion, {
@@ -190,5 +198,4 @@ export const actualizar_participacion_schema = base_participacion_schema.omit({
   id_documento: true,
 }).extend({
   id_centro: optionalUuidField,
-  representantes: optionalUuidArrayField,
 }).partial();

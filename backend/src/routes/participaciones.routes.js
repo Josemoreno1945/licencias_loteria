@@ -8,7 +8,6 @@ import {
   actualizar_participacion,
   buscar_c_participaciones_por_persona,
   buscar_c_participaciones_por_comercializador,
-  buscar_c_participaciones_por_licencia,
   buscar_c_participaciones_por_nro_archivo,
   buscar_c_participaciones_proximas_a_vencer,
 } from "../controllers/participaciones.controllers.js";
@@ -30,7 +29,6 @@ router.get("/participaciones/por-persona/:id", verifyToken, hasRole("superAdmin"
 
 router.get("/participaciones/por-comercializador/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_participaciones_por_comercializador);
 
-router.get("/participaciones/por-licencia/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_participaciones_por_licencia);
 
 router.get("/participaciones/por-nro-archivo/:nro_archivo", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_participaciones_por_nro_archivo);
 

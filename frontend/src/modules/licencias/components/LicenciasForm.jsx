@@ -213,7 +213,7 @@ const LicenciasForm = ({
         2. Datos del Documento
       </h6>
 
-      {/* Fila: LOT y N° de Licencia */}
+      {/* Fila 1: LOT y N° de Licencia */}
       <CRow className="mb-3">
         <CCol md={4} className="mb-3">
           <CFormLabel>LOT N° <span className="text-danger">*</span></CFormLabel>
@@ -244,18 +244,21 @@ const LicenciasForm = ({
         </CCol>
       </CRow>
 
-      {/* Fila: Tipo de Emisión */}
+      {/* Fila 2: Tipo de Emisión + Fecha Expedición + Fecha Vencimiento */}
       <CRow className="mb-3">
         <CCol md={4} className="mb-3">
           <CFormLabel>Tipo de Emisión <span className="text-danger">*</span></CFormLabel>
-          <CFormSelect
-            name="tipo_emision"
-            value={formData.tipo_emision}
-            onChange={handleInputChange}
-          >
-            <option value="Inscripcion">Inscripción (nueva)</option>
-            <option value="Renovacion">Renovación</option>
-          </CFormSelect>
+          <CInputGroup>
+            <CInputGroupText><CIcon icon={cilList} /></CInputGroupText>
+            <CFormSelect
+              name="tipo_emision"
+              value={formData.tipo_emision}
+              onChange={handleInputChange}
+            >
+              <option value="Inscripcion">Inscripción (nueva)</option>
+              <option value="Renovacion">Renovación</option>
+            </CFormSelect>
+          </CInputGroup>
         </CCol>
 
         <CCol md={4} className="mb-3">
@@ -286,17 +289,20 @@ const LicenciasForm = ({
         </CCol>
       </CRow>
 
-      {/* Fila: Papel de Seguridad y Dirección */}
+      {/* Fila 3: Papel de Seguridad + Dirección */}
       <CRow className="mb-3">
         <CCol md={4} className="mb-3">
           <CFormLabel>Papel de Seguridad <span className="text-danger">*</span></CFormLabel>
-          <CFormInput
-            name="papel_seguridad"
-            value={formData.papel_seguridad}
-            onChange={handleInputChange}
-            placeholder="Código del papel"
-            required
-          />
+          <CInputGroup>
+            <CInputGroupText><CIcon icon={cilClipboard} /></CInputGroupText>
+            <CFormInput
+              name="papel_seguridad"
+              value={formData.papel_seguridad}
+              onChange={handleInputChange}
+              placeholder="Código del papel"
+              required
+            />
+          </CInputGroup>
         </CCol>
 
         <CCol md={8} className="mb-3">
@@ -310,7 +316,7 @@ const LicenciasForm = ({
         </CCol>
       </CRow>
 
-      {/* Observaciones del documento */}
+      {/* Fila 4: Observaciones del documento */}
       <CRow className="mb-3">
         <CCol md={12}>
           <CFormLabel>Observaciones del Documento (Opcional)</CFormLabel>
