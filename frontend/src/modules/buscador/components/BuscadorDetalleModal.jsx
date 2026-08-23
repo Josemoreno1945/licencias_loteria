@@ -184,8 +184,6 @@ const BuscadorDetalleModal = ({
                 </CNavLink>
               </CNavItem>
 
-              {/* ── Placeholder Participaciones ── */}
-              {/* TODO: activar cuando el módulo esté listo
               <CNavItem>
                 <CNavLink
                   active={activeTab === 'participaciones'}
@@ -195,7 +193,6 @@ const BuscadorDetalleModal = ({
                   Participaciones ({detalle.participaciones?.length || 0})
                 </CNavLink>
               </CNavItem>
-              */}
 
               {/* ── Placeholder Autorizaciones Especiales ── */}
               {/* TODO: activar cuando el módulo esté listo
@@ -399,8 +396,6 @@ const BuscadorDetalleModal = ({
                 )}
               </CTabPane>
 
-              {/* ── TAB PLACEHOLDER: PARTICIPACIONES ── */}
-              {/* TODO: descomentar y conectar datos cuando el módulo esté listo
               <CTabPane visible={activeTab === 'participaciones'}>
                 {detalle.participaciones?.length === 0 ? (
                   <CAlert color="info">Esta persona no tiene participaciones registradas.</CAlert>
@@ -411,6 +406,7 @@ const BuscadorDetalleModal = ({
                         <CTableHeaderCell>#</CTableHeaderCell>
                         <CTableHeaderCell>Nº Archivo</CTableHeaderCell>
                         <CTableHeaderCell>Nº Documento</CTableHeaderCell>
+                        <CTableHeaderCell>Tipo</CTableHeaderCell>
                         <CTableHeaderCell>Estado</CTableHeaderCell>
                         <CTableHeaderCell>Comercializador</CTableHeaderCell>
                         <CTableHeaderCell>Expedición</CTableHeaderCell>
@@ -421,8 +417,9 @@ const BuscadorDetalleModal = ({
                       {detalle.participaciones.map((par, idx) => (
                         <CTableRow key={par.id_documento}>
                           <CTableDataCell className="text-muted">{idx + 1}</CTableDataCell>
-                          <CTableDataCell>{par.nro_archivo}</CTableDataCell>
+                          <CTableDataCell>{par.nro_archivo || '—'}</CTableDataCell>
                           <CTableDataCell>{par.numero_documento}</CTableDataCell>
+                          <CTableDataCell>{par.tipo || '—'}</CTableDataCell>
                           <CTableDataCell>
                             <CBadge color={getEstadoDocColor(par.estado_documento)}>
                               {par.estado_documento}
@@ -442,7 +439,6 @@ const BuscadorDetalleModal = ({
                   </CTable>
                 )}
               </CTabPane>
-              */}
 
               {/* ── TAB PLACEHOLDER: AUTORIZACIONES ESPECIALES ── */}
               {/* TODO: descomentar y conectar datos cuando el módulo esté listo

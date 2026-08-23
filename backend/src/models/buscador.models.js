@@ -242,24 +242,24 @@ export const get_detalle_persona = async (id_persona) => {
     [id_persona],
   );
 
-  // ── Placeholder: Participaciones ─────────────────────────────────────────
-  // TODO: descomentar cuando el módulo de participaciones esté listo
-  // const participacionesRes = await pool.query(
-  //   `SELECT
-  //      p.id_documento,
-  //      de.numero_documento,
-  //      de.estado_documento,
-  //      de.fecha_expedicion,
-  //      de.fecha_vencimiento,
-  //      p.nro_archivo,
-  //      c.razon_social AS comercializador
-  //    FROM participaciones AS p
-  //    JOIN documentos_emitidos AS de ON p.id_documento = de.id_documento
-  //    LEFT JOIN comercializadores AS c ON p.id_comercializador = c.id_comercializadores
-  //    WHERE p.id_persona = $1
-  //    ORDER BY de.fecha_expedicion DESC`,
-  //   [id_persona],
-  // );
+  // Participaciones asociadas a la persona
+  const participacionesRes = await pool.query(
+    `SELECT
+       p.id_documento,
+       de.numero_documento,
+       de.estado_documento,
+       de.fecha_expedicion,
+       de.fecha_vencimiento,
+       p.tipo,
+       p.nro_archivo,
+       c.razon_social AS comercializador
+    FROM participaciones AS p
+    JOIN documentos_emitidos AS de ON p.id_documento = de.id_documento
+    LEFT JOIN comercializadores AS c ON p.id_comercializador = c.id_comercializadores
+    WHERE p.id_persona = $1
+    ORDER BY de.fecha_expedicion DESC`,
+    [id_persona],
+  );
 
   // ── Placeholder: Autorizaciones Especiales ────────────────────────────────
   // TODO: descomentar cuando el módulo de autorizaciones esté listo
@@ -311,9 +311,9 @@ export const get_detalle_persona = async (id_persona) => {
   return {
     persona: personaRes.rows[0],
     licencias: licenciasRes.rows,
-    solicitudes: solicitudesRes.rows,
-    // participaciones: participacionesRes.rows,     // TODO: activar cuando esté listo
-    // autorizaciones_especiales: autorizacionesRes.rows, // TODO: activar cuando esté listo
+     solicitudes: solicitudesRes.rows,
+     participaciones: participacionesRes.rows,
+     // autorizaciones_especiales: autorizacionesRes.rows, // TODO: activar cuando esté listo
     representantes: representantesRes.rows,
     centros_apuesta: centrosRes.rows,
   };

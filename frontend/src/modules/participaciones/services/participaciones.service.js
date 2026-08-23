@@ -10,6 +10,11 @@ export const getSolicitudesParticipacion = async () => {
   return data;
 };
 
+export const getSolicitudDetalle = async (id_solicitud) => {
+  const { data } = await axiosInstance.get(`/solicitudes/${id_solicitud}`);
+  return Array.isArray(data) ? data[0] : data;
+};
+
 export const getLicenciasVigentes = async () => {
   const { data } = await axiosInstance.get("/licencias/vigentes");
   return data;

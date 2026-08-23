@@ -1,18 +1,5 @@
 import { pool } from "../db.js";
 
-const REPRESENTANTES_SUBQUERY = `(
-  SELECT COALESCE(json_agg(json_build_object(
-    'id_persona', rp.id_persona,
-    'ci_rif', rpp.ci_rif,
-    'razon_social', rpp.razon_social,
-    'cargo', rp.cargo,
-    'rol', rp.rol
-  )) FILTER (WHERE rpp.id_persona IS NOT NULL), '[]'::json)
-  FROM participaciones_representantes rp
-  LEFT JOIN personas rpp ON rp.id_persona = rpp.id_persona
-  WHERE rp.id_documento = par.id_documento
-)`;
-
 //get--------------------------------------------------------------------
 export const get_participaciones = async () => {
   const query = `
@@ -24,25 +11,21 @@ export const get_participaciones = async () => {
     de.estado_documento,
     de.fecha_expedicion,
     de.fecha_vencimiento,
-    par.nro_archivo,
     par.tipo,
+    par.numero_lot,
+    par.nro_archivo,
+    par.id_licencia,
     p.ci_rif,
-    p.razon_social          AS persona,
-    c.razon_social          AS comercializador,
-    lic.numero_documento    AS numero_licencia,
-    aut.numero_documento    AS numero_autorizacion_previa,
-    u.nombre_usuario        AS emitido_por,
+    p.razon_social      AS persona,
+    c.razon_social      AS comercializador,
+    u.nombre_usuario    AS emitido_por,
     de.created_at,
     de.updated_at
   FROM participaciones AS par
-  JOIN documentos_emitidos AS de  ON par.id_documento       = de.id_documento
-  JOIN personas            AS p   ON par.id_persona         = p.id_persona
-  JOIN comercializadores   AS c   ON par.id_comercializador = c.id_comercializadores
-  LEFT JOIN licencias           AS l   ON par.id_licencia        = l.id_documento
-  LEFT JOIN documentos_emitidos AS lic ON l.id_documento         = lic.id_documento
-  LEFT JOIN autorizaciones_especiales AS ae ON par.id_autorizacion_previa = ae.id_documento
-  LEFT JOIN documentos_emitidos AS aut ON ae.id_documento       = aut.id_documento
-  JOIN usuarios            AS u   ON de.emitido_por       = u.id_usuario
+  JOIN documentos_emitidos AS de ON par.id_documento       = de.id_documento
+  JOIN personas            AS p  ON par.id_persona         = p.id_persona
+  JOIN usuarios            AS u  ON de.emitido_por       = u.id_usuario
+  LEFT JOIN comercializadores AS c ON par.id_comercializador = c.id_comercializadores
   ORDER BY de.created_at DESC`;
   const result = await pool.query(query);
   return result.rows;
@@ -58,34 +41,49 @@ export const get_participaciones_id = async (id) => {
     de.estado_documento,
     de.fecha_expedicion,
     de.fecha_vencimiento,
-    de.observaciones            AS observaciones_documento,
+    de.direccion_establecimiento,
+    de.observaciones          AS observaciones_documento,
     de.detalles_extra,
-    par.nro_archivo,
     par.tipo,
     par.numero_lot,
-    par.fecha_solicitud,
-    par.territorio,
-    par.observaciones,
+    par.nro_archivo,
+    par.id_licencia,
+    de_lic.numero_documento AS licencia_numero,
+    par.id_centro,
     p.ci_rif,
-    p.razon_social          AS persona,
-    c.razon_social          AS comercializador,
-    lic.numero_documento    AS numero_licencia,
-    aut.numero_documento    AS numero_autorizacion_previa,
-    p.tipo_persona          AS tipo_persona,
-    de.direccion_establecimiento,
-    u.nombre_usuario        AS emitido_por,
+    p.razon_social      AS persona,
+    p.tipo_persona,
+    c.razon_social      AS comercializador,
+    ca.nombre_agencia    AS centro_apuesta,
+    ca.direccion         AS centro_apuesta_direccion,
+    p_ca.ci_rif          AS centro_apuesta_representante_ci,
+    p_ca.razon_social    AS centro_apuesta_representante,
+    de.id_solicitud,
+    u.nombre_usuario    AS emitido_por,
     de.created_at,
     de.updated_at,
-    ${REPRESENTANTES_SUBQUERY} AS representantes
+    pag.id_pago,
+    pag.num_referencia  AS pago_numero_referencia,
+    pag.fecha_pago      AS pago_fecha_pago,
+    pag.monto           AS pago_monto,
+    pag.tasa_dia        AS pago_tasa_dia,
+    pag.responsable_texto AS pago_responsable,
+    pag.observaciones   AS pago_observaciones,
+    b.nombre            AS pago_banco,
+    (SELECT COALESCE(json_agg(json_build_object('id_persona', rp.id_persona, 'ci_rif', rpp.ci_rif, 'razon_social', rpp.razon_social, 'cargo', rp.cargo, 'rol', rp.rol)) FILTER (WHERE rpp.id_persona IS NOT NULL), '[]'::json)
+     FROM participaciones_representantes rp
+     LEFT JOIN personas rpp ON rp.id_persona = rpp.id_persona
+     WHERE rp.id_documento = par.id_documento) AS representantes
   FROM participaciones AS par
   JOIN documentos_emitidos AS de  ON par.id_documento       = de.id_documento
   JOIN personas            AS p   ON par.id_persona         = p.id_persona
-  JOIN comercializadores   AS c   ON par.id_comercializador = c.id_comercializadores
-  LEFT JOIN licencias           AS l   ON par.id_licencia        = l.id_documento
-  LEFT JOIN documentos_emitidos AS lic ON l.id_documento         = lic.id_documento
-  LEFT JOIN autorizaciones_especiales AS ae ON par.id_autorizacion_previa = ae.id_documento
-  LEFT JOIN documentos_emitidos AS aut ON ae.id_documento       = aut.id_documento
   JOIN usuarios            AS u   ON de.emitido_por       = u.id_usuario
+  LEFT JOIN comercializadores AS c ON par.id_comercializador = c.id_comercializadores
+  LEFT JOIN centros_apuesta AS ca ON par.id_centro = ca.id_centro
+  LEFT JOIN personas        AS p_ca ON ca.id_persona = p_ca.id_persona
+  LEFT JOIN documentos_emitidos AS de_lic ON par.id_licencia = de_lic.id_documento
+  LEFT JOIN pagos AS pag ON pag.id_participacion = par.id_documento
+  LEFT JOIN bancos AS b ON pag.id_banco = b.id_banco
   WHERE par.id_documento = $1
   `;
   const result = await pool.query(query, [id]);
@@ -96,22 +94,23 @@ export const get_participaciones_vigentes = async () => {
   const query = `
   SELECT
     par.id_documento,
+    par.id_persona,
     de.numero_documento,
     de.estado_documento,
     de.fecha_expedicion,
     de.fecha_vencimiento,
-    par.nro_archivo,
     par.tipo,
+    par.nro_archivo,
+    par.id_licencia,
     p.ci_rif,
-    p.razon_social          AS persona,
-    c.razon_social          AS comercializador,
-    lic.numero_documento    AS numero_licencia
+    p.razon_social      AS persona,
+    c.razon_social      AS comercializador,
+    par.numero_lot,
+    par.id_centro
   FROM participaciones AS par
-  JOIN documentos_emitidos AS de  ON par.id_documento       = de.id_documento
-  JOIN personas            AS p   ON par.id_persona         = p.id_persona
-  JOIN comercializadores   AS c   ON par.id_comercializador = c.id_comercializadores
-  LEFT JOIN licencias           AS l   ON par.id_licencia        = l.id_documento
-  LEFT JOIN documentos_emitidos AS lic ON l.id_documento         = lic.id_documento
+  JOIN documentos_emitidos AS de ON par.id_documento       = de.id_documento
+  JOIN personas            AS p  ON par.id_persona         = p.id_persona
+  LEFT JOIN comercializadores AS c ON par.id_comercializador = c.id_comercializadores
   WHERE de.estado_documento = 'vigente'
   ORDER BY de.fecha_vencimiento ASC
   `;
@@ -122,24 +121,17 @@ export const get_participaciones_vigentes = async () => {
 //post------------------------------------------------------------
 export const crear_participacion = async (data) => {
   const query = `
-    INSERT INTO participaciones (
-      id_documento, nro_archivo, id_persona, id_comercializador,
-      id_licencia, id_autorizacion_previa, tipo, numero_lot,
-      fecha_solicitud, territorio, observaciones
-    )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`;
+    INSERT INTO participaciones (id_documento, tipo, id_persona, id_comercializador, id_centro, id_licencia, numero_lot, nro_archivo)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`;
   const values = [
     data.id_documento,
-    data.nro_archivo,
-    data.id_persona,
-    data.id_comercializador,
-    data.id_licencia ?? null,
-    data.id_autorizacion_previa ?? null,
     data.tipo,
+    data.id_persona,
+    data.id_comercializador ?? null,
+    data.id_centro ?? null,
+    data.id_licencia ?? null,
     data.numero_lot ?? null,
-    data.fecha_solicitud ?? null,
-    data.territorio ?? null,
-    data.observaciones ?? null,
+    data.nro_archivo ?? null,
   ];
   const result = await pool.query(query, values);
   return result.rows;
@@ -148,9 +140,13 @@ export const crear_participacion = async (data) => {
 //put---------------------------------------------------
 export const actualizar_participacion_id = async (id, data) => {
   const allowed = [
-    "nro_archivo", "id_persona", "id_comercializador",
-    "id_licencia", "id_autorizacion_previa", "tipo", "numero_lot",
-    "fecha_solicitud", "territorio", "observaciones",
+    "tipo",
+    "id_persona",
+    "id_comercializador",
+    "id_centro",
+    "id_licencia",
+    "numero_lot",
+    "nro_archivo",
   ];
   const fields = [];
   const values = [];
@@ -206,18 +202,16 @@ export const buscar_participaciones_por_persona = async (id_persona) => {
     de.estado_documento,
     de.fecha_expedicion,
     de.fecha_vencimiento,
-    par.nro_archivo,
     par.tipo,
+    par.nro_archivo,
     p.ci_rif,
-    p.razon_social          AS persona,
-    c.razon_social          AS comercializador,
-    lic.numero_documento    AS numero_licencia
+    p.razon_social      AS persona,
+    c.razon_social      AS comercializador,
+    par.numero_lot
   FROM participaciones AS par
-  JOIN documentos_emitidos AS de  ON par.id_documento       = de.id_documento
-  JOIN personas            AS p   ON par.id_persona         = p.id_persona
-  JOIN comercializadores   AS c   ON par.id_comercializador = c.id_comercializadores
-  LEFT JOIN licencias           AS l   ON par.id_licencia        = l.id_documento
-  LEFT JOIN documentos_emitidos AS lic ON l.id_documento         = lic.id_documento
+  JOIN documentos_emitidos AS de ON par.id_documento       = de.id_documento
+  JOIN personas            AS p  ON par.id_persona         = p.id_persona
+  LEFT JOIN comercializadores AS c ON par.id_comercializador = c.id_comercializadores
   WHERE par.id_persona = $1
   ORDER BY de.created_at DESC
   `;
@@ -233,18 +227,16 @@ export const buscar_participaciones_por_comercializador = async (id_comercializa
     de.estado_documento,
     de.fecha_expedicion,
     de.fecha_vencimiento,
-    par.nro_archivo,
     par.tipo,
+    par.nro_archivo,
     p.ci_rif,
-    p.razon_social          AS persona,
-    c.razon_social          AS comercializador,
-    lic.numero_documento    AS numero_licencia
+    p.razon_social      AS persona,
+    c.razon_social      AS comercializador,
+    par.numero_lot
   FROM participaciones AS par
-  JOIN documentos_emitidos AS de  ON par.id_documento       = de.id_documento
-  JOIN personas            AS p   ON par.id_persona         = p.id_persona
-  JOIN comercializadores   AS c   ON par.id_comercializador = c.id_comercializadores
-  LEFT JOIN licencias           AS l   ON par.id_licencia        = l.id_documento
-  LEFT JOIN documentos_emitidos AS lic ON l.id_documento         = lic.id_documento
+  JOIN documentos_emitidos AS de ON par.id_documento       = de.id_documento
+  JOIN personas            AS p  ON par.id_persona         = p.id_persona
+  JOIN comercializadores   AS c  ON par.id_comercializador = c.id_comercializadores
   WHERE par.id_comercializador = $1
   ORDER BY de.created_at DESC
   `;
@@ -260,15 +252,18 @@ export const buscar_participaciones_por_licencia = async (id_licencia) => {
     de.estado_documento,
     de.fecha_expedicion,
     de.fecha_vencimiento,
-    par.nro_archivo,
     par.tipo,
+    par.nro_archivo,
+    de_lic.numero_documento AS licencia_numero,
     p.ci_rif,
-    p.razon_social          AS persona,
-    c.razon_social          AS comercializador
+    p.razon_social      AS persona,
+    c.razon_social      AS comercializador,
+    par.numero_lot
   FROM participaciones AS par
-  JOIN documentos_emitidos AS de  ON par.id_documento       = de.id_documento
-  JOIN personas            AS p   ON par.id_persona         = p.id_persona
-  JOIN comercializadores   AS c   ON par.id_comercializador = c.id_comercializadores
+  JOIN documentos_emitidos AS de ON par.id_documento = de.id_documento
+  JOIN personas            AS p  ON par.id_persona   = p.id_persona
+  LEFT JOIN comercializadores AS c ON par.id_comercializador = c.id_comercializadores
+  LEFT JOIN documentos_emitidos AS de_lic ON par.id_licencia = de_lic.id_documento
   WHERE par.id_licencia = $1
   ORDER BY de.created_at DESC
   `;
@@ -284,21 +279,44 @@ export const buscar_participaciones_por_nro_archivo = async (nro_archivo) => {
     de.estado_documento,
     de.fecha_expedicion,
     de.fecha_vencimiento,
-    par.nro_archivo,
     par.tipo,
+    par.nro_archivo,
+    par.id_licencia,
     p.ci_rif,
-    p.razon_social          AS persona,
-    c.razon_social          AS comercializador,
-    lic.numero_documento    AS numero_licencia
+    p.razon_social      AS persona,
+    c.razon_social      AS comercializador,
+    par.numero_lot
   FROM participaciones AS par
-  JOIN documentos_emitidos AS de  ON par.id_documento       = de.id_documento
-  JOIN personas            AS p   ON par.id_persona         = p.id_persona
-  JOIN comercializadores   AS c   ON par.id_comercializador = c.id_comercializadores
-  LEFT JOIN licencias           AS l   ON par.id_licencia        = l.id_documento
-  LEFT JOIN documentos_emitidos AS lic ON l.id_documento         = lic.id_documento
+  JOIN documentos_emitidos AS de ON par.id_documento = de.id_documento
+  JOIN personas            AS p  ON par.id_persona   = p.id_persona
+  LEFT JOIN comercializadores AS c ON par.id_comercializador = c.id_comercializadores
   WHERE par.nro_archivo ILIKE $1
   `;
   const result = await pool.query(query, [`%${nro_archivo}%`]);
+  return result.rows;
+};
+
+export const buscar_participaciones_por_numero_lot = async (numero_lot) => {
+  const query = `
+  SELECT
+    par.id_documento,
+    de.numero_documento,
+    de.estado_documento,
+    de.fecha_expedicion,
+    de.fecha_vencimiento,
+    par.tipo,
+    par.nro_archivo,
+    p.ci_rif,
+    p.razon_social      AS persona,
+    c.razon_social      AS comercializador,
+    par.numero_lot
+  FROM participaciones AS par
+  JOIN documentos_emitidos AS de ON par.id_documento = de.id_documento
+  JOIN personas            AS p  ON par.id_persona   = p.id_persona
+  LEFT JOIN comercializadores AS c ON par.id_comercializador = c.id_comercializadores
+  WHERE par.numero_lot ILIKE $1
+  `;
+  const result = await pool.query(query, [`%${numero_lot}%`]);
   return result.rows;
 };
 
@@ -309,18 +327,16 @@ export const buscar_participaciones_proximas_a_vencer = async () => {
     de.numero_documento,
     de.estado_documento,
     de.fecha_vencimiento,
-    par.nro_archivo,
     par.tipo,
+    par.nro_archivo,
     p.ci_rif,
-    p.razon_social          AS persona,
-    c.razon_social          AS comercializador,
-    lic.numero_documento    AS numero_licencia
+    p.razon_social      AS persona,
+    c.razon_social      AS comercializador,
+    par.numero_lot
   FROM participaciones AS par
-  JOIN documentos_emitidos AS de  ON par.id_documento       = de.id_documento
-  JOIN personas            AS p   ON par.id_persona         = p.id_persona
-  JOIN comercializadores   AS c   ON par.id_comercializador = c.id_comercializadores
-  LEFT JOIN licencias           AS l   ON par.id_licencia        = l.id_documento
-  LEFT JOIN documentos_emitidos AS lic ON l.id_documento         = lic.id_documento
+  JOIN documentos_emitidos AS de ON par.id_documento       = de.id_documento
+  JOIN personas            AS p  ON par.id_persona         = p.id_persona
+  LEFT JOIN comercializadores AS c ON par.id_comercializador = c.id_comercializadores
   WHERE de.estado_documento = 'vigente'
     AND de.fecha_vencimiento BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '30 days'
   ORDER BY de.fecha_vencimiento ASC

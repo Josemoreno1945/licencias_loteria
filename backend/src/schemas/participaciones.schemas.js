@@ -18,7 +18,7 @@ const optionalStringField = (schema) =>
   z.preprocess(
     (value) =>
       value === "" || value === null || value === undefined ? undefined : value,
-    schema.optional().nullable(), // ← .optional() en el inner schema (Zod v3)
+    schema.optional().nullable(),
   );
 
 /**
@@ -27,7 +27,7 @@ const optionalStringField = (schema) =>
 const optionalDateField = z.preprocess(
   (value) =>
     value === "" || value === null || value === undefined ? undefined : value,
-  dateStringSchema.optional().nullable(), // ← corrección Zod v3
+  dateStringSchema.optional().nullable(),
 );
 
 /**
@@ -36,7 +36,7 @@ const optionalDateField = z.preprocess(
 const optionalUuidField = z.preprocess(
   (value) =>
     value === "" || value === null || value === undefined ? undefined : value,
-  uuidSchema.optional().nullable(), // ← corrección Zod v3
+  uuidSchema.optional().nullable(),
 );
 
 const optionalUuidArrayField = z.preprocess(
@@ -45,52 +45,51 @@ const optionalUuidArrayField = z.preprocess(
   z.array(uuidSchema).optional().nullable(),
 );
 
+/* Catálogo de tipos de participación (espejo del enum tipo_participacion_enum) */
+const tipos_participacion = ["Archivo", "Certificacion", "Rectificacion", "Nulidad"];
+
+/**
+ * Schema base de la entidad participación (espejo de simple_licencia_schema).
+ * id_persona e id_comercializador se heredan de la solicitud asociiada.
+ * id_licencia referencia la licencia a la que la participación hace referencia.
+ */
 const base_participacion_schema = z.object({
   id_documento: uuidSchema,
 
-  nro_archivo: z
-    .string({ required_error: "El numero de archivo es requerido" })
-    .min(1, "El numero de archivo no puede estar vacio")
-    .max(30, "El numero de archivo no puede exceder los 30 caracteres"),
+  tipo: z.enum(tipos_participacion, {
+    required_error: "El tipo de participación es requerido",
+  }),
 
-  id_persona: optionalUuidField,
+  id_persona: uuidSchema,
 
-  id_comercializador: optionalUuidField,
+  id_comercializador: uuidSchema.optional().nullable(),
+
+  id_centro: optionalUuidField,
 
   id_licencia: optionalUuidField,
-
-  id_autorizacion_previa: optionalUuidField,
-
-  tipo: z.enum(["Archivo", "Certificacion", "Rectificacion", "Nulidad"], {
-    required_error: "El tipo de participacion es requerido",
-  }),
 
   numero_lot: optionalStringField(
     z.string().max(30, "El numero_lot no puede exceder los 30 caracteres"),
   ),
 
-  fecha_solicitud: optionalDateField,
-
-  territorio: optionalStringField(
-    z.string().max(200, "El territorio no puede exceder los 200 caracteres"),
+  nro_archivo: optionalStringField(
+    z.string().max(50, "El nro_archivo no puede exceder los 50 caracteres"),
   ),
-
-  observaciones: optionalStringField(
-    z.string().max(500, "Las observaciones no pueden exceder los 500 caracteres"),
-  ),
-
-  representantes: optionalUuidArrayField,
 });
 
-export const actualizar_participacion_schema = base_participacion_schema.omit({
-  id_documento: true,
-}).partial();
+export const crear_participacion_schema = base_participacion_schema;
 
 /**
  * Schema para la emisión (alta) de una participación.
  * Reproduce el patrón de emitir_licencia_schema: crea el documento
  * emitido, el pago y el detalle de participaciones de forma transaccional.
  * id_persona e id_comercializador se obtienen de la solicitud asociiada.
+ *
+ * Adaptación respecto a Licencias:
+ *  - `tipo` (Tipo de participación) es un DATO PROPIO y es requerido.
+ *  - `id_licencia` referencia la licencia a la que hace referencia.
+ *  - No hay `categoria` (corresponde a Licencias); el tipo de participación
+ *    reemplaza esa responsabilidad.
  */
 export const emitir_participacion_schema = z.object({
   id_solicitud: uuidSchema,
@@ -133,34 +132,35 @@ export const emitir_participacion_schema = z.object({
       .max(500, "Las observaciones no pueden exceder los 500 caracteres"),
   ),
 
-  nro_archivo: z
-    .string({ required_error: "El numero de archivo es requerido" })
-    .min(1, "El numero de archivo no puede estar vacio")
-    .max(30, "El numero de archivo no puede exceder los 30 caracteres"),
-
-  id_licencia: optionalUuidField,
-
-  id_autorizacion_previa: optionalUuidField,
-
-  tipo: z.enum(["Archivo", "Certificacion", "Rectificacion", "Nulidad"], {
-    required_error: "El tipo de participacion es requerido",
-  }),
+  observaciones: optionalStringField(
+    z
+      .string()
+      .max(500, "Las observaciones no pueden exceder los 500 caracteres"),
+  ),
 
   numero_lot: optionalStringField(
     z.string().max(30, "El numero_lot no puede exceder los 30 caracteres"),
   ),
 
-  fecha_solicitud: optionalDateField,
+  id_centro: optionalUuidField,
 
-  territorio: optionalStringField(
-    z.string().max(200, "El territorio no puede exceder los 200 caracteres"),
-  ),
+  id_licencia: optionalUuidField,
 
-  observaciones: optionalStringField(
-    z.string().max(500, "Las observaciones no pueden exceder los 500 caracteres"),
+  nro_archivo: optionalStringField(
+    z.string().max(50, "El nro_archivo no puede exceder los 50 caracteres"),
   ),
 
   representantes: optionalUuidArrayField,
+
+  /* DATO PROPIO de la Participación */
+  tipo: z.enum(tipos_participacion, {
+    required_error: "El tipo de participación es requerido",
+  }),
+
+  juegos: z
+    .array(z.string().uuid("Cada ID de juego debe ser un UUID válido"))
+    .optional()
+    .nullable(),
 
   pago: z.object({
     id_banco: uuidSchema,
@@ -183,3 +183,12 @@ export const emitir_participacion_schema = z.object({
       .nullable(),
   }),
 });
+
+export const crear_participacion_completa_schema = emitir_participacion_schema;
+
+export const actualizar_participacion_schema = base_participacion_schema.omit({
+  id_documento: true,
+}).extend({
+  id_centro: optionalUuidField,
+  representantes: optionalUuidArrayField,
+}).partial();

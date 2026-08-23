@@ -175,12 +175,12 @@ const ParticipacionesDetalleModal = ({ idParticipacion, onClose }) => {
                </CCol>
 
                <CCol md={6}>
-                 <CFormLabel className="text-muted small fw-semibold mb-1">Licencia Previa</CFormLabel>
-                 <CFormInput type="text" value={data.numero_licencia || 'Ninguna'} readOnly className="bg-light" />
-               </CCol>
-               <CCol md={6}>
-                 <CFormLabel className="text-muted small fw-semibold mb-1">Autorización Previa</CFormLabel>
-                 <CFormInput type="text" value={data.numero_autorizacion_previa || 'Ninguna'} readOnly className="bg-light" />
+                <CFormLabel className="text-muted small fw-semibold mb-1">Licencia Previa</CFormLabel>
+                <CFormInput type="text" value={data.licencia_numero || 'Ninguna'} readOnly className="bg-light" />
+              </CCol>
+              <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">ID Licencia</CFormLabel>
+                <CFormInput type="text" value={data.id_licencia || 'Ninguna'} readOnly className="bg-light" />
                </CCol>
 
                <CCol md={12}>
@@ -189,8 +189,12 @@ const ParticipacionesDetalleModal = ({ idParticipacion, onClose }) => {
                </CCol>
 
                <CCol md={12}>
-                 <CFormLabel className="text-muted small fw-semibold mb-1">Representante Legal</CFormLabel>
-                 <CFormInput type="text" value={data.representante ? `${data.ci_rif_representante || ''} — ${data.representante}` : 'Ninguno'} readOnly className="bg-light" />
+                <CFormLabel className="text-muted small fw-semibold mb-1">Representante Legal</CFormLabel>
+                <CFormInput type="text"
+                  value={Array.isArray(data.representantes) && data.representantes.length > 0
+                    ? data.representantes.map((r) => r.razon_social || r.ci_rif || '').filter(Boolean).join(', ')
+                    : 'Ninguno'}
+                  readOnly className="bg-light" />
                </CCol>
 
                <CCol md={12}>

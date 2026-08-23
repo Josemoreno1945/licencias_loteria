@@ -775,16 +775,13 @@ CREATE INDEX idx_aut_rep_persona   ON autorizaciones_representantes (id_persona)
 
 CREATE TABLE participaciones (
     id_documento          UUID                    PRIMARY KEY,
-    nro_archivo           VARCHAR(30)             NOT NULL,
-    id_persona            UUID                    NOT NULL,
-    id_comercializador    UUID                    NOT NULL,
-    id_licencia           UUID,                   -- Licencia previa (una de las dos debe existir)
-    id_autorizacion_previa UUID,                  -- Autorización especial previa (una de las dos debe existir)
     tipo                  tipo_participacion_enum NOT NULL,
+    id_persona            UUID                    NOT NULL,
+    id_comercializador    UUID,
+    id_centro             UUID,
     numero_lot            VARCHAR(30),
-    fecha_solicitud       DATE,
-    territorio            TEXT,
-    observaciones         TEXT,
+    id_licencia           UUID,
+    nro_archivo           VARCHAR(50),
 
     CONSTRAINT fk_par_documento
         FOREIGN KEY (id_documento)
@@ -801,41 +798,38 @@ CREATE TABLE participaciones (
         REFERENCES comercializadores (id_comercializadores)
         ON DELETE RESTRICT ON UPDATE CASCADE,
 
+    CONSTRAINT fk_par_centro
+        FOREIGN KEY (id_centro)
+        REFERENCES centros_apuesta (id_centro)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+
     CONSTRAINT fk_par_licencia
         FOREIGN KEY (id_licencia)
         REFERENCES licencias (id_documento)
-        ON DELETE RESTRICT ON UPDATE CASCADE,
-
-    CONSTRAINT fk_par_autorizacion_previa
-        FOREIGN KEY (id_autorizacion_previa)
-        REFERENCES autorizaciones_especiales (id_documento)
-        ON DELETE RESTRICT ON UPDATE CASCADE,
-
-    CONSTRAINT ck_par_previa_xor CHECK (
-        id_licencia IS NOT NULL OR id_autorizacion_previa IS NOT NULL
-    )
+        ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 COMMENT ON TABLE  participaciones             IS
     'Detalle de documentos de tipo ''Participacion''. PK = FK 1:1 con documentos_emitidos.';
 COMMENT ON COLUMN participaciones.tipo        IS
     'Catálogo: Archivo, Certificacion, Rectificacion, Nulidad.';
-COMMENT ON COLUMN participaciones.id_licencia IS
-    'Licencia padre que habilita esta participación (una de dos previas posibles).';
-COMMENT ON COLUMN participaciones.id_autorizacion_previa IS
-    'Autorización especial previa que habilita esta participación (una de dos previas posibles).';
-COMMENT ON COLUMN participaciones.territorio  IS
-    'Territorio de alcance de la participación según el documento físico.';
-COMMENT ON COLUMN participaciones.fecha_solicitud IS
-    'Fecha de solicitud según el documento físico.';
+COMMENT ON COLUMN participaciones.id_comercializador IS
+    'Comercializador heredado de la solicitud; nullable: no toda participación pertenece a un comercializador.';
+COMMENT ON COLUMN participaciones.id_centro   IS
+    'Centro de apuesta heredado de la solicitud; nullable.';
+COMMENT ON COLUMN participaciones.numero_lot   IS
+    'Número LOT (Lotería de Táchira) asignado al documento emitido.';
+COMMENT ON COLUMN participaciones.id_licencia  IS
+    'Licencia a la que hace referencia esta participación (Archivo, Certificación, etc.).';
+COMMENT ON COLUMN participaciones.nro_archivo  IS
+    'Número de archivo interno de la participación.';
 
-CREATE INDEX idx_participaciones_licencia             ON participaciones (id_licencia);
 CREATE INDEX idx_participaciones_persona              ON participaciones (id_persona);
 CREATE INDEX idx_participaciones_comercializador      ON participaciones (id_comercializador);
-CREATE INDEX idx_participaciones_archivo              ON participaciones (nro_archivo);
+CREATE INDEX idx_participaciones_centro               ON participaciones (id_centro);
 CREATE INDEX idx_participaciones_tipo                 ON participaciones (tipo);
-CREATE INDEX idx_participaciones_autorizacion_previa  ON participaciones (id_autorizacion_previa);
-CREATE INDEX idx_participaciones_licencia_persona     ON participaciones (id_licencia, id_persona);
+CREATE INDEX idx_participaciones_persona_tipo         ON participaciones (id_persona, tipo);
+CREATE INDEX idx_participaciones_licencia             ON participaciones (id_licencia);
 
 -- -------------------------------------------------------
 -- Puente: Representantes de la Participación (N:M)

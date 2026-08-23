@@ -32,7 +32,7 @@ const PARTICIPACIONES_SEARCH_FIELDS = [
   'persona',
   'representante',
   'comercializador',
-  'numero_licencia',
+  'id_licencia',
 ]
 
 const ParticipacionesListaView = () => {
@@ -143,7 +143,7 @@ const ParticipacionesListaView = () => {
                           <div className="text-muted small">{par.persona}</div>
                         </CTableDataCell>
                         <CTableDataCell>{par.comercializador || <span className="text-muted">—</span>}</CTableDataCell>
-                        <CTableDataCell>{par.numero_licencia || <span className="text-muted">—</span>}</CTableDataCell>
+                        <CTableDataCell>{par.id_licencia ? `${par.id_licencia.slice(0, 8)}...` : <span className="text-muted">—</span>}</CTableDataCell>
                         <CTableDataCell>
                           <CBadge color={par.estado_documento === 'vigente' ? 'success' : par.estado_documento === 'vencido' ? 'warning' : 'danger'}>
                             {par.estado_documento}
