@@ -60,6 +60,7 @@ export const get_participaciones_id = async (id) => {
     p_ca.ci_rif          AS centro_apuesta_representante_ci,
     p_ca.razon_social    AS centro_apuesta_representante,
     de.id_solicitud,
+    s.created_at         AS fecha_solicitud,
     u.nombre_usuario    AS emitido_por,
     de.created_at,
     de.updated_at,
@@ -81,10 +82,11 @@ export const get_participaciones_id = async (id) => {
   JOIN usuarios            AS u   ON de.emitido_por       = u.id_usuario
   LEFT JOIN comercializadores AS c ON par.id_comercializador = c.id_comercializadores
   LEFT JOIN centros_apuesta AS ca ON par.id_centro = ca.id_centro
-  LEFT JOIN personas        AS p_ca ON ca.id_persona = p_ca.id_persona
-  LEFT JOIN pagos AS pag ON pag.id_participacion = par.id_documento
-  LEFT JOIN bancos AS b ON pag.id_banco = b.id_banco
-  WHERE par.id_documento = $1
+   LEFT JOIN personas        AS p_ca ON ca.id_persona = p_ca.id_persona
+   LEFT JOIN solicitudes     AS s   ON de.id_solicitud = s.id_solicitudes
+   LEFT JOIN pagos AS pag ON pag.id_participacion = par.id_documento
+   LEFT JOIN bancos AS b ON pag.id_banco = b.id_banco
+   WHERE par.id_documento = $1
   `;
   const result = await pool.query(query, [id]);
   return result.rows;

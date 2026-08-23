@@ -172,11 +172,13 @@ const SolicitudesListaView = () => {
                           {TIPO_LABEL[sol.tipo_tramite] ?? sol.tipo_tramite}
                         </CTableDataCell>
                         <CTableDataCell>
-                          {sol.categoria_licencia
+                          {sol.tipo_tramite === 'Licencia' && sol.categoria_licencia
                             ? sol.categoria_licencia
-                            : sol.tipo_participacion
+                            : sol.tipo_tramite === 'Participacion' && sol.tipo_participacion
                               ? <span>{sol.tipo_participacion}</span>
-                              : <span className="text-muted">—</span>}
+                              : sol.tipo_tramite === 'Autorizacion_especial' && sol.tipo_autorizacion_especial
+                                ? <span>{sol.tipo_autorizacion_especial}</span>
+                                : <span className="text-muted">—</span>}
                         </CTableDataCell>
                         <CTableDataCell>
                           {new Date(sol.created_at).toLocaleDateString()}

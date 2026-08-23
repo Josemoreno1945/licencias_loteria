@@ -305,6 +305,22 @@ const ParticipacionesForm = ({
         </CCol>
       </CRow>
 
+      {/* Fila 2b: N° LOT */}
+      <CRow className="mb-3">
+        <CCol md={4} className="mb-3">
+          <CFormLabel>Número LOT</CFormLabel>
+          <CInputGroup>
+            <CInputGroupText><CIcon icon={cilClipboard} /></CInputGroupText>
+            <CFormInput
+              name="numero_lot"
+              value={formData.numero_lot || ''}
+              onChange={handleInputChange}
+              placeholder="Ej: LOT-000123"
+            />
+          </CInputGroup>
+        </CCol>
+      </CRow>
+
       {/* Fila 3: Tipo Emisión + Fecha Expedición + Fecha Vencimiento */}
       <CRow className="mb-3">
         <CCol md={4} className="mb-3">

@@ -363,6 +363,8 @@ CREATE TABLE solicitudes (
     id_operadora       UUID,
     tipo_tramite       tipo_tramite_enum       NOT NULL,
     categoria_licencia categoria_licencia_enum,
+    tipo_participacion tipo_participacion_enum,
+    tipo_autorizacion_especial tipo_autorizacion_especial_enum,
     estado             estado_solicitud        NOT NULL DEFAULT 'Pendiente',
     justificacion_no_logrado TEXT,
     descripcion_tramite      TEXT,

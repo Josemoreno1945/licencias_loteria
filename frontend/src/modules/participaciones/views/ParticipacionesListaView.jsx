@@ -28,6 +28,7 @@ import Paginacion from '../../../components/Paginacion'
 const PARTICIPACIONES_SEARCH_FIELDS = [
   'numero_documento',
   'nro_archivo',
+  'numero_lot',
   'ci_rif',
   'persona',
   'comercializador',
@@ -119,6 +120,7 @@ const ParticipacionesListaView = () => {
                       <CTableHeaderCell>#</CTableHeaderCell>
                       <CTableHeaderCell>Nro. Documento</CTableHeaderCell>
                       <CTableHeaderCell>Nro. Archivo</CTableHeaderCell>
+                      <CTableHeaderCell>N° LOT</CTableHeaderCell>
                       <CTableHeaderCell>Persona</CTableHeaderCell>
                       <CTableHeaderCell>Comercializador</CTableHeaderCell>
                       <CTableHeaderCell>Tipo</CTableHeaderCell>
@@ -137,6 +139,7 @@ const ParticipacionesListaView = () => {
                           {par.numero_documento}
                         </CTableDataCell>
                         <CTableDataCell>{par.nro_archivo}</CTableDataCell>
+                        <CTableDataCell>{par.numero_lot || <span className="text-muted">—</span>}</CTableDataCell>
                         <CTableDataCell>
                           <div className="fw-semibold">{par.ci_rif}</div>
                           <div className="text-muted small">{par.persona}</div>
