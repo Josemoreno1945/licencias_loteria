@@ -113,6 +113,7 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
   const [comercializadores, setComercializadores] = useState([]);
   const [centros, setCentros] = useState([]);
   const [juegos, setJuegos] = useState([]);
+  const [operadoras, setOperadoras] = useState([]);
 
   // ── Datos autocompletados ──
   const [detalleComercializador, setDetalleComercializador] = useState(null);
@@ -124,6 +125,7 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
   const [loadingCentros, setLoadingCentros] = useState(false);
   const [loadingDetalleCA, setLoadingDetalleCA] = useState(false);
   const [loadingJuegos, setLoadingJuegos] = useState(false);
+  const [loadingOperadoras, setLoadingOperadoras] = useState(false);
 
   // 1. Cargar comercializadores activos al montar
   useEffect(() => {
@@ -155,6 +157,22 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
       }
     };
     fetchJuegos();
+  }, []);
+
+  // 2b. Cargar operadoras al montar
+  useEffect(() => {
+    const fetchOperadoras = async () => {
+      setLoadingOperadoras(true);
+      try {
+        const res = await axiosInstance.get('/operadoras');
+        setOperadoras(res.data || []);
+      } catch (err) {
+        console.error('Error al cargar operadoras:', err);
+      } finally {
+        setLoadingOperadoras(false);
+      }
+    };
+    fetchOperadoras();
   }, []);
 
   // 3. Cuando cambia el comercializador → autocompletar detalle + cargar centros
@@ -302,6 +320,35 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
           </CInputGroup>
         </CCol>
       </CRow>
+
+      {/* Selector de Operadora — solo para Autorización Especial (obligatoria) */}
+      {mostrarCamposAutorizacion && (
+        <CRow className="mb-2">
+          <CCol md={6} className="mb-3">
+            <CFormLabel>Operadora <span className="text-danger">*</span></CFormLabel>
+            <CInputGroup>
+              <CInputGroupText><CIcon icon={cilFactory} /></CInputGroupText>
+              <CFormSelect
+                name="id_operadora"
+                value={formData.id_operadora || ''}
+                onChange={handleInputChange}
+                disabled={loadingOperadoras}
+                required
+              >
+                <option value="">Seleccione la operadora...</option>
+                {operadoras.map((op) => (
+                  <option key={op.id_operadora} value={op.id_operadora}>
+                    {op.rif ? `${op.rif} — ${op.razon_social}` : op.razon_social}
+                  </option>
+                ))}
+              </CFormSelect>
+              {loadingOperadoras && (
+                <CInputGroupText><CSpinner size="sm" /></CInputGroupText>
+              )}
+            </CInputGroup>
+          </CCol>
+        </CRow>
+      )}
 
       {/* Panel de autocompletado del Comercializador */}
       {loadingDetalleC && (

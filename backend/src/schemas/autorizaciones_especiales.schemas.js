@@ -210,6 +210,8 @@ export const emitir_autorizacion_especial_schema = z
 
     representantes: optionalUuidArrayField,
 
+    id_operadora: optionalUuidField,
+
     pago: z.object({
       id_banco: uuidSchema,
       num_referencia: z

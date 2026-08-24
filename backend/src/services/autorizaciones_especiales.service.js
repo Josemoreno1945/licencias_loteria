@@ -39,8 +39,20 @@ export const crear_autorizacion_completa = async (data) => {
       throwError(errors.solicitud_rechazada);
     }
 
-    if (!solicitud.id_operadora) {
+    // La operadora puede venir de la solicitud o, en su defecto, del payload
+    // (por si la solicitud se registró sin operadora asociada).
+    const operadoraId = solicitud.id_operadora || data.id_operadora
+    if (!operadoraId) {
       throwError(errors.solicitud_sin_operadora);
+    }
+
+    // Validar que la operadora resuelta exista
+    const operadoraExiste = await client.query(
+      `SELECT 1 FROM operadoras WHERE id_operadora = $1`,
+      [operadoraId],
+    );
+    if (!operadoraExiste.rows[0]) {
+      throwError(errors.operadora_no_encontrada);
     }
 
     // 2. La solicitud aún no puede tener un documento emitido asociado
@@ -188,7 +200,7 @@ export const crear_autorizacion_completa = async (data) => {
         data.nro_mesa ?? null,
         data.tipo ?? "Mesa",
         solicitud.id_persona,
-        solicitud.id_operadora,
+        operadoraId,
         data.id_comercializador ?? solicitud.id_comercializador ?? null,
         data.id_centro ?? null,
         data.agencia_texto ?? null,
