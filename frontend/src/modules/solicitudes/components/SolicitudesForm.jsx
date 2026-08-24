@@ -28,6 +28,7 @@ import {
   cilCheckAlt,
   cilX,
   cilTask,
+  cilFactory
 } from '@coreui/icons';
 import axiosInstance from '../../../api/axiosInstance';
 
@@ -245,7 +246,7 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
 
       <CRow className="mb-3">
         <CCol md={6} className="mb-3">
-          <CFormLabel>Tipo de Documento a Solicitar <span className="text-danger">*</span></CFormLabel>
+          <CFormLabel>Tipo de Documento <span className="text-danger">*</span></CFormLabel>
           <CInputGroup>
             <CInputGroupText><CIcon icon={cilDescription} /></CInputGroupText>
             <CFormSelect
@@ -375,7 +376,6 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
               <CCol md={12}>
                 <CFormLabel>
                   Representante Legal Titular <span className="text-danger">*</span>
-                  <span className="text-muted small ms-2">(Persona que firma la solicitud)</span>
                 </CFormLabel>
                 <CInputGroup>
                   <CInputGroupText><CIcon icon={cilUser} /></CInputGroupText>
