@@ -38,11 +38,7 @@ export const buildDateString = (value) => {
  */
 export const ciRifRegex = /^[VEJGPC]-?\d{6,8}-?\d?$/i;
 
-/**
- * Valida el formato de RIF para operadoras/comercializadores.
- * Ejemplos: J-12345678-9, G-1234567-8
- */
-export const rifRegex = /^[JG]-?\d{6,8}-?\d$/;
+;
 
 /**
  * Valida el código BCV de banco (4 dígitos).

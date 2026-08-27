@@ -213,24 +213,6 @@ COMMENT ON TABLE comercializadores_representantes IS 'Representantes legales vin
 
 -- -------------------------------------------------------
 
-CREATE TABLE operadoras (
-    id_operadora     UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-    rif              VARCHAR(20)  NOT NULL,
-    razon_social     VARCHAR(200) NOT NULL,
-    direccion_fiscal TEXT,
-    estado           estado       NOT NULL DEFAULT 'activo',
-    created_at       TIMESTAMP    DEFAULT now(),
-    updated_at       TIMESTAMP    DEFAULT now(),
-
-    CONSTRAINT uq_operadoras_rif UNIQUE (rif)
-);
-
-COMMENT ON TABLE operadoras IS 'Operadoras: empresas propietarias de los juegos de azar.';
-
-CREATE INDEX idx_operadoras_rif ON operadoras (rif);
-
--- -------------------------------------------------------
-
 CREATE TABLE centros_apuesta (
     id_centro          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     id_comercializador UUID         NOT NULL,
@@ -294,31 +276,25 @@ CREATE INDEX idx_centros_representantes_persona  ON centros_apuesta_representant
 
 CREATE TABLE juegos (
     id_juego     UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-    id_operadora UUID         NOT NULL,
     nombre       VARCHAR(100) NOT NULL,
     estado       estado       NOT NULL DEFAULT 'activo',
-
-    CONSTRAINT fk_juego_operadora
-        FOREIGN KEY (id_operadora)
-        REFERENCES operadoras (id_operadora)
-        ON DELETE RESTRICT ON UPDATE CASCADE,
 
     CONSTRAINT uq_juegos_nombre UNIQUE (nombre)
 );
 
-COMMENT ON TABLE juegos IS 'Catálogo de juegos; cada juego pertenece a una operadora.';
+COMMENT ON TABLE juegos IS 'Catálogo de juegos de azar.';
 
 -- -------------------------------------------------------
 
 CREATE TABLE permisos_juego (
     id_permiso_juego   UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),
     id_juego           UUID                     NOT NULL,
-    id_comercializador UUID,                    -- NULL si es permiso para un centro
-    id_centro          UUID,                    -- NULL si es permiso para comercializador
+    id_comercializador UUID,
+    id_centro          UUID,
     nivel              nivel_permiso_juego_enum NOT NULL,
     estado             estado                   NOT NULL DEFAULT 'activo',
     fecha_inicio       DATE                     NOT NULL,
-    fecha_fin          DATE,                    -- NULL = sin vencimiento
+    fecha_fin          DATE,
 
     CONSTRAINT fk_permiso_juego
         FOREIGN KEY (id_juego)
@@ -348,7 +324,7 @@ CREATE TABLE permisos_juego (
 );
 
 COMMENT ON TABLE  permisos_juego IS
-    'Jerarquía de permisos: Nivel 1 = Operadora→Comercializador, Nivel 2 = Comercializador→Centro.';
+    'Jerarquía de permisos: Nivel 1 = Comercializador, Nivel 2 = Comercializador→Centro.';
 COMMENT ON COLUMN permisos_juego.fecha_fin IS 'NULL indica permiso sin fecha de vencimiento.';
 
 
@@ -360,7 +336,6 @@ CREATE TABLE solicitudes (
     id_solicitudes     UUID                    PRIMARY KEY DEFAULT gen_random_uuid(),
     id_persona         UUID                    NOT NULL,
     id_comercializador UUID,
-    id_operadora       UUID,
     tipo_tramite       tipo_tramite_enum       NOT NULL,
     categoria_licencia categoria_licencia_enum,
     tipo_participacion tipo_participacion_enum,
@@ -369,12 +344,12 @@ CREATE TABLE solicitudes (
     justificacion_no_logrado TEXT,
     descripcion_tramite      TEXT,
     observaciones            TEXT,
-    tipo_emision             tipo_emision_enum,          -- Inscripcion/Renovacion (aplica en Licencia)
-    numero_autorizacion_conalot VARCHAR(50),             -- Nro CONALOT (aplica en Participacion)
-    fecha_emision_conalot    DATE,                       -- Fecha emision CONALOT (aplica en Participacion)
-    fecha_vencimiento_conalot DATE,                      -- Fecha vencimiento CONALOT (aplica en Participacion)
-    numero_licencia_loteriatachira VARCHAR(100),         -- N° de Licencia emitida por Loteria (aplica en Participacion)
-    direccion_autorizacion_especial TEXT,                -- Direccion de la Mesa/Localidad (aplica en Autorizacion Especial)
+    tipo_emision             tipo_emision_enum,
+    numero_autorizacion_conalot VARCHAR(50),
+    fecha_emision_conalot    DATE,
+    fecha_vencimiento_conalot DATE,
+    numero_licencia_loteriatachira VARCHAR(100),
+    direccion_autorizacion_especial TEXT,
     registrado_por     UUID                    NOT NULL,
     created_at         TIMESTAMP               DEFAULT now(),
     updated_at         TIMESTAMP               DEFAULT now(),
@@ -389,24 +364,17 @@ CREATE TABLE solicitudes (
         REFERENCES comercializadores (id_comercializadores)
         ON DELETE RESTRICT ON UPDATE CASCADE,
 
-    CONSTRAINT fk_solicitud_operadora
-        FOREIGN KEY (id_operadora)
-        REFERENCES operadoras (id_operadora)
-        ON DELETE RESTRICT ON UPDATE CASCADE,
-
     CONSTRAINT fk_solicitud_registrado_por
         FOREIGN KEY (registrado_por)
         REFERENCES usuarios (id_usuario)
         ON DELETE RESTRICT ON UPDATE CASCADE,
 
-    -- Justificación obligatoria cuando se rechaza
     CONSTRAINT ck_solicitud_justificacion CHECK (
         estado <> 'Rechazada' OR justificacion_no_logrado IS NOT NULL
     )
 );
 
 COMMENT ON TABLE  solicitudes                      IS 'Trámites iniciados por personas o comercializadores ante la institución.';
-COMMENT ON COLUMN solicitudes.id_operadora         IS 'v2.0: Nullable; aplica en Autorizaciones Especiales vinculadas directamente a la operadora.';
 COMMENT ON COLUMN solicitudes.categoria_licencia   IS 'Solo aplica cuando tipo_tramite = ''Licencia''.';
 COMMENT ON COLUMN solicitudes.justificacion_no_logrado IS 'Obligatorio a nivel de aplicación cuando estado = ''Rechazada''.';
 
@@ -424,7 +392,7 @@ CREATE TABLE solicitud_representantes (
     id_solicitud_representante UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
     id_solicitud               UUID    NOT NULL,
     id_persona                 UUID    NOT NULL,
-    rol                        VARCHAR(30) NOT NULL,   -- 'comercializador' | 'centro' | 'legal'
+    rol                        VARCHAR(30) NOT NULL,
     cargo                      VARCHAR(100),
     estado                     estado  NOT NULL DEFAULT 'activo',
 
@@ -521,7 +489,6 @@ CREATE TABLE documentos_emitidos (
     created_at            TIMESTAMP             DEFAULT now(),
     updated_at            TIMESTAMP             DEFAULT now(),
 
-    -- Integridad referencial
     CONSTRAINT fk_doc_solicitud
         FOREIGN KEY (id_solicitud)
         REFERENCES solicitudes (id_solicitudes)
@@ -537,15 +504,12 @@ CREATE TABLE documentos_emitidos (
         REFERENCES usuarios (id_usuario)
         ON DELETE RESTRICT ON UPDATE CASCADE,
 
-    -- Unicidad
     CONSTRAINT uq_doc_solicitud         UNIQUE (id_solicitud),
     CONSTRAINT uq_doc_numero_documento  UNIQUE (numero_documento),
     CONSTRAINT uq_doc_papel_seguridad   UNIQUE (papel_seguridad),
 
-    -- Integridad de fechas
     CONSTRAINT ck_doc_fechas CHECK (fecha_vencimiento >= fecha_expedicion),
 
-    -- Si es renovación, debe referenciar el documento anterior
     CONSTRAINT ck_doc_renovacion CHECK (
         tipo_emision <> 'Renovacion' OR id_documento_anterior IS NOT NULL
     )
@@ -560,13 +524,11 @@ COMMENT ON COLUMN documentos_emitidos.fecha_vencimiento IS
 COMMENT ON COLUMN documentos_emitidos.detalles_extra IS
     'JSONB libre para campos específicos del trámite "Otro".';
 
--- Índices simples
 CREATE INDEX idx_doc_numero           ON documentos_emitidos (numero_documento);
 CREATE INDEX idx_doc_papel_seguridad  ON documentos_emitidos (papel_seguridad);
 CREATE INDEX idx_doc_vencimiento      ON documentos_emitidos (fecha_vencimiento);
 CREATE INDEX idx_doc_estado           ON documentos_emitidos (estado_documento);
 CREATE INDEX idx_doc_tipo             ON documentos_emitidos (tipo);
--- Índice compuesto para consultas de alertas de vencimiento
 CREATE INDEX idx_doc_vencimiento_estado ON documentos_emitidos (fecha_vencimiento, estado_documento);
 
 -- -------------------------------------------------------
@@ -653,7 +615,7 @@ CREATE TABLE licencias_representantes (
     id_lic_representante UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
     id_documento         UUID    NOT NULL,
     id_persona           UUID    NOT NULL,
-    rol                  VARCHAR(30),            -- 'comercializador' | 'centro' | 'legal'
+    rol                  VARCHAR(30),
     cargo                VARCHAR(100),
 
     CONSTRAINT fk_lr_documento
@@ -680,18 +642,17 @@ CREATE INDEX idx_lic_rep_persona   ON licencias_representantes (id_persona);
 
 CREATE TABLE autorizaciones_especiales (
     id_documento              UUID                             PRIMARY KEY,
-    nro_mesa                  INTEGER,                         -- Solo aplica cuando tipo = 'Mesa'
+    nro_mesa                  INTEGER,
     tipo                      tipo_autorizacion_especial_enum NOT NULL DEFAULT 'Mesa',
     id_persona                UUID                             NOT NULL,
-    id_operadora              UUID                             NOT NULL,
-    id_comercializador        UUID,                           -- Comercializador asignado
+    id_comercializador        UUID,
     id_centro                 UUID,
     agencia_texto             VARCHAR(200),
     numero_lot                VARCHAR(30),
-    direccion_centro_asignado TEXT,                           -- Dirección del centro de apuesta asignado
-    direccion_localidad       TEXT,                           -- Dirección de la localidad (tipo Localidad)
-    direccion_responsable     TEXT,                           -- Dirección del responsable
-    otros                     JSONB,                          -- Campos libres ("otros")
+    direccion_centro_asignado TEXT,
+    direccion_localidad       TEXT,
+    direccion_responsable     TEXT,
+    otros                     JSONB,
 
     CONSTRAINT fk_aut_documento
         FOREIGN KEY (id_documento)
@@ -701,11 +662,6 @@ CREATE TABLE autorizaciones_especiales (
     CONSTRAINT fk_aut_persona
         FOREIGN KEY (id_persona)
         REFERENCES personas (id_persona)
-        ON DELETE RESTRICT ON UPDATE CASCADE,
-
-    CONSTRAINT fk_aut_operadora
-        FOREIGN KEY (id_operadora)
-        REFERENCES operadoras (id_operadora)
         ON DELETE RESTRICT ON UPDATE CASCADE,
 
     CONSTRAINT fk_aut_comercializador
@@ -736,11 +692,9 @@ COMMENT ON COLUMN autorizaciones_especiales.id_comercializador IS
 
 CREATE INDEX idx_autorizaciones_mesa              ON autorizaciones_especiales (nro_mesa);
 CREATE INDEX idx_autorizaciones_persona           ON autorizaciones_especiales (id_persona);
-CREATE INDEX idx_autorizaciones_operadora         ON autorizaciones_especiales (id_operadora);
 CREATE INDEX idx_autorizaciones_comercializador   ON autorizaciones_especiales (id_comercializador);
 CREATE INDEX idx_autorizaciones_centro            ON autorizaciones_especiales (id_centro);
 CREATE INDEX idx_autorizaciones_tipo              ON autorizaciones_especiales (tipo);
-CREATE INDEX idx_autorizaciones_operadora_mesa    ON autorizaciones_especiales (id_operadora, nro_mesa);
 
 -- -------------------------------------------------------
 -- Puente: Representantes de la Autorización Especial (N:M)
@@ -750,7 +704,7 @@ CREATE TABLE autorizaciones_representantes (
     id_aut_representante UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
     id_documento         UUID    NOT NULL,
     id_persona           UUID    NOT NULL,
-    rol                  VARCHAR(30),            -- 'comercializador' | 'centro' | 'legal'
+    rol                  VARCHAR(30),
     cargo                VARCHAR(100),
 
     CONSTRAINT fk_ar_documento
@@ -904,17 +858,14 @@ CREATE TABLE pagos (
         REFERENCES usuarios (id_usuario)
         ON DELETE RESTRICT ON UPDATE CASCADE,
 
-    -- Unicidad de referencia bancaria
     CONSTRAINT uq_pagos_num_referencia UNIQUE (num_referencia),
 
-    -- Al menos un documento debe estar vinculado al pago
     CONSTRAINT ck_pago_al_menos_un_documento CHECK (
         id_licencia IS NOT NULL OR
         id_autorizacion IS NOT NULL OR
         id_participacion IS NOT NULL
     ),
 
-    -- Montos positivos
     CONSTRAINT ck_pago_monto_positivo   CHECK (monto   > 0),
     CONSTRAINT ck_pago_tasa_positiva    CHECK (tasa_dia > 0)
 );
@@ -944,7 +895,6 @@ BEGIN
 END;
 $$;
 
--- Aplica el trigger a cada tabla con columna updated_at
 CREATE TRIGGER trg_usuarios_updated_at
     BEFORE UPDATE ON usuarios
     FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
@@ -955,10 +905,6 @@ CREATE TRIGGER trg_personas_updated_at
 
 CREATE TRIGGER trg_comercializadores_updated_at
     BEFORE UPDATE ON comercializadores
-    FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
-
-CREATE TRIGGER trg_operadoras_updated_at
-    BEFORE UPDATE ON operadoras
     FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
 
 CREATE TRIGGER trg_centros_apuesta_updated_at
@@ -976,6 +922,7 @@ CREATE TRIGGER trg_documentos_emitidos_updated_at
 CREATE TRIGGER trg_pagos_updated_at
     BEFORE UPDATE ON pagos
     FOR EACH ROW EXECUTE FUNCTION fn_set_updated_at();
+
 
 -- ============================================================
 -- TRIGGER: Validacion de pago para licencias vigentes
@@ -1002,6 +949,7 @@ $$;
 CREATE TRIGGER trg_validar_pago_licencia
     BEFORE INSERT OR UPDATE ON documentos_emitidos
     FOR EACH ROW EXECUTE FUNCTION fn_validar_pago_licencia();
+
 
 -- ============================================================
 -- FIN DEL SCRIPT

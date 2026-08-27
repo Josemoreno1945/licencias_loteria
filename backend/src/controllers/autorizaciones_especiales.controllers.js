@@ -4,7 +4,6 @@ import {
   get_autorizaciones_especiales_vigentes,
   actualizar_autorizacion_especial_id,
   buscar_autorizaciones_por_persona,
-  buscar_autorizaciones_por_operadora,
   buscar_autorizaciones_por_centro,
   buscar_autorizaciones_por_nro_mesa,
   buscar_autorizaciones_proximas_a_vencer,
@@ -110,19 +109,6 @@ export const buscar_c_autorizaciones_por_persona = async (req, res, next) => {
       throwError(errors.invalidData);
     }
     const rows = await buscar_autorizaciones_por_persona(id);
-    res.json(rows);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const buscar_c_autorizaciones_por_operadora = async (req, res, next) => {
-  try {
-    const id = req.params.id;
-    if (!uuidRegex.test(id)) {
-      throwError(errors.invalidData);
-    }
-    const rows = await buscar_autorizaciones_por_operadora(id);
     res.json(rows);
   } catch (error) {
     next(error);

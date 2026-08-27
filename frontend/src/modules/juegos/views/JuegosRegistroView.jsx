@@ -8,7 +8,6 @@ import { extractErrorMessage } from '../../../utils/errorHandler';
 const JuegosRegistroView = () => {
   // Estado del formulario
   const [formData, setFormData] = useState({
-    id_operadora: '',
     nombre: '',
   });
 
@@ -49,7 +48,6 @@ const JuegosRegistroView = () => {
 
       // Limpiar formulario tras éxito
       setFormData({
-        id_operadora: '',
         nombre: '',
       });
 
@@ -77,7 +75,7 @@ const JuegosRegistroView = () => {
         <CCardHeader className="bg-white pb-0">
           <h4 className="mb-3 text-primary">Registro de Juego</h4>
           <p className="text-muted small">
-            Ingrese los datos del nuevo juego de azar y asócielo a su respectiva operadora.
+            Ingrese los datos del nuevo juego de azar.
           </p>
         </CCardHeader>
         <CCardBody>

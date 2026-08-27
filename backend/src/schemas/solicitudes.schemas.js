@@ -7,8 +7,6 @@ const base_solicitud_schema = z.object({
 
   id_comercializador: uuidSchema.optional().nullable(),
 
-  id_operadora: uuidSchema.optional().nullable(),
-
   tipo_tramite: z.enum(
     ["Licencia", "Participacion", "Autorizacion_especial", "Otro"],
     { required_error: "El tipo de tramite es requerido" }

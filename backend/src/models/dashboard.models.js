@@ -6,7 +6,6 @@ export const get_dashboard_resumen = async () => {
     (SELECT COUNT(*) FROM personas) AS total_personas,
     (SELECT COUNT(*) FROM personas WHERE tipo_persona = 'natural') AS personas_naturales,
     (SELECT COUNT(*) FROM personas WHERE tipo_persona = 'juridica') AS personas_juridicas,
-    (SELECT COUNT(*) FROM operadoras) AS total_operadoras,
     (SELECT COUNT(*) FROM bancos) AS total_bancos,
     (SELECT COUNT(*) FROM usuarios) AS total_usuarios,
     (SELECT COUNT(*) FROM licencias) AS total_licencias,

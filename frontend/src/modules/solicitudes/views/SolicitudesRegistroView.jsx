@@ -11,7 +11,6 @@ const INITIAL_FORM = {
   // Entidades vinculadas
   id_persona:          '',    // Se elige del selector de representantes del comercializador
   id_comercializador:  null,
-  id_operadora:        null,
   id_centro:           null,  // Centro de apuesta opcional
 
   // Tipo de trámite y subtipos
@@ -98,7 +97,6 @@ const SolicitudesRegistroView = () => {
         registrado_por: user?.id_usuario,
         // Asegurar nulos en lugar de strings vacíos para los campos opcionales
         id_comercializador:           formData.id_comercializador || null,
-        id_operadora:                 formData.id_operadora || null,
         id_centro:                    formData.id_centro || null,
         categoria_licencia:           formData.categoria_licencia || null,
         tipo_emision:                 formData.tipo_emision || null,

@@ -61,15 +61,6 @@ const JuegosDetalleModal = ({ idJuego, onClose }) => {
                 <CFormInput type="text" value={data.nombre || ''} readOnly className="bg-light fw-semibold" />
               </CCol>
               <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Operadora</CFormLabel>
-                <CFormInput
-                  type="text"
-                  value={data.operadora_razon_social ? `${data.operadora_rif || ''} — ${data.operadora_razon_social}` : data.id_operadora || '—'}
-                  readOnly
-                  className="bg-light"
-                />
-              </CCol>
-              <CCol md={6}>
                 <CFormLabel className="text-muted small fw-semibold mb-1">Estado</CFormLabel>
                 <div>
                   <CBadge color={data.estado === 'activo' ? 'success' : 'secondary'} className="fs-6 px-3 py-2">

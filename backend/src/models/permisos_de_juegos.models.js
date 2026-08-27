@@ -6,7 +6,6 @@ export const get_permisos_juego = async () => {
   SELECT
     pj.id_permiso_juego,
     j.nombre        AS nombre_juego,
-    op.razon_social AS operadora,
     c.razon_social  AS comercializador,
     ca.nombre_agencia AS centro_apuesta,
     pj.nivel,
@@ -15,7 +14,6 @@ export const get_permisos_juego = async () => {
     pj.fecha_fin
   FROM permisos_juego AS pj
   JOIN juegos         AS j  ON pj.id_juego           = j.id_juego
-  JOIN operadoras     AS op ON j.id_operadora         = op.id_operadora
   LEFT JOIN comercializadores AS c  ON pj.id_comercializador = c.id_comercializadores
   LEFT JOIN centros_apuesta   AS ca ON pj.id_centro          = ca.id_centro`;
   const result = await pool.query(query);
@@ -27,7 +25,6 @@ export const get_permisos_juego_id = async (id) => {
   SELECT
     pj.id_permiso_juego,
     j.nombre        AS nombre_juego,
-    op.razon_social AS operadora,
     c.razon_social  AS comercializador,
     ca.nombre_agencia AS centro_apuesta,
     pj.nivel,
@@ -36,7 +33,6 @@ export const get_permisos_juego_id = async (id) => {
     pj.fecha_fin
   FROM permisos_juego AS pj
   JOIN juegos         AS j  ON pj.id_juego           = j.id_juego
-  JOIN operadoras     AS op ON j.id_operadora         = op.id_operadora
   LEFT JOIN comercializadores AS c  ON pj.id_comercializador = c.id_comercializadores
   LEFT JOIN centros_apuesta   AS ca ON pj.id_centro          = ca.id_centro
   WHERE pj.id_permiso_juego = $1
@@ -50,7 +46,6 @@ export const get_permisos_juego_activos = async () => {
   SELECT
     pj.id_permiso_juego,
     j.nombre        AS nombre_juego,
-    op.razon_social AS operadora,
     c.razon_social  AS comercializador,
     ca.nombre_agencia AS centro_apuesta,
     pj.nivel,
@@ -59,7 +54,6 @@ export const get_permisos_juego_activos = async () => {
     pj.fecha_fin
   FROM permisos_juego AS pj
   JOIN juegos         AS j  ON pj.id_juego           = j.id_juego
-  JOIN operadoras     AS op ON j.id_operadora         = op.id_operadora
   LEFT JOIN comercializadores AS c  ON pj.id_comercializador = c.id_comercializadores
   LEFT JOIN centros_apuesta   AS ca ON pj.id_centro          = ca.id_centro
   WHERE pj.estado = 'activo'
@@ -125,7 +119,6 @@ export const buscar_permisos_por_juego = async (id_juego) => {
   SELECT
     pj.id_permiso_juego,
     j.nombre        AS nombre_juego,
-    op.razon_social AS operadora,
     c.razon_social  AS comercializador,
     ca.nombre_agencia AS centro_apuesta,
     pj.nivel,
@@ -134,7 +127,6 @@ export const buscar_permisos_por_juego = async (id_juego) => {
     pj.fecha_fin
   FROM permisos_juego AS pj
   JOIN juegos         AS j  ON pj.id_juego           = j.id_juego
-  JOIN operadoras     AS op ON j.id_operadora         = op.id_operadora
   LEFT JOIN comercializadores AS c  ON pj.id_comercializador = c.id_comercializadores
   LEFT JOIN centros_apuesta   AS ca ON pj.id_centro          = ca.id_centro
   WHERE pj.id_juego = $1
@@ -149,7 +141,6 @@ export const buscar_permisos_por_comercializador = async (id_comercializador) =>
     pj.id_permiso_juego,
     j.id_juego,
     j.nombre        AS nombre_juego,
-    op.razon_social AS operadora,
     c.razon_social  AS comercializador,
     pj.nivel,
     pj.estado,
@@ -157,7 +148,6 @@ export const buscar_permisos_por_comercializador = async (id_comercializador) =>
     pj.fecha_fin
   FROM permisos_juego AS pj
   JOIN juegos         AS j  ON pj.id_juego           = j.id_juego
-  JOIN operadoras     AS op ON j.id_operadora         = op.id_operadora
   JOIN comercializadores AS c ON pj.id_comercializador = c.id_comercializadores
   WHERE pj.id_comercializador = $1
   `;
@@ -170,7 +160,6 @@ export const buscar_permisos_por_centro = async (id_centro) => {
   SELECT
     pj.id_permiso_juego,
     j.nombre        AS nombre_juego,
-    op.razon_social AS operadora,
     ca.nombre_agencia AS centro_apuesta,
     pj.nivel,
     pj.estado,
@@ -178,7 +167,6 @@ export const buscar_permisos_por_centro = async (id_centro) => {
     pj.fecha_fin
   FROM permisos_juego AS pj
   JOIN juegos         AS j  ON pj.id_juego   = j.id_juego
-  JOIN operadoras     AS op ON j.id_operadora = op.id_operadora
   JOIN centros_apuesta AS ca ON pj.id_centro  = ca.id_centro
   WHERE pj.id_centro = $1
   `;
@@ -191,7 +179,6 @@ export const buscar_permisos_por_nivel = async (nivel) => {
   SELECT
     pj.id_permiso_juego,
     j.nombre        AS nombre_juego,
-    op.razon_social AS operadora,
     c.razon_social  AS comercializador,
     ca.nombre_agencia AS centro_apuesta,
     pj.nivel,
@@ -200,7 +187,6 @@ export const buscar_permisos_por_nivel = async (nivel) => {
     pj.fecha_fin
   FROM permisos_juego AS pj
   JOIN juegos         AS j  ON pj.id_juego           = j.id_juego
-  JOIN operadoras     AS op ON j.id_operadora         = op.id_operadora
   LEFT JOIN comercializadores AS c  ON pj.id_comercializador = c.id_comercializadores
   LEFT JOIN centros_apuesta   AS ca ON pj.id_centro          = ca.id_centro
   WHERE pj.nivel = $1
@@ -214,7 +200,6 @@ export const buscar_permisos_vencidos = async () => {
   SELECT
     pj.id_permiso_juego,
     j.nombre        AS nombre_juego,
-    op.razon_social AS operadora,
     c.razon_social  AS comercializador,
     ca.nombre_agencia AS centro_apuesta,
     pj.nivel,
@@ -223,7 +208,6 @@ export const buscar_permisos_vencidos = async () => {
     pj.fecha_fin
   FROM permisos_juego AS pj
   JOIN juegos         AS j  ON pj.id_juego           = j.id_juego
-  JOIN operadoras     AS op ON j.id_operadora         = op.id_operadora
   LEFT JOIN comercializadores AS c  ON pj.id_comercializador = c.id_comercializadores
   LEFT JOIN centros_apuesta   AS ca ON pj.id_centro          = ca.id_centro
   WHERE pj.fecha_fin IS NOT NULL AND pj.fecha_fin < CURRENT_DATE

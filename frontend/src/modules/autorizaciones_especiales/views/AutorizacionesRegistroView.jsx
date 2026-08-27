@@ -9,13 +9,11 @@ import {
   getSolicitudesAutorizacion,
   getSolicitudDetalle,
   getBancos,
-  getOperadoras,
   getDocumentosPorTipo,
 } from '../services/autorizaciones_especiales.service'
 
 const INITIAL_FORM = {
   id_solicitud:             '',
-  id_operadora:             '',
   tipo:                     'Mesa',
   numero_documento:         '',
   papel_seguridad:          '',
@@ -50,7 +48,6 @@ const AutorizacionesRegistroView = () => {
   // ── Catálogos base ──
   const [solicitudes, setSolicitudes] = useState([])
   const [bancos, setBancos]           = useState([])
-  const [operadoras, setOperadoras]   = useState([])
   const [documentosAnteriores, setDocumentosAnteriores] = useState([])
 
   // ── Detalle de la solicitud seleccionada (autocompletado) ──
@@ -73,7 +70,6 @@ const AutorizacionesRegistroView = () => {
         const results = await Promise.allSettled([
           getSolicitudesAutorizacion(),
           getBancos(),
-          getOperadoras(),
         ])
 
         const errorsList = []
@@ -92,12 +88,6 @@ const AutorizacionesRegistroView = () => {
           setBancos(results[1].value || [])
         } else {
           errorsList.push('No se pudieron cargar los bancos.')
-        }
-
-        if (results[2].status === 'fulfilled') {
-          setOperadoras(results[2].value || [])
-        } else {
-          errorsList.push('No se pudieron cargar las operadoras.')
         }
 
         if (errorsList.length > 0) setError(errorsList.join(' '))
@@ -245,7 +235,6 @@ const AutorizacionesRegistroView = () => {
         fecha_expedicion:formData.fecha_expedicion,
         // Datos heredados de la solicitud (opcionales en el documento)
         ...(formData.id_centro?.trim()        ? { id_centro:        formData.id_centro }        : {}),
-        ...(formData.id_operadora?.trim()      ? { id_operadora:     formData.id_operadora }     : {}),
         // Datos propios del documento
         ...(tipo === 'Mesa' && formData.nro_mesa
           ? { nro_mesa: parseFloat(formData.nro_mesa) }
@@ -303,7 +292,7 @@ const AutorizacionesRegistroView = () => {
         <CCardHeader className="bg-white pb-0">
           <h4 className="mb-1 text-primary">Emisión de Autorización Especial</h4>
           <p className="text-muted small mb-3">
-            Seleccione una solicitud pendiente para heredar sus datos (Operadora, Comercializadora, Centro de Apuestas, Representantes y Tipo) y complete los campos propios del documento.
+            Seleccione una solicitud pendiente para heredar sus datos (Comercializadora, Centro de Apuestas, Representantes y Tipo) y complete los campos propios del documento.
           </p>
         </CCardHeader>
         <CCardBody>
@@ -315,7 +304,6 @@ const AutorizacionesRegistroView = () => {
             solicitudes={solicitudes}
             solicitudSeleccionada={solicitudSeleccionada}
             bancos={bancos}
-            operadoras={operadoras}
             documentosAnteriores={documentosAnteriores}
             loadingDeps={loadingDeps}
             loadingDetalleSolicitud={loadingDetalleSolicitud}

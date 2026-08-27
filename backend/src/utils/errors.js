@@ -74,16 +74,6 @@ export const errors = {
     message: "La persona ya es representante de este comercializador",
   },
 
-  // Operadoras
-  operadora_no_encontrada: {
-    status: 404,
-    message: "Operadora no encontrada",
-  },
-  operadora_rif_duplicado: {
-    status: 409,
-    message: "El rif esta duplicado",
-  },
-
   // bancos
   bancos_no_encontrada: {
     status: 404,
@@ -184,10 +174,6 @@ export const errors = {
   solicitud_no_es_autorizacion_especial: {
     status: 400,
     message: "La solicitud no corresponde a un tramite de Autorizacion_especial",
-  },
-  solicitud_sin_operadora: {
-    status: 400,
-    message: "La solicitud de autorizacion debe tener una operadora asociada",
   },
 
   // Participaciones

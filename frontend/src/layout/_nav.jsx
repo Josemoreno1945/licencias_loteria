@@ -4,7 +4,6 @@ import {
   cilSpeedometer,
   cilPeople,
   cilBuilding,
-  cilFactory,
   cilLocationPin,
   cilClipboard,
   cilTask,
@@ -57,16 +56,6 @@ const _navBase = [
     items: [
       { component: CNavItem, name: 'Lista',    to: '/personas/lista',    indent: true, roles: TODOS    },
       { component: CNavItem, name: 'Registro', to: '/personas/registro', indent: true, roles: GESTORES },
-    ],
-  },
-  {
-    component: CNavGroup,
-    name: 'Operadoras',
-    icon: <CIcon icon={cilFactory} customClassName="nav-icon" />,
-    roles: TODOS,
-    items: [
-      { component: CNavItem, name: 'Lista',    to: '/operadoras/lista',    indent: true, roles: TODOS    },
-      { component: CNavItem, name: 'Registro', to: '/operadoras/registro', indent: true, roles: GESTORES },
     ],
   },
   {

@@ -25,11 +25,6 @@ export const getBancos = async () => {
   return data;
 };
 
-export const getOperadoras = async () => {
-  const { data } = await axiosInstance.get("/operadoras");
-  return data;
-};
-
 export const getDocumentosPorTipo = async (tipo) => {
   const { data } = await axiosInstance.get(`/documentos-emitidos/por-tipo/${tipo}`);
   return data;

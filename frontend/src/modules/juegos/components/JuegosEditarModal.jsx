@@ -17,7 +17,6 @@ import { extractErrorMessage } from '../../../utils/errorHandler';
 const JuegosEditarModal = ({ idJuego, onClose, onUpdated }) => {
   // Estado del formulario
   const [formData, setFormData] = useState({
-    id_operadora: '',
     nombre: '',
   });
 
@@ -42,7 +41,6 @@ const JuegosEditarModal = ({ idJuego, onClose, onUpdated }) => {
         const res = await axiosInstance.get(`/juegos/${idJuego}`);
         const juego = Array.isArray(res.data) ? res.data[0] : res.data;
         setFormData({
-          id_operadora: juego.id_operadora || '',
           nombre: juego.nombre || '',
         });
       } catch (err) {

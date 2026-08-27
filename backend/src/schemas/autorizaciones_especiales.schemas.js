@@ -63,8 +63,6 @@ const base_autorizacion_especial_schema = z.object({
 
   id_persona: uuidSchema,
 
-  id_operadora: uuidSchema,
-
   id_comercializador: optionalUuidField,
 
   id_centro: optionalUuidField,
@@ -209,8 +207,6 @@ export const emitir_autorizacion_especial_schema = z
     otros: z.record(z.unknown()).optional().nullable(),
 
     representantes: optionalUuidArrayField,
-
-    id_operadora: optionalUuidField,
 
     pago: z.object({
       id_banco: uuidSchema,

@@ -7,7 +7,6 @@ import {
   crear_c_autorizacion_completa,
   actualizar_autorizacion_especial,
   buscar_c_autorizaciones_por_persona,
-  buscar_c_autorizaciones_por_operadora,
   buscar_c_autorizaciones_por_centro,
   buscar_c_autorizaciones_por_nro_mesa,
   buscar_c_autorizaciones_proximas_a_vencer,
@@ -32,8 +31,6 @@ router.get(
 );
 
 router.get("/autorizaciones-especiales/por-persona/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_autorizaciones_por_persona);
-
-router.get("/autorizaciones-especiales/por-operadora/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_autorizaciones_por_operadora);
 
 router.get("/autorizaciones-especiales/por-centro/:id", verifyToken, hasRole("superAdmin", "gerente", "gestor_de_tramites", "supervisor"), buscar_c_autorizaciones_por_centro);
 

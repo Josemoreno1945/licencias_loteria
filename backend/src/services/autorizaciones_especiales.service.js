@@ -20,7 +20,7 @@ export const crear_autorizacion_completa = async (data) => {
 
     // 1. Validar la solicitud de trámite
     const solicitudRes = await client.query(
-      `SELECT tipo_tramite, id_persona, id_operadora, id_comercializador, estado
+      `SELECT tipo_tramite, id_persona, id_comercializador, estado
        FROM solicitudes
        WHERE id_solicitudes = $1`,
       [data.id_solicitud],
@@ -37,22 +37,6 @@ export const crear_autorizacion_completa = async (data) => {
 
     if (solicitud.estado === "Rechazada") {
       throwError(errors.solicitud_rechazada);
-    }
-
-    // La operadora puede venir de la solicitud o, en su defecto, del payload
-    // (por si la solicitud se registró sin operadora asociada).
-    const operadoraId = solicitud.id_operadora || data.id_operadora
-    if (!operadoraId) {
-      throwError(errors.solicitud_sin_operadora);
-    }
-
-    // Validar que la operadora resuelta exista
-    const operadoraExiste = await client.query(
-      `SELECT 1 FROM operadoras WHERE id_operadora = $1`,
-      [operadoraId],
-    );
-    if (!operadoraExiste.rows[0]) {
-      throwError(errors.operadora_no_encontrada);
     }
 
     // 2. La solicitud aún no puede tener un documento emitido asociado
@@ -190,17 +174,16 @@ export const crear_autorizacion_completa = async (data) => {
     // 9. Crear el detalle de autorizaciones_especiales
     const autorizacionResult = await client.query(
       `INSERT INTO autorizaciones_especiales (
-         id_documento, nro_mesa, tipo, id_persona, id_operadora,
+         id_documento, nro_mesa, tipo, id_persona,
          id_comercializador, id_centro, agencia_texto, numero_lot,
          direccion_centro_asignado, direccion_localidad, direccion_responsable, otros
        )
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
       [
         documento.id_documento,
         data.nro_mesa ?? null,
         data.tipo ?? "Mesa",
         solicitud.id_persona,
-        operadoraId,
         data.id_comercializador ?? solicitud.id_comercializador ?? null,
         data.id_centro ?? null,
         data.agencia_texto ?? null,

@@ -453,7 +453,6 @@ const BuscadorDetalleModal = ({
                         <CTableHeaderCell>Nº Mesa</CTableHeaderCell>
                         <CTableHeaderCell>Nº Documento</CTableHeaderCell>
                         <CTableHeaderCell>Estado</CTableHeaderCell>
-                        <CTableHeaderCell>Operadora</CTableHeaderCell>
                         <CTableHeaderCell>Expedición</CTableHeaderCell>
                         <CTableHeaderCell>Acciones</CTableHeaderCell>
                       </CTableRow>
@@ -469,7 +468,6 @@ const BuscadorDetalleModal = ({
                               {aut.estado_documento}
                             </CBadge>
                           </CTableDataCell>
-                          <CTableDataCell>{aut.operadora}</CTableDataCell>
                           <CTableDataCell>{aut.fecha_expedicion?.slice(0, 10)}</CTableDataCell>
                           <CTableDataCell>
                             <CButton size="sm" color="primary" variant="outline"

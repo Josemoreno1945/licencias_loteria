@@ -8,12 +8,10 @@ export const get_documento_juegos = async () => {
     de.numero_documento,
     de.tipo            AS tipo_documento,
     de.estado_documento,
-    j.nombre           AS nombre_juego,
-    op.razon_social    AS operadora
+    j.nombre           AS nombre_juego
   FROM documento_juegos AS dj
   JOIN documentos_emitidos AS de ON dj.id_documento = de.id_documento
-  JOIN juegos              AS j  ON dj.id_juego     = j.id_juego
-  JOIN operadoras          AS op ON j.id_operadora  = op.id_operadora`;
+  JOIN juegos              AS j  ON dj.id_juego     = j.id_juego`;
   const result = await pool.query(query);
   return result.rows;
 };
@@ -25,12 +23,10 @@ export const get_documento_juegos_id = async (id) => {
     de.numero_documento,
     de.tipo            AS tipo_documento,
     de.estado_documento,
-    j.nombre           AS nombre_juego,
-    op.razon_social    AS operadora
+    j.nombre           AS nombre_juego
   FROM documento_juegos AS dj
   JOIN documentos_emitidos AS de ON dj.id_documento = de.id_documento
   JOIN juegos              AS j  ON dj.id_juego     = j.id_juego
-  JOIN operadoras          AS op ON j.id_operadora  = op.id_operadora
   WHERE dj.id_doc_juego = $1
   `;
   const result = await pool.query(query, [id]);
@@ -68,12 +64,10 @@ export const buscar_juegos_por_documento = async (id_documento) => {
     de.tipo            AS tipo_documento,
     de.estado_documento,
     j.id_juego,
-    j.nombre           AS nombre_juego,
-    op.razon_social    AS operadora
+    j.nombre           AS nombre_juego
   FROM documento_juegos AS dj
   JOIN documentos_emitidos AS de ON dj.id_documento = de.id_documento
   JOIN juegos              AS j  ON dj.id_juego     = j.id_juego
-  JOIN operadoras          AS op ON j.id_operadora  = op.id_operadora
   WHERE dj.id_documento = $1
   `;
   const result = await pool.query(query, [id_documento]);

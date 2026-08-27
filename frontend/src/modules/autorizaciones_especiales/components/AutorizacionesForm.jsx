@@ -24,7 +24,7 @@ import {
   cilDescription,
   cilBuilding,
   cilLocationPin,
-  cilFactory,
+
 } from '@coreui/icons'
 
 // ── Sub-componentes de UI (calco exacto de Licencias / Participaciones) ─────────
@@ -62,7 +62,6 @@ const AutorizacionesForm = ({
   loadingDeps,
   loadingDetalleSolicitud,
   bancos,
-  operadoras,
   documentosAnteriores,
   loadingDocs,
   isEditMode,
@@ -128,41 +127,6 @@ const AutorizacionesForm = ({
       {/* ── Panel autocompletado: datos heredados de la solicitud (solo lectura) ── */}
       {!loadingDetalleSolicitud && solicitudSeleccionada && (
         <>
-          {/* Operadora (requerida en autorizaciones especiales) */}
-          {solicitudSeleccionada.operadora ? (
-            <InfoCard
-              titulo="🏭 Operadora"
-              campos={[
-                { label: 'Razón Social', value: solicitudSeleccionada.operadora },
-              ]}
-            />
-          ) : (
-            <CRow className="mb-3">
-              <CCol md={12} className="mb-3">
-                <CFormLabel>
-                  Operadora <span className="text-danger">*</span>
-                  <span className="text-muted small ms-2">(La solicitud no tiene operadora asociada; selecciónela para emitir)</span>
-                </CFormLabel>
-                <CInputGroup>
-                  <CInputGroupText><CIcon icon={cilFactory} /></CInputGroupText>
-                  <CFormSelect
-                    name="id_operadora"
-                    value={formData.id_operadora || ''}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="">Seleccione la operadora...</option>
-                    {operadoras.map((op) => (
-                      <option key={op.id_operadora} value={op.id_operadora}>
-                        {op.rif ? `${op.rif} — ${op.razon_social}` : op.razon_social}
-                      </option>
-                    ))}
-                  </CFormSelect>
-                </CInputGroup>
-              </CCol>
-            </CRow>
-          )}
-
           {/* Datos de la Comercializadora + Representante + Tipo de Autorización */}
           <InfoCard
             titulo="📋 Comercializadora"

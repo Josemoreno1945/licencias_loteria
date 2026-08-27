@@ -188,15 +188,6 @@ const DashboardView = () => {
       <CRow className="g-3 mb-4">
         <CCol sm={6} xl={3}>
           <StatCard
-            title="Operadoras"
-            value={loadingResumen ? null : personas.total_operadoras}
-            icon={cilFactory}
-            colorClass="bg-dark"
-            borderColor="border-start-dark"
-          />
-        </CCol>
-        <CCol sm={6} xl={3}>
-          <StatCard
             title="Bancos Registrados"
             value={loadingResumen ? null : personas.total_bancos}
             icon={cilBank}

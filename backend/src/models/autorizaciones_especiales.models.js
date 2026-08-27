@@ -29,7 +29,6 @@ export const get_autorizaciones_especiales = async () => {
     ae.numero_lot,
     p.ci_rif,
     p.razon_social      AS persona,
-    op.razon_social     AS operadora,
     c.razon_social      AS comercializador,
     ca.nombre_agencia   AS centro_apuesta,
     ae.agencia_texto,
@@ -39,7 +38,6 @@ export const get_autorizaciones_especiales = async () => {
   FROM autorizaciones_especiales AS ae
   JOIN documentos_emitidos AS de ON ae.id_documento  = de.id_documento
   JOIN personas            AS p  ON ae.id_persona    = p.id_persona
-  JOIN operadoras          AS op ON ae.id_operadora  = op.id_operadora
   JOIN usuarios            AS u  ON de.emitido_por   = u.id_usuario
   LEFT JOIN centros_apuesta AS ca ON ae.id_centro    = ca.id_centro
   LEFT JOIN comercializadores AS c ON ae.id_comercializador = c.id_comercializadores
@@ -70,7 +68,6 @@ export const get_autorizaciones_especiales_id = async (id) => {
     p.ci_rif,
     p.razon_social      AS persona,
     p.tipo_persona      AS tipo_persona,
-    op.razon_social     AS operadora,
     c.razon_social      AS comercializador,
     ca.nombre_agencia   AS centro_apuesta,
     ae.agencia_texto,
@@ -90,7 +87,6 @@ export const get_autorizaciones_especiales_id = async (id) => {
   FROM autorizaciones_especiales AS ae
   JOIN documentos_emitidos AS de ON ae.id_documento  = de.id_documento
   JOIN personas            AS p  ON ae.id_persona    = p.id_persona
-  JOIN operadoras          AS op ON ae.id_operadora  = op.id_operadora
   JOIN usuarios            AS u  ON de.emitido_por   = u.id_usuario
   LEFT JOIN centros_apuesta AS ca ON ae.id_centro    = ca.id_centro
   LEFT JOIN comercializadores AS c ON ae.id_comercializador = c.id_comercializadores
@@ -115,13 +111,11 @@ export const get_autorizaciones_especiales_vigentes = async () => {
     ae.numero_lot,
     p.ci_rif,
     p.razon_social      AS persona,
-    op.razon_social     AS operadora,
     ca.nombre_agencia   AS centro_apuesta,
     ae.agencia_texto
   FROM autorizaciones_especiales AS ae
   JOIN documentos_emitidos AS de ON ae.id_documento  = de.id_documento
   JOIN personas            AS p  ON ae.id_persona    = p.id_persona
-  JOIN operadoras          AS op ON ae.id_operadora  = op.id_operadora
   LEFT JOIN centros_apuesta AS ca ON ae.id_centro    = ca.id_centro
   WHERE de.estado_documento = 'vigente'
   ORDER BY de.fecha_vencimiento ASC
@@ -134,17 +128,16 @@ export const get_autorizaciones_especiales_vigentes = async () => {
 export const crear_autorizacion_especial = async (data) => {
   const query = `
     INSERT INTO autorizaciones_especiales (
-      id_documento, nro_mesa, tipo, id_persona, id_operadora,
+      id_documento, nro_mesa, tipo, id_persona,
       id_comercializador, id_centro, agencia_texto, numero_lot,
       direccion_centro_asignado, direccion_localidad, direccion_responsable, otros
     )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`;
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`;
   const values = [
     data.id_documento,
     data.nro_mesa ?? null,
     data.tipo ?? "Mesa",
     data.id_persona,
-    data.id_operadora,
     data.id_comercializador ?? null,
     data.id_centro ?? null,
     data.agencia_texto ?? null,
@@ -161,7 +154,7 @@ export const crear_autorizacion_especial = async (data) => {
 //put---------------------------------------------------
 export const actualizar_autorizacion_especial_id = async (id, data) => {
   const allowed = [
-    "nro_mesa", "tipo", "id_persona", "id_operadora",
+    "nro_mesa", "tipo", "id_persona",
     "id_comercializador", "id_centro", "agencia_texto", "numero_lot",
     "direccion_centro_asignado", "direccion_localidad",
     "direccion_responsable", "otros",
@@ -225,46 +218,16 @@ export const buscar_autorizaciones_por_persona = async (id_persona) => {
     ae.numero_lot,
     p.ci_rif,
     p.razon_social      AS persona,
-    op.razon_social     AS operadora,
     ca.nombre_agencia   AS centro_apuesta,
     ae.agencia_texto
   FROM autorizaciones_especiales AS ae
   JOIN documentos_emitidos AS de ON ae.id_documento  = de.id_documento
   JOIN personas            AS p  ON ae.id_persona    = p.id_persona
-  JOIN operadoras          AS op ON ae.id_operadora  = op.id_operadora
   LEFT JOIN centros_apuesta AS ca ON ae.id_centro    = ca.id_centro
   WHERE ae.id_persona = $1
   ORDER BY de.created_at DESC
   `;
   const result = await pool.query(query, [id_persona]);
-  return result.rows;
-};
-
-export const buscar_autorizaciones_por_operadora = async (id_operadora) => {
-  const query = `
-  SELECT
-    ae.id_documento,
-    de.numero_documento,
-    de.estado_documento,
-    de.fecha_expedicion,
-    de.fecha_vencimiento,
-    ae.tipo,
-    ae.nro_mesa,
-    ae.numero_lot,
-    p.ci_rif,
-    p.razon_social      AS persona,
-    op.razon_social     AS operadora,
-    ca.nombre_agencia   AS centro_apuesta,
-    ae.agencia_texto
-  FROM autorizaciones_especiales AS ae
-  JOIN documentos_emitidos AS de ON ae.id_documento  = de.id_documento
-  JOIN personas            AS p  ON ae.id_persona    = p.id_persona
-  JOIN operadoras          AS op ON ae.id_operadora  = op.id_operadora
-  LEFT JOIN centros_apuesta AS ca ON ae.id_centro    = ca.id_centro
-  WHERE ae.id_operadora = $1
-  ORDER BY de.created_at DESC
-  `;
-  const result = await pool.query(query, [id_operadora]);
   return result.rows;
 };
 
@@ -281,12 +244,10 @@ export const buscar_autorizaciones_por_centro = async (id_centro) => {
     ae.numero_lot,
     p.ci_rif,
     p.razon_social      AS persona,
-    op.razon_social     AS operadora,
     ca.nombre_agencia   AS centro_apuesta
   FROM autorizaciones_especiales AS ae
   JOIN documentos_emitidos AS de ON ae.id_documento  = de.id_documento
   JOIN personas            AS p  ON ae.id_persona    = p.id_persona
-  JOIN operadoras          AS op ON ae.id_operadora  = op.id_operadora
   JOIN centros_apuesta     AS ca ON ae.id_centro     = ca.id_centro
   WHERE ae.id_centro = $1
   ORDER BY de.created_at DESC
@@ -308,13 +269,11 @@ export const buscar_autorizaciones_por_nro_mesa = async (nro_mesa) => {
     ae.numero_lot,
     p.ci_rif,
     p.razon_social      AS persona,
-    op.razon_social     AS operadora,
     ca.nombre_agencia   AS centro_apuesta,
     ae.agencia_texto
   FROM autorizaciones_especiales AS ae
   JOIN documentos_emitidos AS de ON ae.id_documento  = de.id_documento
   JOIN personas            AS p  ON ae.id_persona    = p.id_persona
-  JOIN operadoras          AS op ON ae.id_operadora  = op.id_operadora
   LEFT JOIN centros_apuesta AS ca ON ae.id_centro    = ca.id_centro
   WHERE ae.nro_mesa = $1
   ORDER BY de.created_at DESC
@@ -335,13 +294,11 @@ export const buscar_autorizaciones_proximas_a_vencer = async () => {
     ae.numero_lot,
     p.ci_rif,
     p.razon_social      AS persona,
-    op.razon_social     AS operadora,
     ca.nombre_agencia   AS centro_apuesta,
     ae.agencia_texto
   FROM autorizaciones_especiales AS ae
   JOIN documentos_emitidos AS de ON ae.id_documento  = de.id_documento
   JOIN personas            AS p  ON ae.id_persona    = p.id_persona
-  JOIN operadoras          AS op ON ae.id_operadora  = op.id_operadora
   LEFT JOIN centros_apuesta AS ca ON ae.id_centro    = ca.id_centro
   WHERE de.estado_documento = 'vigente'
     AND de.fecha_vencimiento BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '30 days'

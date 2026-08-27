@@ -270,11 +270,9 @@ export const get_detalle_persona = async (id_persona) => {
   //      de.estado_documento,
   //      de.fecha_expedicion,
   //      de.fecha_vencimiento,
-  //      ae.nro_mesa,
-  //      op.razon_social AS operadora
-  //    FROM autorizaciones_especiales AS ae
-  //    JOIN documentos_emitidos AS de ON ae.id_documento = de.id_documento
-  //    JOIN operadoras AS op ON ae.id_operadora = op.id_operadora
+   //      ae.nro_mesa
+   //    FROM autorizaciones_especiales AS ae
+   //    JOIN documentos_emitidos AS de ON ae.id_documento = de.id_documento
   //    WHERE ae.id_persona = $1
   //    ORDER BY de.fecha_expedicion DESC`,
   //   [id_persona],

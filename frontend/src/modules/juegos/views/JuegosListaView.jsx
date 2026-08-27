@@ -29,7 +29,6 @@ import Paginacion from '../../../components/Paginacion';
 
 const JUEGOS_SEARCH_FIELDS = [
   'nombre',
-  'operadora_razon_social',
   'estado',
 ];
 
@@ -73,7 +72,7 @@ const JuegosListaView = () => {
           <div>
             <h4 className="mb-1 text-primary">Lista de Juegos</h4>
             <p className="text-muted small mb-3">
-              Catálogo de juegos de azar asociados a sus respectivas operadoras.
+              Catálogo de juegos de azar.
             </p>
           </div>
           {user?.rol !== 'supervisor' && (
@@ -128,7 +127,6 @@ const JuegosListaView = () => {
                       <CTableRow>
                         <CTableHeaderCell>#</CTableHeaderCell>
                         <CTableHeaderCell>Nombre del Juego</CTableHeaderCell>
-                        <CTableHeaderCell>Operadora (Propietaria)</CTableHeaderCell>
                          <CTableHeaderCell>Estado</CTableHeaderCell>
                          <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
                          <CTableHeaderCell className="text-center">Editar</CTableHeaderCell>
@@ -142,9 +140,6 @@ const JuegosListaView = () => {
                           </CTableDataCell>
                           <CTableDataCell className="fw-semibold">
                             {juego.nombre}
-                          </CTableDataCell>
-                          <CTableDataCell>
-                            {juego.operadora_razon_social || juego.id_operadora}
                           </CTableDataCell>
                            <CTableDataCell>
                              <CBadge color={juego.estado === 'activo' ? 'success' : 'secondary'}>

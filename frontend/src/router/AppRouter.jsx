@@ -13,10 +13,6 @@ import DashboardView from '../modules/dashboard/views/DashboardView'
 import PersonasListaView from '../modules/personas/views/PersonasListaView'
 import PersonasRegistroView from '../modules/personas/views/PersonasRegistroView'
 
-// Operadoras
-import OperadorasListaView from '../modules/operadoras/views/OperadorasListaView'
-import OperadorasRegistroView from '../modules/operadoras/views/OperadorasRegistroView'
-
 // Comercializadores
 import ComercializadoresListaView from '../modules/comercializadores/views/ComercializadoresListaView'
 import ComercializadoresRegistroView from '../modules/comercializadores/views/ComercializadoresRegistroView'
@@ -91,11 +87,6 @@ const AppRouter = () => {
           <Route path="personas" element={<Navigate to="/personas/lista" replace />} />
           <Route path="personas/lista" element={<RoleRoute allowedRoles={TODOS}><PersonasListaView /></RoleRoute>} />
           <Route path="personas/registro" element={<RoleRoute allowedRoles={GESTORES}><PersonasRegistroView /></RoleRoute>} />
-
-          {/* Operadoras */}
-          <Route path="operadoras" element={<Navigate to="/operadoras/lista" replace />} />
-          <Route path="operadoras/lista" element={<RoleRoute allowedRoles={TODOS}><OperadorasListaView /></RoleRoute>} />
-          <Route path="operadoras/registro" element={<RoleRoute allowedRoles={GESTORES}><OperadorasRegistroView /></RoleRoute>} />
 
           {/* Usuarios */}
           <Route path="usuarios" element={<Navigate to="/usuarios/lista" replace />} />
