@@ -225,7 +225,7 @@ const CentrosApuestaListaView = () => {
                       <CTableHeaderCell>#</CTableHeaderCell>
                       <CTableHeaderCell>Nombre Agencia</CTableHeaderCell>
                       <CTableHeaderCell>Comercializador</CTableHeaderCell>
-                      <CTableHeaderCell>Encargado</CTableHeaderCell>
+                      <CTableHeaderCell>Representante Legal</CTableHeaderCell>
                       <CTableHeaderCell>Dirección</CTableHeaderCell>
                        <CTableHeaderCell>Estado</CTableHeaderCell>
                        <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
@@ -248,7 +248,17 @@ const CentrosApuestaListaView = () => {
                           )}
                         </CTableDataCell>
                         <CTableDataCell>
-                          {centro.persona_razon_social ? (
+                          {centro.representantes && centro.representantes.length > 0 ? (
+                            <ul className="list-unstyled mb-0">
+                              {centro.representantes.map((rep, idx) => (
+                                <li key={idx} className="mb-1">
+                                  <span className="fw-semibold small">{rep.ci_rif}</span>
+                                  <br />
+                                  <span className="text-muted small">{rep.razon_social}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : centro.persona_razon_social ? (
                             <>
                               <span className="fw-semibold">{centro.persona_ci_rif}</span>
                               <br />

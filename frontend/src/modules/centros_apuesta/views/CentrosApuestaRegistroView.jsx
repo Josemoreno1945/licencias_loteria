@@ -9,10 +9,10 @@ const CentrosApuestaRegistroView = () => {
   // Estado del formulario
   const [formData, setFormData] = useState({
     id_comercializador: '',
-    id_persona: '',
     nombre_agencia: '',
     direccion: '',
     estado: 'activo',
+    representantes: [{ id_persona: '', cargo: '' }],
   })
 
   // Datos para los selects dinámicos
@@ -70,7 +70,16 @@ const CentrosApuestaRegistroView = () => {
     })
 
     try {
-      const response = await axiosInstance.post('/centros_apuesta', formData)
+      // Construir payload con representantes
+      const payload = {
+        id_comercializador: formData.id_comercializador,
+        nombre_agencia: formData.nombre_agencia,
+        direccion: formData.direccion,
+        estado: formData.estado,
+        representantes: formData.representantes.filter((r) => r.id_persona),
+      }
+
+      const response = await axiosInstance.post('/centros_apuesta', payload)
 
       setModalState({
         visible: true,
@@ -81,10 +90,10 @@ const CentrosApuestaRegistroView = () => {
       // Limpiar formulario tras éxito
       setFormData({
         id_comercializador: '',
-        id_persona: '',
         nombre_agencia: '',
         direccion: '',
         estado: 'activo',
+        representantes: [{ id_persona: '', cargo: '' }],
       })
     } catch (err) {
       const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al registrar el centro de apuesta.');

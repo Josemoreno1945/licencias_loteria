@@ -72,7 +72,10 @@ export const crear_c_centros_apuesta = async (req, res, next) => {
     }
 
     const rows = await crear_centros_apuesta(data);
-    return res.json(rows);
+    return res.status(201).json({
+      message: "Centro de apuesta registrado exitosamente",
+      centro_apuesta: rows,
+    });
   } catch (error) {
     next(error);
   }
@@ -129,7 +132,10 @@ export const actualizar_c_centros_apuesta = async (req, res, next) => {
     }
 
     const rows = await actualizar_centros_apuesta_id(id, data);
-    res.json(rows);
+    res.json({
+      message: "Centro de apuesta actualizado exitosamente",
+      centro_apuesta: rows[0],
+    });
   } catch (error) {
     next(error);
   }

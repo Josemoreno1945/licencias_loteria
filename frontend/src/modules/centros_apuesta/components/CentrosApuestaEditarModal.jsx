@@ -18,10 +18,10 @@ const CentrosApuestaEditarModal = ({ idCentro, onClose, onUpdated }) => {
   // Estado del formulario
   const [formData, setFormData] = useState({
     id_comercializador: '',
-    id_persona: '',
     nombre_agencia: '',
     direccion: '',
     estado: 'activo',
+    representantes: [{ id_persona: '', cargo: '' }],
   });
 
   // Datos para los selects dinámicos
@@ -51,18 +51,28 @@ const CentrosApuestaEditarModal = ({ idCentro, onClose, onUpdated }) => {
       setErrorDeps(null);
       try {
         const [resCentro, resComercializadores, resPersonas] = await Promise.all([
-          axiosInstance.get(`/centros_apuesta/${idCentro}`),
+          axiosInstance.get(`/centros_apuesta/${idCentro}/detalle-completo`),
           axiosInstance.get('/comercializadores'),
           axiosInstance.get('/personas'),
         ]);
 
-        const centro = Array.isArray(resCentro.data) ? resCentro.data[0] : resCentro.data;
+        const centro = resCentro.data;
+
+        // Mapear representantes desde la respuesta del backend
+        let representantesData = [{ id_persona: '', cargo: 'Representante Legal' }];
+        if (centro.representantes && centro.representantes.length > 0) {
+          representantesData = centro.representantes.map((rep) => ({
+            id_persona: rep.id_persona || '',
+            cargo: rep.cargo || 'Representante Legal',
+          }));
+        }
+
         setFormData({
           id_comercializador: centro.id_comercializador || '',
-          id_persona: centro.id_persona || '',
           nombre_agencia: centro.nombre_agencia || '',
           direccion: centro.direccion || '',
           estado: centro.estado || 'activo',
+          representantes: representantesData,
         });
 
         setComercializadores(resComercializadores.data || []);
@@ -103,11 +113,18 @@ const CentrosApuestaEditarModal = ({ idCentro, onClose, onUpdated }) => {
       // (evita sobreescribir campos con strings vacíos)
       const payload = {};
       Object.keys(formData).forEach((key) => {
+        if (key === 'representantes') return; // Se procesa aparte
         const val = formData[key];
         if (val !== '' && val !== null && val !== undefined) {
           payload[key] = val;
         }
       });
+
+      // Agregar representantes solo si hay al menos uno con id_persona
+      const repsFiltrados = formData.representantes.filter((r) => r.id_persona);
+      if (repsFiltrados.length > 0) {
+        payload.representantes = repsFiltrados;
+      }
 
       const response = await axiosInstance.put(`/centros_apuesta/${idCentro}`, payload);
 
