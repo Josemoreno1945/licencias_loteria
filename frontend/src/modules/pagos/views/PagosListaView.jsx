@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   CContainer,
   CCard,
@@ -30,11 +30,11 @@ const PAGOS_SEARCH_FIELDS = [
 
 const PagosListaView = () => {
   const { data: pagos, loading, error } = useFetch('/pagos')
-  const [paginaActual, setPaginaActual] = React.useState(1)
-  const [busqueda, setBusqueda] = React.useState('')
+  const [paginaActual, setPaginaActual] = useState(1)
+  const [busqueda, setBusqueda] = useState('')
   const debouncedBusqueda = useDebounce(busqueda, 400)
 
-  const pagosFiltrados = React.useMemo(
+  const pagosFiltrados = useMemo(
     () => filterBySearch(pagos, debouncedBusqueda, PAGOS_SEARCH_FIELDS),
     [pagos, debouncedBusqueda]
   )
@@ -44,7 +44,7 @@ const PagosListaView = () => {
   const startIndex = (paginaActual - 1) * PAGE_SIZE
   const pagosPaginados = pagosFiltrados?.slice(startIndex, startIndex + PAGE_SIZE) || []
 
-  React.useEffect(() => {
+  useEffect(() => {
     setPaginaActual(1)
   }, [debouncedBusqueda])
 
@@ -80,38 +80,40 @@ const PagosListaView = () => {
             </CAlert>
           )}
           {!loading && !error && pagosFiltrados?.length > 0 && (
-            <CTable hover responsive>
-              <CTableHead>
-                <CTableRow>
-                  <CTableHeaderCell>#</CTableHeaderCell>
-                  <CTableHeaderCell>Banco</CTableHeaderCell>
-                  <CTableHeaderCell>Referencia</CTableHeaderCell>
-                  <CTableHeaderCell>Fecha</CTableHeaderCell>
-                  <CTableHeaderCell>Monto</CTableHeaderCell>
-                  <CTableHeaderCell>Licencia</CTableHeaderCell>
-                  <CTableHeaderCell>Registrado Por</CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody>
-                {pagosPaginados.map((pago, index) => (
-                  <CTableRow key={pago.id_pago}>
-                    <CTableDataCell>{startIndex + index + 1}</CTableDataCell>
-                    <CTableDataCell>{pago.banco}</CTableDataCell>
-                    <CTableDataCell>{pago.num_referencia}</CTableDataCell>
-                    <CTableDataCell>{pago.fecha_pago}</CTableDataCell>
-                    <CTableDataCell>{pago.monto}</CTableDataCell>
-                    <CTableDataCell>{pago.licencia || '—'}</CTableDataCell>
-                    <CTableDataCell>{pago.registrado_por}</CTableDataCell>
+            <>
+              <CTable hover responsive>
+                <CTableHead>
+                  <CTableRow>
+                    <CTableHeaderCell>#</CTableHeaderCell>
+                    <CTableHeaderCell>Banco</CTableHeaderCell>
+                    <CTableHeaderCell>Referencia</CTableHeaderCell>
+                    <CTableHeaderCell>Fecha</CTableHeaderCell>
+                    <CTableHeaderCell>Monto</CTableHeaderCell>
+                    <CTableHeaderCell>Licencia</CTableHeaderCell>
+                    <CTableHeaderCell>Registrado Por</CTableHeaderCell>
                   </CTableRow>
-                ))}
-              </CTableBody>
-            </CTable>
+                </CTableHead>
+                <CTableBody>
+                  {pagosPaginados.map((pago, index) => (
+                    <CTableRow key={pago.id_pago}>
+                      <CTableDataCell>{startIndex + index + 1}</CTableDataCell>
+                      <CTableDataCell>{pago.banco}</CTableDataCell>
+                      <CTableDataCell>{pago.num_referencia}</CTableDataCell>
+                      <CTableDataCell>{pago.fecha_pago}</CTableDataCell>
+                      <CTableDataCell>{pago.monto}</CTableDataCell>
+                      <CTableDataCell>{pago.licencia || '—'}</CTableDataCell>
+                      <CTableDataCell>{pago.registrado_por}</CTableDataCell>
+                    </CTableRow>
+                  ))}
+                </CTableBody>
+              </CTable>
+              <Paginacion
+                currentPage={paginaActual}
+                totalPages={totalPaginas}
+                onPageChange={setPaginaActual}
+              />
+            </>
           )}
-            <Paginacion
-              currentPage={paginaActual}
-              totalPages={totalPaginas}
-              onPageChange={setPaginaActual}
-            />
           </CCardBody>
       </CCard>
     </CContainer>

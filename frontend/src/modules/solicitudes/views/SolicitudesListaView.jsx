@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState, useEffect, useMemo } from 'react'
 import {
   CContainer,
   CCard,
@@ -41,12 +41,12 @@ const SolicitudesListaView = () => {
   const { data: solicitudes, loading, error, refetch } = useFetch('/solicitudes');
 
   const location = useLocation();
-  const [modalDataId, setModalDataId] = React.useState(null);
-  const [paginaActual, setPaginaActual] = React.useState(1);
-  const [busqueda, setBusqueda] = React.useState('');
+  const [modalDataId, setModalDataId] = useState(null);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [busqueda, setBusqueda] = useState('');
   const debouncedBusqueda = useDebounce(busqueda, 400);
 
-  const solicitudesFiltradas = React.useMemo(
+  const solicitudesFiltradas = useMemo(
     () => filterBySearch(solicitudes, debouncedBusqueda, SOLICITUDES_SEARCH_FIELDS),
     [solicitudes, debouncedBusqueda]
   );
@@ -56,11 +56,11 @@ const SolicitudesListaView = () => {
   const startIndex = (paginaActual - 1) * PAGE_SIZE;
   const solicitudesPaginadas = solicitudesFiltradas?.slice(startIndex, startIndex + PAGE_SIZE) || [];
 
-  React.useEffect(() => {
+  useEffect(() => {
     setPaginaActual(1);
   }, [debouncedBusqueda]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (location.state?.openModalId) {
       setModalDataId(location.state.openModalId);
       window.history.replaceState({}, '');

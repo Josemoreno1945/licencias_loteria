@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   CContainer,
   CCard,
@@ -45,13 +45,13 @@ const UsuariosListaView = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { data: usuarios, loading, error, refetch } = useFetch('/usuarios')
-  const [modalVerId, setModalVerId] = React.useState(null)
-  const [modalEditarUsuarioId, setModalEditarUsuarioId] = React.useState(null)
-  const [paginaActual, setPaginaActual] = React.useState(1)
-  const [busqueda, setBusqueda] = React.useState('')
+  const [modalVerId, setModalVerId] = useState(null)
+  const [modalEditarUsuarioId, setModalEditarUsuarioId] = useState(null)
+  const [paginaActual, setPaginaActual] = useState(1)
+  const [busqueda, setBusqueda] = useState('')
   const debouncedBusqueda = useDebounce(busqueda, 400)
 
-  const usuariosFiltrados = React.useMemo(
+  const usuariosFiltrados = useMemo(
     () => filterBySearch(usuarios, debouncedBusqueda, USUARIOS_SEARCH_FIELDS),
     [usuarios, debouncedBusqueda]
   )
@@ -61,7 +61,7 @@ const UsuariosListaView = () => {
   const startIndex = (paginaActual - 1) * PAGE_SIZE
   const usuariosPaginados = usuariosFiltrados?.slice(startIndex, startIndex + PAGE_SIZE) || []
 
-  React.useEffect(() => {
+  useEffect(() => {
     setPaginaActual(1)
   }, [debouncedBusqueda])
 

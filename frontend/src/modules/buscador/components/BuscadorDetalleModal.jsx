@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   CModal,
   CModalHeader,
@@ -55,9 +55,9 @@ const BuscadorDetalleModal = ({
   onOpenSolicitud,
 }) => {
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = React.useState('licencias')
+  const [activeTab, setActiveTab] = useState('licencias')
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (visible) setActiveTab('licencias')
   }, [visible])
 

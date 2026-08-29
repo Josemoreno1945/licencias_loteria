@@ -1,12 +1,12 @@
-import React, { useState } from 'react'
-import { CCard, CCardBody, CCardHeader, CContainer } from '@coreui/react'
-import axiosInstance from '../../../api/axiosInstance'
+import { useState, useEffect, useCallback } from 'react'
+import { CCard, CCardBody, CCardHeader, CContainer, CAlert } from '@coreui/react'
+import { createComercializador, getComercializadoresActivos } from '../services/comercializadores.service'
+import { getPersonas } from '../../personas/services/personas.service'
 import FeedbackModal from '../../../components/FeedbackModal'
 import ComercializadoresForm from '../components/ComercializadoresForm'
 import { extractErrorMessage } from '../../../utils/errorHandler'
 
 const ComercializadoresRegistroView = () => {
-  // Estado del formulario
   const [formData, setFormData] = useState({
     rif: '',
     razon_social: '',
@@ -14,25 +14,44 @@ const ComercializadoresRegistroView = () => {
     telefono: '',
     email: '',
     estado: 'activo',
+    representantes: [{ id_persona: '', cargo: '' }],
   })
 
-  // Estados para los modales
+  const [personas, setPersonas] = useState([])
+  const [loadingDeps, setLoadingDeps] = useState(true)
+  const [errorDeps, setErrorDeps] = useState(null)
+
   const [modalState, setModalState] = useState({
     visible: false,
     type: '',
     message: '',
   })
 
-  // Manejador de cambios en los inputs
-  const handleInputChange = (e) => {
+  useEffect(() => {
+    const cargarDependencias = async () => {
+      setLoadingDeps(true)
+      setErrorDeps(null)
+      try {
+        const data = await getPersonas()
+        setPersonas(data || [])
+      } catch {
+        setErrorDeps('No se pudieron cargar los datos necesarios. Verifique la conexión con el servidor.')
+      } finally {
+        setLoadingDeps(false)
+      }
+    }
+
+    cargarDependencias()
+  }, [])
+
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
     }))
-  }
+  }, [])
 
-  // Enviar el formulario
   const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -43,15 +62,24 @@ const ComercializadoresRegistroView = () => {
     })
 
     try {
-      const response = await axiosInstance.post('/comercializadores', formData)
+      const payload = {
+        rif: formData.rif,
+        razon_social: formData.razon_social,
+        direccion_fiscal: formData.direccion_fiscal,
+        telefono: formData.telefono,
+        email: formData.email,
+        estado: formData.estado,
+        representantes: formData.representantes.filter((r) => r.id_persona),
+      }
+
+      const response = await createComercializador(payload)
 
       setModalState({
         visible: true,
         type: 'success',
-        message: response.data.message || 'Comercializador registrado exitosamente.',
+        message: response.message || 'Comercializador registrado exitosamente.',
       })
 
-      // Limpiar formulario tras éxito
       setFormData({
         rif: '',
         razon_social: '',
@@ -59,9 +87,10 @@ const ComercializadoresRegistroView = () => {
         telefono: '',
         email: '',
         estado: 'activo',
+        representantes: [{ id_persona: '', cargo: '' }],
       })
     } catch (err) {
-      const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al registrar el comercializador.');
+      const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al registrar el comercializador.')
 
       setModalState({
         visible: true,
@@ -77,7 +106,7 @@ const ComercializadoresRegistroView = () => {
         visible={modalState.visible}
         type={modalState.type}
         message={modalState.message}
-        onClose={() => setModalState({ ...modalState, visible: false })}
+        onClose={() => setModalState((prev) => ({ ...prev, visible: false }))}
       />
 
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
@@ -88,11 +117,17 @@ const ComercializadoresRegistroView = () => {
           </p>
         </CCardHeader>
         <CCardBody>
-          <ComercializadoresForm
-            formData={formData}
-            handleInputChange={handleInputChange}
-            onSubmit={handleSubmit}
-          />
+          {errorDeps ? (
+            <CAlert color="danger">{errorDeps}</CAlert>
+          ) : (
+            <ComercializadoresForm
+              formData={formData}
+              handleInputChange={handleInputChange}
+              onSubmit={handleSubmit}
+              personas={personas}
+              loadingDeps={loadingDeps}
+            />
+          )}
         </CCardBody>
       </CCard>
     </CContainer>

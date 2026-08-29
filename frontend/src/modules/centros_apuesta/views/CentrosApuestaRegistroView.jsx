@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { CCard, CCardBody, CCardHeader, CContainer, CAlert } from '@coreui/react'
-import axiosInstance from '../../../api/axiosInstance'
+import { createCentroApuesta, getCentrosApuestaActivos } from '../services/centros_apuesta.service'
+import { getComercializadoresActivos } from '../../comercializadores/services/comercializadores.service'
+import { getPersonas } from '../../personas/services/personas.service'
 import FeedbackModal from '../../../components/FeedbackModal'
 import CentrosApuestaForm from '../components/CentrosApuestaForm'
 import { extractErrorMessage } from '../../../utils/errorHandler'
 
 const CentrosApuestaRegistroView = () => {
-  // Estado del formulario
   const [formData, setFormData] = useState({
     id_comercializador: '',
     nombre_agencia: '',
@@ -15,31 +16,28 @@ const CentrosApuestaRegistroView = () => {
     representantes: [{ id_persona: '', cargo: '' }],
   })
 
-  // Datos para los selects dinámicos
   const [comercializadores, setComercializadores] = useState([])
   const [personas, setPersonas] = useState([])
   const [loadingDeps, setLoadingDeps] = useState(true)
   const [errorDeps, setErrorDeps] = useState(null)
 
-  // Estado para los modales
   const [modalState, setModalState] = useState({
     visible: false,
     type: '',
     message: '',
   })
 
-  // Cargar comercializadores y personas en paralelo al montar el componente
   useEffect(() => {
     const cargarDependencias = async () => {
       setLoadingDeps(true)
       setErrorDeps(null)
       try {
-        const [resComercializadores, resPersonas] = await Promise.all([
-          axiosInstance.get('/comercializadores'),
-          axiosInstance.get('/personas'),
+        const [dataComercializadores, dataPersonas] = await Promise.all([
+          getComercializadoresActivos(),
+          getPersonas(),
         ])
-        setComercializadores(resComercializadores.data || [])
-        setPersonas(resPersonas.data || [])
+        setComercializadores(dataComercializadores || [])
+        setPersonas(dataPersonas || [])
       } catch {
         setErrorDeps('No se pudieron cargar los datos necesarios. Verifique la conexión con el servidor.')
       } finally {
@@ -50,16 +48,14 @@ const CentrosApuestaRegistroView = () => {
     cargarDependencias()
   }, [])
 
-  // Manejador de cambios en los inputs
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
     }))
-  }
+  }, [])
 
-  // Enviar el formulario
   const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -70,7 +66,6 @@ const CentrosApuestaRegistroView = () => {
     })
 
     try {
-      // Construir payload con representantes
       const payload = {
         id_comercializador: formData.id_comercializador,
         nombre_agencia: formData.nombre_agencia,
@@ -79,15 +74,14 @@ const CentrosApuestaRegistroView = () => {
         representantes: formData.representantes.filter((r) => r.id_persona),
       }
 
-      const response = await axiosInstance.post('/centros_apuesta', payload)
+      const response = await createCentroApuesta(payload)
 
       setModalState({
         visible: true,
         type: 'success',
-        message: response.data.message || 'Centro de apuesta registrado exitosamente.',
+        message: response.message || 'Centro de apuesta registrado exitosamente.',
       })
 
-      // Limpiar formulario tras éxito
       setFormData({
         id_comercializador: '',
         nombre_agencia: '',
@@ -96,7 +90,7 @@ const CentrosApuestaRegistroView = () => {
         representantes: [{ id_persona: '', cargo: '' }],
       })
     } catch (err) {
-      const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al registrar el centro de apuesta.');
+      const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al registrar el centro de apuesta.')
 
       setModalState({
         visible: true,
@@ -112,7 +106,7 @@ const CentrosApuestaRegistroView = () => {
         visible={modalState.visible}
         type={modalState.type}
         message={modalState.message}
-        onClose={() => setModalState({ ...modalState, visible: false })}
+        onClose={() => setModalState((prev) => ({ ...prev, visible: false }))}
       />
 
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">

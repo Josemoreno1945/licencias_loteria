@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   CContainer,
   CCard,
@@ -10,7 +10,6 @@ import {
   CTableHeaderCell,
   CTableBody,
   CTableDataCell,
-  CBadge,
   CSpinner,
   CAlert,
   CButton,
@@ -41,13 +40,13 @@ const PersonasListaView = () => {
   const { data: personas, loading, error, refetch } = useFetch('/personas')
 
   const location = useLocation()
-  const [modalDataId, setModalDataId] = React.useState(null)
-  const [modalEditarPersonaId, setModalEditarPersonaId] = React.useState(null)
-  const [paginaActual, setPaginaActual] = React.useState(1)
-  const [busqueda, setBusqueda] = React.useState('')
+  const [modalDataId, setModalDataId] = useState(null)
+  const [modalEditarPersonaId, setModalEditarPersonaId] = useState(null)
+  const [paginaActual, setPaginaActual] = useState(1)
+  const [busqueda, setBusqueda] = useState('')
   const debouncedBusqueda = useDebounce(busqueda, 400)
 
-  const personasFiltradas = React.useMemo(
+  const personasFiltradas = useMemo(
     () => filterBySearch(personas, debouncedBusqueda, PERSONAS_SEARCH_FIELDS),
     [personas, debouncedBusqueda]
   )
@@ -57,11 +56,11 @@ const PersonasListaView = () => {
   const startIndex = (paginaActual - 1) * PAGE_SIZE
   const personasPaginadas = personasFiltradas?.slice(startIndex, startIndex + PAGE_SIZE) || []
 
-  React.useEffect(() => {
+  useEffect(() => {
     setPaginaActual(1)
   }, [debouncedBusqueda])
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (location.state?.openModalId) {
       setModalDataId(location.state.openModalId)
       // Limpiar el state para que no se reabra al recargar
@@ -162,11 +161,7 @@ const PersonasListaView = () => {
                         </CTableDataCell>
                         <CTableDataCell>{persona.razon_social}</CTableDataCell>
                         <CTableDataCell>
-                          <CBadge
-                            color={persona.tipo_persona === 'natural' ? 'info' : 'warning'}
-                          >
-                            {persona.tipo_persona === 'natural' ? 'Natural' : 'Juridica'}
-                          </CBadge>
+                          {persona.tipo_persona === 'natural' ? 'Natural' : 'Jurídica'}
                         </CTableDataCell>
                          <CTableDataCell>
                            {persona.telefono || <span className="text-muted">—</span>}

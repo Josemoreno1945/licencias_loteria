@@ -5,9 +5,8 @@ import {
   CModalTitle,
   CModalBody,
   CModalFooter,
-  CButton,
-  CBadge,
-  CSpinner,
+   CButton,
+   CSpinner,
   CAlert,
   CRow,
   CCol,
@@ -57,20 +56,21 @@ const PersonaDetalleModal = ({ idPersona, onClose }) => {
             <h5 className="text-primary fw-semibold mb-3">Información Principal</h5>
             <CRow className="gy-3 mb-4">
               <CCol md={6}>
+                <CFormLabel className="text-muted small fw-semibold mb-1">Tipo de Persona</CFormLabel>
+                <CFormInput
+                  type="text"
+                  readOnly
+                  className="fw-medium"
+                  value={data.tipo_persona === 'natural' ? 'Persona Natural' : 'Persona Jurídica'}
+                />
+              </CCol>
+              <CCol md={6}>
                 <CFormLabel className="text-muted small fw-semibold mb-1">CI / RIF</CFormLabel>
                 <CFormInput type="text" value={data.ci_rif || ''} readOnly className="bg-light" />
               </CCol>
-              <CCol md={6}>
+              <CCol md={12}>
                 <CFormLabel className="text-muted small fw-semibold mb-1">Nombre / Razón Social</CFormLabel>
                 <CFormInput type="text" value={data.razon_social || ''} readOnly className="bg-light fw-semibold" />
-              </CCol>
-              <CCol md={12}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Tipo de Persona</CFormLabel>
-                <div>
-                  <CBadge color={data.tipo_persona === 'natural' ? 'info' : 'warning'} className="fs-6 px-3 py-2">
-                    {data.tipo_persona === 'natural' ? 'Persona Natural' : 'Persona Jurídica'}
-                  </CBadge>
-                </div>
               </CCol>
             </CRow>
 

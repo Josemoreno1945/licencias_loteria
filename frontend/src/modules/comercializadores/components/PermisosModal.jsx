@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   CModal,
   CModalHeader,
@@ -29,16 +29,16 @@ import { extractErrorMessage } from '../../../utils/errorHandler'
 import FeedbackModal from '../../../components/FeedbackModal'
 
 const PermisosModal = ({ visible, comercializador, user, onClose, onPermisoCreado }) => {
-  const [permisos, setPermisos] = React.useState([])
-  const [loadingPermisos, setLoadingPermisos] = React.useState(false)
-  const [errorPermisos, setErrorPermisos] = React.useState(null)
+  const [permisos, setPermisos] = useState([])
+  const [loadingPermisos, setLoadingPermisos] = useState(false)
+  const [errorPermisos, setErrorPermisos] = useState(null)
 
-  const [addPermisoModal, setAddPermisoModal] = React.useState(false)
-  const [juegos, setJuegos] = React.useState([])
-  const [permisoFormData, setPermisoFormData] = React.useState({ id_juego: '', fecha_inicio: '', fecha_fin: '', estado: 'activo' })
-  const [feedbackModal, setFeedbackModal] = React.useState({ visible: false, type: '', message: '' })
+  const [addPermisoModal, setAddPermisoModal] = useState(false)
+  const [juegos, setJuegos] = useState([])
+  const [permisoFormData, setPermisoFormData] = useState({ id_juego: '', fecha_inicio: '', fecha_fin: '', estado: 'activo' })
+  const [feedbackModal, setFeedbackModal] = useState({ visible: false, type: '', message: '' })
 
-  const handleVerPermisos = React.useCallback(async () => {
+  const handleVerPermisos = useCallback(async () => {
     setLoadingPermisos(true)
     setErrorPermisos(null)
     try {
@@ -51,7 +51,7 @@ const PermisosModal = ({ visible, comercializador, user, onClose, onPermisoCread
     }
   }, [comercializador])
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (visible && comercializador) {
       handleVerPermisos()
     }

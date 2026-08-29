@@ -76,7 +76,10 @@ export const crear_c_comercializador = async (req, res, next) => {
     }
 
     const rows = await crear_comercializador(data);
-    return res.json(rows);
+    return res.status(201).json({
+      message: "Comercializador registrado exitosamente",
+      comercializador: rows,
+    });
   } catch (error) {
     next(error);
   }
@@ -139,7 +142,10 @@ export const actualizar_comercializador = async (req, res, next) => {
     }
 
     const rows = await actualizar_comercializador_id(id, data);
-    res.json(rows);
+    res.json({
+      message: "Comercializador actualizado exitosamente",
+      comercializador: rows[0],
+    });
   } catch (error) {
     next(error);
   }

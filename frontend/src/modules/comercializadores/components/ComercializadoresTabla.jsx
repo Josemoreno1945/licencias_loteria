@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   CCard,
   CCardBody,
@@ -15,7 +15,7 @@ import {
   CButton,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilPeople, cilPlus, cilMagnifyingGlass,cilPencil ,cilGamepad} from '@coreui/icons'
+import { cilPlus, cilMagnifyingGlass, cilPencil } from '@coreui/icons'
 import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
 import Buscador from '../../../components/Buscador'
@@ -36,23 +36,22 @@ const ComercializadoresTabla = ({
   refetch,
   user,
   onNavegarRegistro,
-   onVerRepresentantes,
+   onVerDetalle,
    onEditar,
-  onVerDetalle,
   paginaActual,
   totalPaginas,
   onPageChange,
 }) => {
   const PAGE_SIZE = 10
 
-  const [busqueda, setBusqueda] = React.useState('')
+  const [busqueda, setBusqueda] = useState('')
   const debouncedBusqueda = useDebounce(busqueda, 400)
-  const comercializadoresFiltrados = React.useMemo(
+  const comercializadoresFiltrados = useMemo(
     () => filterBySearch(comercializadores, debouncedBusqueda, COMERCIALIZADORES_SEARCH_FIELDS),
     [comercializadores, debouncedBusqueda]
   )
 
-  React.useEffect(() => {
+  useEffect(() => {
     onPageChange(1)
   }, [debouncedBusqueda])
 
@@ -115,34 +114,49 @@ const ComercializadoresTabla = ({
               <>
                 <CTable hover responsive striped align="middle" className="mb-0">
                    <CTableHead>
-                     <CTableRow>
-                       <CTableHeaderCell>#</CTableHeaderCell>
-                       <CTableHeaderCell>RIF</CTableHeaderCell>
-                       <CTableHeaderCell>Razón Social</CTableHeaderCell>
-                       <CTableHeaderCell>Teléfono</CTableHeaderCell>
-                       <CTableHeaderCell>Email</CTableHeaderCell>
-                       <CTableHeaderCell>Estado</CTableHeaderCell>
-                       <CTableHeaderCell className="text-center">Detalle</CTableHeaderCell>
-                       <CTableHeaderCell className="text-center">Representante</CTableHeaderCell>
-                       <CTableHeaderCell className="text-center">Editar</CTableHeaderCell>
-                     </CTableRow>
-                   </CTableHead>
-                  <CTableBody>
-                    {comercializadoresPaginados.map((com, index) => (
-                      <CTableRow key={com.id_comercializadores}>
-                        <CTableDataCell className="text-muted small">{startIndex + index + 1}</CTableDataCell>
-                        <CTableDataCell className="fw-semibold">{com.rif}</CTableDataCell>
-                        <CTableDataCell>{com.razon_social}</CTableDataCell>
-                        <CTableDataCell>
-                          {com.telefono || <span className="text-muted">—</span>}
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          {com.email || <span className="text-muted">—</span>}
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          <CBadge color={com.estado === 'activo' ? 'success' : 'secondary'}>
-                            {com.estado === 'activo' ? 'Activo' : 'Inactivo'}
-                          </CBadge>
+                      <CTableRow>
+                        <CTableHeaderCell>#</CTableHeaderCell>
+                        <CTableHeaderCell>RIF</CTableHeaderCell>
+                        <CTableHeaderCell>Razón Social</CTableHeaderCell>
+                        <CTableHeaderCell>Teléfono</CTableHeaderCell>
+                        <CTableHeaderCell>Email</CTableHeaderCell>
+                        <CTableHeaderCell>Representante Legal</CTableHeaderCell>
+                        <CTableHeaderCell>Estado</CTableHeaderCell>
+                        <CTableHeaderCell className="text-center">Detalle</CTableHeaderCell>
+                        <CTableHeaderCell className="text-center">Editar</CTableHeaderCell>
+                      </CTableRow>
+                    </CTableHead>
+                   <CTableBody>
+                     {comercializadoresPaginados.map((com, index) => (
+                       <CTableRow key={com.id_comercializadores}>
+                         <CTableDataCell className="text-muted small">{startIndex + index + 1}</CTableDataCell>
+                         <CTableDataCell className="fw-semibold">{com.rif}</CTableDataCell>
+                         <CTableDataCell>{com.razon_social}</CTableDataCell>
+                         <CTableDataCell>
+                           {com.telefono || <span className="text-muted">—</span>}
+                         </CTableDataCell>
+                         <CTableDataCell>
+                           {com.email || <span className="text-muted">—</span>}
+                         </CTableDataCell>
+                         <CTableDataCell>
+                           {com.representantes && com.representantes.length > 0 ? (
+                             <ul className="list-unstyled mb-0">
+                               {com.representantes.map((rep, idx) => (
+                                 <li key={idx} className="mb-1">
+                                   <span className="fw-semibold small">{rep.ci_rif}</span>
+                                   <br />
+                                   <span className="text-muted small">{rep.razon_social}</span>
+                                 </li>
+                               ))}
+                             </ul>
+                           ) : (
+                             <span className="text-muted">—</span>
+                           )}
+                         </CTableDataCell>
+                         <CTableDataCell>
+                           <CBadge color={com.estado === 'activo' ? 'success' : 'secondary'}>
+                             {com.estado === 'activo' ? 'Activo' : 'Inactivo'}
+                           </CBadge>
                          </CTableDataCell>
                          <CTableDataCell className="text-center">
                            <CButton
@@ -152,16 +166,6 @@ const ComercializadoresTabla = ({
                              onClick={() => onVerDetalle(com)}
                            >
                              <CIcon icon={cilMagnifyingGlass} />
-                           </CButton>
-                         </CTableDataCell>
-                         <CTableDataCell className="text-center">
-                           <CButton
-                             color="info"
-                             variant="outline"
-                             size="sm"
-                             onClick={() => onVerRepresentantes(com)}
-                           >
-                             <CIcon icon={cilPeople} />
                            </CButton>
                          </CTableDataCell>
                          <CTableDataCell className="text-center">
@@ -176,12 +180,9 @@ const ComercializadoresTabla = ({
                              </CButton>
                            )}
                          </CTableDataCell>
-                        <CTableDataCell className="text-center">
-                          
-                        </CTableDataCell>
-                      </CTableRow>
-                    ))}
-                  </CTableBody>
+                       </CTableRow>
+                     ))}
+                   </CTableBody>
                 </CTable>
                 <Paginacion
                   currentPage={paginaActual}

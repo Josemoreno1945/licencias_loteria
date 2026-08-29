@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../store/AuthContext'
+import { extractErrorMessage } from '../../../utils/errorHandler'
 import {
   CButton,
   CCard,
@@ -22,7 +23,6 @@ import {
   cilUser,
   cilLockLocked,
   cilEnvelopeClosed,
-  cilWarning,
   cilCheckCircle,
 } from '@coreui/icons'
 import '../styles/auth.css'
@@ -79,15 +79,8 @@ const LoginView = () => {
       setActionLabel('')
       navigate('/dashboard')
     } catch (err) {
-      const errData = err?.response?.data
-      if (errData?.error) {
-        setMensajeError(errData.error)
-      } else if (errData?.errors) {
-        const msgs = errData.errors.map((issue) => issue.message)
-        setMensajeError(msgs)
-      } else {
-        setMensajeError('Credenciales inválidas. Intenta de nuevo.')
-      }
+      const errorMsg = extractErrorMessage(err, 'Credenciales inválidas. Intenta de nuevo.')
+      setMensajeError(errorMsg)
       setModalError(true)
     } finally {
       setLoadingAction(false)

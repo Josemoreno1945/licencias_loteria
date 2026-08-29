@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   CModal,
   CModalHeader,
@@ -31,19 +31,17 @@ import { extractErrorMessage } from '../../../utils/errorHandler'
 import FeedbackModal from '../../../components/FeedbackModal'
 
 const RepresentantesModal = ({ visible, comercializador, user, onClose, onRepresentanteCreado }) => {
-  const [representantes, setRepresentantes] = React.useState([])
-  const [loadingReps, setLoadingReps] = React.useState(false)
-  const [errorReps, setErrorReps] = React.useState(null)
+  const [representantes, setRepresentantes] = useState([])
+  const [loadingReps, setLoadingReps] = useState(false)
+  const [errorReps, setErrorReps] = useState(null)
 
-  // Modal de asignación: cuando está abierto, el modal padre se oculta temporalmente
-  // para evitar solapamientos. parentVisible guarda el estado previo para restaurarlo.
-  const [addRepModal, setAddRepModal] = React.useState(false)
-  const [parentVisible, setParentVisible] = React.useState(true)
-  const [personas, setPersonas] = React.useState([])
-  const [repFormData, setRepFormData] = React.useState({ id_persona: '', cargo: '', estado: 'activo' })
-  const [feedbackModal, setFeedbackModal] = React.useState({ visible: false, type: '', message: '' })
+  const [addRepModal, setAddRepModal] = useState(false)
+  const [parentVisible, setParentVisible] = useState(true)
+  const [personas, setPersonas] = useState([])
+  const [repFormData, setRepFormData] = useState({ id_persona: '', cargo: '', estado: 'activo' })
+  const [feedbackModal, setFeedbackModal] = useState({ visible: false, type: '', message: '' })
 
-  const handleVerRepresentantes = React.useCallback(async () => {
+  const handleVerRepresentantes = useCallback(async () => {
     setLoadingReps(true)
     setErrorReps(null)
     try {
@@ -56,7 +54,7 @@ const RepresentantesModal = ({ visible, comercializador, user, onClose, onRepres
     }
   }, [comercializador])
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (visible && comercializador) {
       handleVerRepresentantes()
     }

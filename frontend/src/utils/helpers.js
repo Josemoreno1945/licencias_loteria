@@ -8,7 +8,7 @@ export const formatDate = (dateString) => {
 }
 
 export const capitalize = (str) => {
-  if (!str) return ''
+  if (!str || typeof str !== 'string') return ''
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
 }
 
@@ -20,7 +20,7 @@ export const removeToken = () => localStorage.removeItem('token')
 
 export const filterBySearch = (items, searchTerm, fields) => {
   if (!items || !Array.isArray(items)) return []
-  if (!searchTerm || searchTerm.trim() === '') return items
+  if (!searchTerm || typeof searchTerm !== 'string' || searchTerm.trim() === '') return items
   const term = searchTerm.toLowerCase().trim()
   return items.filter((item) =>
     fields.some((field) => {

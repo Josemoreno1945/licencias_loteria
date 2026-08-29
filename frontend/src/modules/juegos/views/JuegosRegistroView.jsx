@@ -1,66 +1,60 @@
-import React, { useState } from 'react';
-import { CCard, CCardBody, CCardHeader, CContainer } from '@coreui/react';
-import axiosInstance from '../../../api/axiosInstance';
-import FeedbackModal from '../../../components/FeedbackModal';
-import JuegosForm from '../components/JuegosForm';
-import { extractErrorMessage } from '../../../utils/errorHandler';
+import { useState, useCallback } from 'react'
+import { CCard, CCardBody, CCardHeader, CContainer } from '@coreui/react'
+import { createJuego } from '../services/juegos.service'
+import FeedbackModal from '../../../components/FeedbackModal'
+import JuegosForm from '../components/JuegosForm'
+import { extractErrorMessage } from '../../../utils/errorHandler'
 
 const JuegosRegistroView = () => {
-  // Estado del formulario
   const [formData, setFormData] = useState({
     nombre: '',
-  });
+  })
 
-  // Estados para los modales
   const [modalState, setModalState] = useState({
     visible: false,
-    type: '', // 'loading', 'success', 'error'
+    type: '',
     message: '',
-  });
+  })
 
-  // Manejador de cambios en los inputs
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  const handleInputChange = useCallback((e) => {
+    const { name, value } = e.target
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
-    }));
-  };
+    }))
+  }, [])
 
-  // Enviar el formulario
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
     setModalState({
       visible: true,
       type: 'loading',
       message: 'Registrando juego...',
-    });
+    })
 
     try {
-      const response = await axiosInstance.post('/juegos', formData);
+      const response = await createJuego(formData)
 
       setModalState({
         visible: true,
         type: 'success',
-        message: response.data.message || 'Juego registrado exitosamente.',
-      });
+        message: response.message || 'Juego registrado exitosamente.',
+      })
 
-      // Limpiar formulario tras éxito
       setFormData({
         nombre: '',
-      });
-
+      })
     } catch (err) {
-      const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al registrar el juego.');
+      const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al registrar el juego.')
 
       setModalState({
         visible: true,
         type: 'error',
         message: errorMsg,
-      });
+      })
     }
-  };
+  }
 
   return (
     <CContainer fluid>
@@ -68,7 +62,7 @@ const JuegosRegistroView = () => {
         visible={modalState.visible}
         type={modalState.type}
         message={modalState.message}
-        onClose={() => setModalState({ ...modalState, visible: false })}
+        onClose={() => setModalState((prev) => ({ ...prev, visible: false }))}
       />
 
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
@@ -87,7 +81,7 @@ const JuegosRegistroView = () => {
         </CCardBody>
       </CCard>
     </CContainer>
-  );
-};
+  )
+}
 
-export default JuegosRegistroView;
+export default JuegosRegistroView

@@ -1,12 +1,11 @@
-import React, { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { CCard, CCardBody, CCardHeader, CContainer } from '@coreui/react'
-import axiosInstance from '../../../api/axiosInstance'
+import { createUsuario } from '../services/usuarios.service'
 import FeedbackModal from '../../../components/FeedbackModal'
 import UsuariosForm from '../components/UsuariosForm'
 import { extractErrorMessage } from '../../../utils/errorHandler'
 
 const UsuariosRegistroView = () => {
-  // Estado del formulario
   const [formData, setFormData] = useState({
     nombre_usuario: '',
     email: '',
@@ -15,23 +14,20 @@ const UsuariosRegistroView = () => {
     estado: 'activo',
   })
 
-  // Estados para los modales
   const [modalState, setModalState] = useState({
     visible: false,
-    type: '', // 'loading', 'success', 'error'
+    type: '',
     message: '',
   })
 
-  // Manejador de cambios en los inputs
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
     }))
-  }
+  }, [])
 
-  // Enviar el formulario
   const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -42,15 +38,14 @@ const UsuariosRegistroView = () => {
     })
 
     try {
-      const response = await axiosInstance.post('/usuarios', formData)
+      const response = await createUsuario(formData)
 
       setModalState({
         visible: true,
         type: 'success',
-        message: response.data.message || 'Usuario registrado exitosamente.',
+        message: response.message || 'Usuario registrado exitosamente.',
       })
 
-      // Limpiar formulario tras exito
       setFormData({
         nombre_usuario: '',
         email: '',
@@ -59,7 +54,7 @@ const UsuariosRegistroView = () => {
         estado: 'activo',
       })
     } catch (err) {
-      const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al registrar el usuario.');
+      const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al registrar el usuario.')
 
       setModalState({
         visible: true,
@@ -75,7 +70,7 @@ const UsuariosRegistroView = () => {
         visible={modalState.visible}
         type={modalState.type}
         message={modalState.message}
-        onClose={() => setModalState({ ...modalState, visible: false })}
+        onClose={() => setModalState((prev) => ({ ...prev, visible: false }))}
       />
 
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { register as registerService } from '../services/auth.service'
+import { extractErrorMessage } from '../../../utils/errorHandler'
 import {
   CButton,
   CCard,
@@ -121,15 +122,8 @@ const RegisterView = () => {
       setMensajeExito(data?.message || 'Usuario registrado exitosamente.')
       setModalExito(true)
     } catch (err) {
-      const errData = err?.response?.data
-      if (errData?.error) {
-        setMensajeError(errData.error)
-      } else if (errData?.errors) {
-        const msgs = errData.errors.map((issue) => issue.message)
-        setMensajeError(msgs)
-      } else {
-        setMensajeError('Ocurrió un error al registrar. Intenta de nuevo.')
-      }
+      const errorMsg = extractErrorMessage(err, 'Ocurrió un error al registrar. Intenta de nuevo.')
+      setMensajeError(errorMsg)
       setModalError(true)
     } finally {
       setLoadingAction(false)

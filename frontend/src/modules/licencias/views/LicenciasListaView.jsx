@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   CContainer,
   CCard,
@@ -42,13 +42,13 @@ const LicenciasListaView = () => {
   const { data: licencias, loading, error, refetch } = useFetch('/licencias')
 
   const location = useLocation()
-  const [modalDataId, setModalDataId] = React.useState(null)
-  const [modalEditarId, setModalEditarId] = React.useState(null)
-  const [paginaActual, setPaginaActual] = React.useState(1)
-  const [busqueda, setBusqueda] = React.useState('')
+  const [modalDataId, setModalDataId] = useState(null)
+  const [modalEditarId, setModalEditarId] = useState(null)
+  const [paginaActual, setPaginaActual] = useState(1)
+  const [busqueda, setBusqueda] = useState('')
   const debouncedBusqueda = useDebounce(busqueda, 400)
 
-  const licenciasFiltradas = React.useMemo(
+  const licenciasFiltradas = useMemo(
     () => filterBySearch(licencias, debouncedBusqueda, LICENCIAS_SEARCH_FIELDS),
     [licencias, debouncedBusqueda]
   )
@@ -58,11 +58,11 @@ const LicenciasListaView = () => {
   const startIndex = (paginaActual - 1) * PAGE_SIZE
   const licenciasPaginadas = licenciasFiltradas?.slice(startIndex, startIndex + PAGE_SIZE) || []
 
-  React.useEffect(() => {
+  useEffect(() => {
     setPaginaActual(1)
   }, [debouncedBusqueda])
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (location.state?.openModalId) {
       setModalDataId(location.state.openModalId)
       window.history.replaceState({}, '')
@@ -104,7 +104,7 @@ const LicenciasListaView = () => {
               <CSpinner />
             </div>
           )}
-          {error && <CAlert color="danger">{error}</CAlert>}
+          {error && !loading && <CAlert color="danger">{error}</CAlert>}
           {!loading && !error && licenciasFiltradas?.length === 0 && (
             <CAlert color="info">
               {licencias?.length === 0

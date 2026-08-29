@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import {
   CContainer,
   CRow,
@@ -113,7 +113,7 @@ const DashboardView = () => {
   const { data: proximos, loading: loadingProximos } = useFetch('/dashboard/proximos-vencer')
   const { data: licenciasCat, loading: loadingLicCat } = useFetch('/dashboard/licencias-por-categoria')
 
-  const personas = useMemo(() => resumen || {}, [resumen])
+  const personas = resumen || {}
 
   return (
     <CContainer fluid className="px-3 px-md-4">

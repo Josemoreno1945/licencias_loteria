@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   CContainer,
   CCard,
@@ -38,12 +38,12 @@ const PARTICIPACIONES_SEARCH_FIELDS = [
 const ParticipacionesListaView = () => {
   const navigate = useNavigate()
   const { data: participaciones, loading, error, refetch } = useFetch('/participaciones')
-  const [paginaActual, setPaginaActual] = React.useState(1)
-  const [busqueda, setBusqueda] = React.useState('')
-  const [modalDetalleId, setModalDetalleId] = React.useState(null)
+  const [paginaActual, setPaginaActual] = useState(1)
+  const [busqueda, setBusqueda] = useState('')
+  const [modalDetalleId, setModalDetalleId] = useState(null)
   const debouncedBusqueda = useDebounce(busqueda, 400)
 
-  const participacionesFiltradas = React.useMemo(
+  const participacionesFiltradas = useMemo(
     () => filterBySearch(participaciones, debouncedBusqueda, PARTICIPACIONES_SEARCH_FIELDS),
     [participaciones, debouncedBusqueda]
   )
@@ -53,7 +53,7 @@ const ParticipacionesListaView = () => {
   const startIndex = (paginaActual - 1) * PAGE_SIZE
   const participacionesPaginadas = participacionesFiltradas?.slice(startIndex, startIndex + PAGE_SIZE) || []
 
-  React.useEffect(() => {
+  useEffect(() => {
     setPaginaActual(1)
   }, [debouncedBusqueda])
 

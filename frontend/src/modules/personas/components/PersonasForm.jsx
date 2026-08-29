@@ -22,9 +22,9 @@ import {
 const PersonasForm = ({ formData, handleInputChange, onSubmit, isEditMode }) => {
   return (
     <CForm onSubmit={onSubmit}>
-      <CRow className="mb-4">
-        {/* Tipo de Persona */}
-        <CCol md={6} className="mb-3">
+      {/* Datos de identificación */}
+      <CRow className="mb-3 g-3">
+        <CCol md={6} className="mb-0">
           <CFormLabel>Tipo de Persona</CFormLabel>
           <CInputGroup>
             <CInputGroupText>
@@ -43,8 +43,7 @@ const PersonasForm = ({ formData, handleInputChange, onSubmit, isEditMode }) => 
           </CInputGroup>
         </CCol>
 
-        {/* CI o RIF */}
-        <CCol md={6} className="mb-3">
+        <CCol md={6} className="mb-0">
           <CFormLabel>
             {formData.tipo_persona === 'juridica' ? 'RIF' : 'Cédula de Identidad'}
           </CFormLabel>
@@ -64,9 +63,9 @@ const PersonasForm = ({ formData, handleInputChange, onSubmit, isEditMode }) => 
         </CCol>
       </CRow>
 
-      <CRow className="mb-4">
-        {/* Razón Social / Nombre */}
-        <CCol md={12} className="mb-3">
+      {/* Nombres / Razón Social */}
+      <CRow className="mb-3 g-3">
+        <CCol md={12} className="mb-0">
           <CFormLabel>
             {formData.tipo_persona === 'juridica' ? 'Razón Social' : 'Nombre Completo'}
           </CFormLabel>
@@ -86,28 +85,9 @@ const PersonasForm = ({ formData, handleInputChange, onSubmit, isEditMode }) => 
         </CCol>
       </CRow>
 
-      <CRow className="mb-4">
-        {/* Dirección Fiscal */}
-        <CCol md={12} className="mb-3">
-          <CFormLabel>Dirección Fiscal</CFormLabel>
-          <CInputGroup>
-            <CInputGroupText>
-              <CIcon icon={cilBuilding} />
-            </CInputGroupText>
-            <CFormInput
-              type="text"
-              name="direccion_fiscal"
-              placeholder="Dirección fiscal completa"
-              value={formData.direccion_fiscal}
-              onChange={handleInputChange}
-            />
-          </CInputGroup>
-        </CCol>
-      </CRow>
-
-      <CRow className="mb-4">
-        {/* Teléfono */}
-        <CCol md={6} className="mb-3">
+      {/* Datos de contacto */}
+      <CRow className="mb-3 g-3">
+        <CCol md={6} className="mb-0">
           <CFormLabel>Teléfono</CFormLabel>
           <CInputGroup>
             <CInputGroupText>
@@ -123,8 +103,7 @@ const PersonasForm = ({ formData, handleInputChange, onSubmit, isEditMode }) => 
           </CInputGroup>
         </CCol>
 
-        {/* Email */}
-        <CCol md={6} className="mb-3">
+        <CCol md={6} className="mb-0">
           <CFormLabel>Correo Electrónico (Opcional)</CFormLabel>
           <CInputGroup>
             <CInputGroupText>
@@ -135,6 +114,25 @@ const PersonasForm = ({ formData, handleInputChange, onSubmit, isEditMode }) => 
               name="email"
               placeholder="ejemplo@correo.com"
               value={formData.email}
+              onChange={handleInputChange}
+            />
+          </CInputGroup>
+        </CCol>
+      </CRow>
+
+      {/* Dirección Fiscal */}
+      <CRow className="mb-3 g-3">
+        <CCol md={12} className="mb-0">
+          <CFormLabel>Dirección Fiscal</CFormLabel>
+          <CInputGroup>
+            <CInputGroupText>
+              <CIcon icon={cilBuilding} />
+            </CInputGroupText>
+            <CFormInput
+              type="text"
+              name="direccion_fiscal"
+              placeholder="Dirección fiscal completa"
+              value={formData.direccion_fiscal}
               onChange={handleInputChange}
             />
           </CInputGroup>

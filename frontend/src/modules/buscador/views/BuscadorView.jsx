@@ -35,17 +35,19 @@ import { getCachedSearch, setCachedSearch } from '../../../utils/searchCache'
 
 const normalizeCiRif = (val) => {
   if (!val) return ""
-  return val.toString().trim().toUpperCase().replace(/\s+/g, "")
+  const str = String(val)
+  return str.trim().toUpperCase().replace(/\s+/g, "")
 }
 
 const HighlightText = ({ text, highlight }) => {
-  if (!highlight || !text) return text
-  const regex = new RegExp(`(${highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
-  const parts = text.split(regex)
+  if (!highlight || !text || typeof text !== 'string') return text
+  const escaped = highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const parts = text.split(new RegExp(`(${escaped})`, 'gi'))
+  const lowerHighlight = highlight.toLowerCase()
   return (
     <>
       {parts.map((part, i) =>
-        regex.test(part) ? (
+        part.toLowerCase() === lowerHighlight ? (
           <mark key={i} style={{ backgroundColor: '#fff3cd', padding: '0 2px', borderRadius: '2px' }}>{part}</mark>
         ) : (
           part

@@ -1,5 +1,16 @@
 import { z } from "zod";
 
+// Esquema para cada representante legal
+const representante_schema = z.object({
+  id_persona: z
+    .string({ required_error: "La persona es requerida" })
+    .min(1, "La persona es requerida"),
+  cargo: z
+    .string()
+    .max(100, "El cargo no puede exceder los 100 caracteres")
+    .optional(),
+});
+
 // 1. Esquema base con lo que comparten POST y PUT
 const base_comercializador_schema = z.object({
   rif: z
@@ -27,6 +38,10 @@ const base_comercializador_schema = z.object({
   email: z.string().email("Solo email valido").optional(),
 
   estado: z.enum(["activo", "inactivo"]).default("activo"),
+
+  representantes: z
+    .array(representante_schema)
+    .min(1, "Debe haber al menos un representante legal"),
 });
 
 // 2. Esquema para CREAR

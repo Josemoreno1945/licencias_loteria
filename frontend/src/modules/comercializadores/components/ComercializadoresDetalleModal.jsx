@@ -13,6 +13,8 @@ import {
   CFormInput,
   CFormLabel,
   CBadge,
+  CListGroup,
+  CListGroupItem,
 } from '@coreui/react'
 import axiosInstance from '../../../api/axiosInstance'
 
@@ -27,8 +29,8 @@ const ComercializadoresDetalleModal = ({ idComercializador, onClose }) => {
       setLoading(true)
       setError(null)
       try {
-        const res = await axiosInstance.get(`/comercializadores/${idComercializador}`)
-        setData(Array.isArray(res.data) ? res.data[0] : res.data)
+        const res = await axiosInstance.get(`/comercializadores/${idComercializador}/detalle-completo`)
+        setData(res.data)
       } catch (err) {
         setError(err.response?.data?.message || 'Error al cargar el detalle del comercializador')
       } finally {
@@ -62,11 +64,9 @@ const ComercializadoresDetalleModal = ({ idComercializador, onClose }) => {
               </CCol>
               <CCol md={6}>
                 <CFormLabel className="text-muted small fw-semibold mb-1">Estado</CFormLabel>
-                <div>
-                  <CBadge color={data.estado === 'activo' ? 'success' : 'secondary'} className="fs-6 px-3 py-2">
-                    {data.estado === 'activo' ? 'Activo' : 'Inactivo'}
-                  </CBadge>
-                </div>
+                <CBadge color={data.estado === 'activo' ? 'success' : 'secondary'} className="fs-6 px-3 py-2 mt-2 d-inline-block">
+                  {data.estado === 'activo' ? 'Activo' : 'Inactivo'}
+                </CBadge>
               </CCol>
               <CCol md={12}>
                 <CFormLabel className="text-muted small fw-semibold mb-1">Razón Social</CFormLabel>
@@ -85,6 +85,30 @@ const ComercializadoresDetalleModal = ({ idComercializador, onClose }) => {
                 <CFormInput type="text" value={data.email || 'No registrado'} readOnly className="bg-light" />
               </CCol>
             </CRow>
+
+            <h5 className="text-primary fw-semibold mb-3">Representante Legal</h5>
+            <div className="bg-light rounded-3 border p-2 mb-4">
+              {data.representantes && data.representantes.length > 0 ? (
+                <CListGroup flush>
+                  {data.representantes.map((rep, idx) => (
+                    <CListGroupItem
+                      key={rep.id_persona || idx}
+                      className="d-flex justify-content-between align-items-center bg-light border-0 border-bottom"
+                    >
+                      <div className="d-flex flex-column">
+                        <span className="fw-semibold">{rep.razon_social || '—'}</span>
+                        <span className="text-muted small">{rep.ci_rif || ''}</span>
+                      </div>
+                      <CBadge color="info" className="px-3 py-1">
+                        {rep.cargo || 'Sin cargo'}
+                      </CBadge>
+                    </CListGroupItem>
+                  ))}
+                </CListGroup>
+              ) : (
+                <span className="text-muted p-2 d-inline-block">No hay representantes registrados</span>
+              )}
+            </div>
           </div>
         )}
       </CModalBody>

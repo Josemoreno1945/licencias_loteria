@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { CCard, CCardBody, CCardHeader, CContainer } from '@coreui/react';
-import axiosInstance from '../../../api/axiosInstance';
+import { createPersona } from '../services/personas.service';
 import FeedbackModal from '../../../components/FeedbackModal';
 import PersonasForm from '../components/PersonasForm';
 import { extractErrorMessage } from '../../../utils/errorHandler';
 
-const PersonasView = () => {
-  // Estado del formulario
+const PersonasRegistroView = () => {
   const [formData, setFormData] = useState({
     tipo_persona: '',
     ci_rif: '',
@@ -16,27 +15,23 @@ const PersonasView = () => {
     email: '',
   });
 
-  // Estados para los modales
   const [modalState, setModalState] = useState({
     visible: false,
-    type: '', // 'loading', 'success', 'error'
+    type: '',
     message: '',
   });
 
-  // Manejador de cambios en los inputs
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
     }));
-  };
+  }, []);
 
-  // Enviar el formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validar tipo de persona
+
     if (!formData.tipo_persona) {
       setModalState({
         visible: true,
@@ -53,15 +48,14 @@ const PersonasView = () => {
     });
 
     try {
-      const response = await axiosInstance.post('/personas', formData);
+      const response = await createPersona(formData);
 
       setModalState({
         visible: true,
         type: 'success',
-        message: response.data.message || 'Persona registrada exitosamente.',
+        message: response.message || 'Persona registrada exitosamente.',
       });
 
-      // Limpiar formulario tras éxito
       setFormData({
         tipo_persona: '',
         ci_rif: '',
@@ -70,7 +64,6 @@ const PersonasView = () => {
         telefono: '',
         email: '',
       });
-
     } catch (err) {
       const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al registrar la persona.');
 
@@ -88,7 +81,7 @@ const PersonasView = () => {
         visible={modalState.visible}
         type={modalState.type}
         message={modalState.message}
-        onClose={() => setModalState({ ...modalState, visible: false })}
+        onClose={() => setModalState((prev) => ({ ...prev, visible: false }))}
       />
 
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
@@ -110,4 +103,4 @@ const PersonasView = () => {
   );
 };
 
-export default PersonasView;
+export default PersonasRegistroView;

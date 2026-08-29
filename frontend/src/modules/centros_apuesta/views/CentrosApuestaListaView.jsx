@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   CContainer,
   CCard,
@@ -26,8 +26,8 @@ import { useNavigate } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
 import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
-import axiosInstance from '../../../api/axiosInstance'
 import { useAuth } from '../../auth/store/AuthContext'
+import { getPermisosJuegosPorComercializador } from '../services/centros_apuesta.service'
 import CentrosApuestaDetalleModal from '../components/CentrosApuestaDetalleModal'
 import CentrosApuestaEditarModal from '../components/CentrosApuestaEditarModal'
 import Buscador from '../../../components/Buscador'
@@ -44,13 +44,13 @@ const CentrosApuestaListaView = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { data: centros, loading, error, refetch } = useFetch('/centros_apuesta')
-  const [modalVerId, setModalVerId] = React.useState(null)
-  const [modalEditarCentroId, setModalEditarCentroId] = React.useState(null)
-  const [paginaActual, setPaginaActual] = React.useState(1)
-  const [busqueda, setBusqueda] = React.useState('')
+  const [modalVerId, setModalVerId] = useState(null)
+  const [modalEditarCentroId, setModalEditarCentroId] = useState(null)
+  const [paginaActual, setPaginaActual] = useState(1)
+  const [busqueda, setBusqueda] = useState('')
   const debouncedBusqueda = useDebounce(busqueda, 400)
 
-  const centrosFiltrados = React.useMemo(
+  const centrosFiltrados = useMemo(
     () => filterBySearch(centros, debouncedBusqueda, CENTROS_APOYO_SEARCH_FIELDS),
     [centros, debouncedBusqueda]
   )
@@ -60,7 +60,7 @@ const CentrosApuestaListaView = () => {
   const startIndex = (paginaActual - 1) * PAGE_SIZE
   const centrosPaginados = centrosFiltrados?.slice(startIndex, startIndex + PAGE_SIZE) || []
 
-  React.useEffect(() => {
+  useEffect(() => {
     setPaginaActual(1)
   }, [debouncedBusqueda])
 
@@ -71,19 +71,19 @@ const CentrosApuestaListaView = () => {
   const [errorPermisos, setErrorPermisos] = useState(null)
 
   // --- Funciones para Permisos ---
-  const handleVerPermisos = async (centro) => {
+  const handleVerPermisos = useCallback(async (centro) => {
     setPermisosModal({ visible: true, centro })
     setLoadingPermisos(true)
     setErrorPermisos(null)
     try {
-      const res = await axiosInstance.get(`/permisos-juego/por-comercializador/${centro.id_comercializador}`)
-      setPermisos(res.data || [])
+      const data = await getPermisosJuegosPorComercializador(centro.id_comercializador)
+      setPermisos(data || [])
     } catch {
       setErrorPermisos('No se pudieron cargar los permisos de juegos.')
     } finally {
       setLoadingPermisos(false)
     }
-  }
+  }, [])
 
   return (
     <CContainer fluid>

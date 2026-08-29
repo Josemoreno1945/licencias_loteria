@@ -1,21 +1,18 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import axiosInstance from '../api/axiosInstance'
 
-/**
- * Hook genérico para llamadas a la API.
- * @param {string} endpoint - URL relativa al baseURL (ej: '/licencias')
- * @param {object} options - { immediate: bool }
- */
 const useFetch = (endpoint, { immediate = true, params = null } = {}) => {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const paramsRef = useRef(params)
+  paramsRef.current = params
 
   const fetchData = useCallback(async (signal) => {
     setLoading(true)
     setError(null)
     try {
-      const { data: result } = await axiosInstance.get(endpoint, { signal, params })
+      const { data: result } = await axiosInstance.get(endpoint, { signal, params: paramsRef.current })
       setData(result)
     } catch (err) {
       if (err.name !== 'CanceledError') {
@@ -24,7 +21,7 @@ const useFetch = (endpoint, { immediate = true, params = null } = {}) => {
     } finally {
       setLoading(false)
     }
-  }, [endpoint, params])
+  }, [endpoint])
 
   useEffect(() => {
     if (!immediate) return

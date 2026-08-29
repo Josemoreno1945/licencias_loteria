@@ -42,8 +42,6 @@ export const AuthProvider = ({ children }) => {
 
   const logout = useCallback(() => {
     logoutService()
-    localStorage.removeItem('user')
-    localStorage.removeItem('token')
     setUser(null)
   }, [])
 

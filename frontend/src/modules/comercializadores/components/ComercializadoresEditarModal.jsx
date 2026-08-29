@@ -23,7 +23,13 @@ const ComercializadoresEditarModal = ({ idComercializador, onClose, onUpdated })
     telefono: '',
     email: '',
     estado: 'activo',
+    representantes: [{ id_persona: '', cargo: '' }],
   });
+
+  // Datos para los selects dinámicos
+  const [personas, setPersonas] = useState([]);
+  const [loadingDeps, setLoadingDeps] = useState(true);
+  const [errorDeps, setErrorDeps] = useState(null);
 
   // Estado para cargar los datos del registro a editar
   const [loadingData, setLoadingData] = useState(false);
@@ -41,10 +47,26 @@ const ComercializadoresEditarModal = ({ idComercializador, onClose, onUpdated })
     if (!idComercializador) return;
     const fetchData = async () => {
       setLoadingData(true);
+      setLoadingDeps(true);
       setErrorData(null);
+      setErrorDeps(null);
       try {
-        const res = await axiosInstance.get(`/comercializadores/${idComercializador}`);
-        const comercializador = Array.isArray(res.data) ? res.data[0] : res.data;
+        const [resComercializador, resPersonas] = await Promise.all([
+          axiosInstance.get(`/comercializadores/${idComercializador}/detalle-completo`),
+          axiosInstance.get('/personas'),
+        ]);
+
+        const comercializador = resComercializador.data;
+
+        // Mapear representantes desde la respuesta del backend
+        let representantesData = [{ id_persona: '', cargo: '' }];
+        if (comercializador.representantes && comercializador.representantes.length > 0) {
+          representantesData = comercializador.representantes.map((rep) => ({
+            id_persona: rep.id_persona || '',
+            cargo: rep.cargo || '',
+          }));
+        }
+
         setFormData({
           rif: comercializador.rif || '',
           razon_social: comercializador.razon_social || '',
@@ -52,11 +74,17 @@ const ComercializadoresEditarModal = ({ idComercializador, onClose, onUpdated })
           telefono: comercializador.telefono || '',
           email: comercializador.email || '',
           estado: comercializador.estado || 'activo',
+          representantes: representantesData,
         });
+
+        setPersonas(resPersonas.data || []);
       } catch (err) {
-        setErrorData(err.response?.data?.message || 'Error al cargar el comercializador');
+        const msg = err.response?.data?.message || 'Error al cargar el comercializador';
+        setErrorData(msg);
+        setErrorDeps(msg);
       } finally {
         setLoadingData(false);
+        setLoadingDeps(false);
       }
     };
     fetchData();
@@ -83,14 +111,20 @@ const ComercializadoresEditarModal = ({ idComercializador, onClose, onUpdated })
 
     try {
       // Construimos el payload solo con campos con valores reales
-      // (evita sobreescribir campos con strings vacíos)
       const payload = {};
       Object.keys(formData).forEach((key) => {
+        if (key === 'representantes') return; // Se procesa aparte
         const val = formData[key];
         if (val !== '' && val !== null && val !== undefined) {
           payload[key] = val;
         }
       });
+
+      // Agregar representantes solo si hay al menos uno con id_persona
+      const repsFiltrados = formData.representantes.filter((r) => r.id_persona);
+      if (repsFiltrados.length > 0) {
+        payload.representantes = repsFiltrados;
+      }
 
       const response = await axiosInstance.put(`/comercializadores/${idComercializador}`, payload);
 
@@ -148,6 +182,8 @@ const ComercializadoresEditarModal = ({ idComercializador, onClose, onUpdated })
               handleInputChange={handleInputChange}
               onSubmit={handleSubmit}
               isEditMode
+              personas={personas}
+              loadingDeps={loadingDeps}
             />
           )}
         </CModalBody>

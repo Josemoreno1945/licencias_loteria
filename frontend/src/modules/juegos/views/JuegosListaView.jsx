@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState, useEffect, useMemo } from 'react'
 import {
   CContainer,
   CCard,
@@ -36,13 +36,13 @@ const JuegosListaView = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: juegos, loading, error, refetch } = useFetch('/juegos');
-  const [modalVerId, setModalVerId] = React.useState(null);
-  const [modalEditarJuegoId, setModalEditarJuegoId] = React.useState(null);
-  const [paginaActual, setPaginaActual] = React.useState(1);
-  const [busqueda, setBusqueda] = React.useState('');
+  const [modalVerId, setModalVerId] = useState(null);
+  const [modalEditarJuegoId, setModalEditarJuegoId] = useState(null);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [busqueda, setBusqueda] = useState('');
   const debouncedBusqueda = useDebounce(busqueda, 400);
 
-  const juegosFiltrados = React.useMemo(
+  const juegosFiltrados = useMemo(
     () => filterBySearch(juegos, debouncedBusqueda, JUEGOS_SEARCH_FIELDS),
     [juegos, debouncedBusqueda]
   );
@@ -52,7 +52,7 @@ const JuegosListaView = () => {
   const startIndex = (paginaActual - 1) * PAGE_SIZE;
   const juegosPaginados = juegosFiltrados?.slice(startIndex, startIndex + PAGE_SIZE) || [];
 
-  React.useEffect(() => {
+  useEffect(() => {
     setPaginaActual(1);
   }, [debouncedBusqueda]);
 

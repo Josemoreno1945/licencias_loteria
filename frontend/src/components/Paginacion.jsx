@@ -21,7 +21,6 @@ const Paginacion = ({ currentPage = 1, totalPages = 1, onPageChange }) => {
         <CPaginationItem
           key={i}
           active={i + 1 === currentPage}
-          className="select"
           onClick={() => goTo(i + 1)}
         >
           {i + 1}

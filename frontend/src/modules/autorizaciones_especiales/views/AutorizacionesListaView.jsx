@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   CContainer,
   CCard,
@@ -37,12 +37,12 @@ const AUTORIZACIONES_SEARCH_FIELDS = [
 const AutorizacionesListaView = () => {
   const navigate = useNavigate()
   const { data: autorizaciones, loading, error, refetch } = useFetch('/autorizaciones-especiales')
-  const [paginaActual, setPaginaActual] = React.useState(1)
-  const [busqueda, setBusqueda] = React.useState('')
-  const [modalDetalleId, setModalDetalleId] = React.useState(null)
+  const [paginaActual, setPaginaActual] = useState(1)
+  const [busqueda, setBusqueda] = useState('')
+  const [modalDetalleId, setModalDetalleId] = useState(null)
   const debouncedBusqueda = useDebounce(busqueda, 400)
 
-  const autorizacionesFiltradas = React.useMemo(
+  const autorizacionesFiltradas = useMemo(
     () => filterBySearch(autorizaciones, debouncedBusqueda, AUTORIZACIONES_SEARCH_FIELDS),
     [autorizaciones, debouncedBusqueda]
   )
@@ -52,7 +52,7 @@ const AutorizacionesListaView = () => {
   const startIndex = (paginaActual - 1) * PAGE_SIZE
   const autorizacionesPaginadas = autorizacionesFiltradas?.slice(startIndex, startIndex + PAGE_SIZE) || []
 
-  React.useEffect(() => {
+  useEffect(() => {
     setPaginaActual(1)
   }, [debouncedBusqueda])
 
