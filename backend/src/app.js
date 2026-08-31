@@ -27,10 +27,11 @@ import { errorHandler } from "./middlewares/errorHandler.js";
 
 const app = express();
 
+// Seguridad: helmet primero para que sus headers se apliquen a todas las respuestas
+app.use(helmet());
 app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:5173", credentials: true }));
 app.use(morgan("dev"));
 app.use(express.json());
-app.use(helmet());
 
 // Rutas
 app.use(auth_rutas);

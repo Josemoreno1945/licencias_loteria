@@ -16,7 +16,13 @@ const useFetch = (endpoint, { immediate = true, params = null } = {}) => {
       setData(result)
     } catch (err) {
       if (err.name !== 'CanceledError') {
-        setError(err.response?.data?.error || 'Error al cargar datos')
+        let errorMsg = 'Error al cargar datos'
+        if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
+          errorMsg = err.response.data.errors.map((e) => (e.path ? `${e.path}: ${e.message}` : e.message)).join(' | ')
+        } else if (err.response?.data?.error) {
+          errorMsg = err.response.data.error
+        }
+        setError(errorMsg)
       }
     } finally {
       setLoading(false)

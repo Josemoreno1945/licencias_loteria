@@ -38,8 +38,6 @@ export const buildDateString = (value) => {
  */
 export const ciRifRegex = /^[VEJGPC]-?\d{6,8}-?\d?$/i;
 
-;
-
 /**
  * Valida el código BCV de banco (4 dígitos).
  */

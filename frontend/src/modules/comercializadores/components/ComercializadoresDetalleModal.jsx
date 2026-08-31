@@ -64,9 +64,11 @@ const ComercializadoresDetalleModal = ({ idComercializador, onClose }) => {
               </CCol>
               <CCol md={6}>
                 <CFormLabel className="text-muted small fw-semibold mb-1">Estado</CFormLabel>
-                <CBadge color={data.estado === 'activo' ? 'success' : 'secondary'} className="fs-6 px-3 py-2 mt-2 d-inline-block">
-                  {data.estado === 'activo' ? 'Activo' : 'Inactivo'}
-                </CBadge>
+                <div className="d-flex align-items-center h-100" style={{ minHeight: '38px' }}>
+                  <CBadge color={data.estado === 'activo' ? 'success' : 'secondary'} shape="rounded-pill" className="px-3 py-2 fs-6">
+                    {data.estado === 'activo' ? 'Activo' : 'Inactivo'}
+                  </CBadge>
+                </div>
               </CCol>
               <CCol md={12}>
                 <CFormLabel className="text-muted small fw-semibold mb-1">Razón Social</CFormLabel>
@@ -86,27 +88,22 @@ const ComercializadoresDetalleModal = ({ idComercializador, onClose }) => {
               </CCol>
             </CRow>
 
-            <h5 className="text-primary fw-semibold mb-3">Representante Legal</h5>
-            <div className="bg-light rounded-3 border p-2 mb-4">
+            <h5 className="text-primary fw-semibold mb-3">Representantes Legales</h5>
+            <div className="mb-4">
               {data.representantes && data.representantes.length > 0 ? (
-                <CListGroup flush>
-                  {data.representantes.map((rep, idx) => (
-                    <CListGroupItem
-                      key={rep.id_persona || idx}
-                      className="d-flex justify-content-between align-items-center bg-light border-0 border-bottom"
-                    >
-                      <div className="d-flex flex-column">
-                        <span className="fw-semibold">{rep.razon_social || '—'}</span>
-                        <span className="text-muted small">{rep.ci_rif || ''}</span>
+                <div className="border rounded bg-light px-3 py-2">
+                  {data.representantes.map((r, i) => (
+                    <div key={r.id_persona || i} className="d-flex justify-content-between align-items-center py-2 border-bottom last-child-no-border">
+                      <div>
+                        <span className="fw-semibold small">{r.razon_social || '—'}</span>
+                        <span className="text-muted small ms-2">{r.ci_rif}</span>
                       </div>
-                      <CBadge color="info" className="px-3 py-1">
-                        {rep.cargo || 'Sin cargo'}
-                      </CBadge>
-                    </CListGroupItem>
+                      <CBadge color="info" className="px-2 py-1">{r.cargo || 'Sin cargo'}</CBadge>
+                    </div>
                   ))}
-                </CListGroup>
+                </div>
               ) : (
-                <span className="text-muted p-2 d-inline-block">No hay representantes registrados</span>
+                <CFormInput type="text" value="Ninguno" readOnly className="bg-light" />
               )}
             </div>
           </div>

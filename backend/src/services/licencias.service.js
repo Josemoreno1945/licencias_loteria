@@ -1,14 +1,7 @@
 import { pool } from "../db.js";
 import { errors, throwError } from "../utils/errors.js";
+import { buildDateString } from "../utils/validators.js";
 import crypto from "crypto";
-
-const buildDateString = (value) => {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    throwError(errors.invalidData);
-  }
-  return date.toISOString().slice(0, 10);
-};
 
 const normalizeRepresentantes = (representantes) => {
   if (!representantes) return [];
@@ -116,9 +109,10 @@ export const crear_licencia_completa = async (data) => {
       const pagoResult = await client.query(
         `INSERT INTO pagos (
            id_banco, num_referencia, fecha_pago, monto, tasa_dia,
-           responsable_texto, id_licencia, observaciones, registrado_por
+           responsable_texto, id_licencia, id_autorizacion, id_participacion,
+           observaciones, registrado_por
          )
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
          RETURNING id_pago`,
         [
           data.pago.id_banco,
@@ -127,7 +121,9 @@ export const crear_licencia_completa = async (data) => {
           data.pago.monto,
           data.pago.tasa_dia,
           data.pago.responsable_texto ?? null,
-          documentoId, // vinculamos al documento que vamos a crear
+          documentoId, // id_licencia — vinculamos al documento que vamos a crear
+          null,         // id_autorizacion — siempre NULL en este flujo
+          null,         // id_participacion — siempre NULL en este flujo
           data.pago.observaciones ?? null,
           data.emitido_por,
         ],

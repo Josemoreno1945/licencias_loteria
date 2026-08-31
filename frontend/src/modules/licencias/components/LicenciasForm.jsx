@@ -22,10 +22,20 @@ import {
   cilList,
   cilPlus,
   cilDescription,
+  cilDollar,
+  cilUser,
+  cilNotes,
+  cilHome,
 } from '@coreui/icons'
 
 // ── Sub-componentes de UI ─────────────────────────────────────────────────────
 const Separator = () => <hr className="my-4 border-primary opacity-25" />
+
+const SectionTitle = ({ step, title }) => (
+  <h6 className="text-primary fw-semibold mb-3 mt-1" style={{ letterSpacing: '0.04em' }}>
+    {step}. {title}
+  </h6>
+)
 
 // Tarjeta de información de solo lectura
 const InfoCard = ({ titulo, campos, children }) => (
@@ -61,8 +71,6 @@ const LicenciasForm = ({
   bancos,
   isEditMode,
 }) => {
-
-  // Autocalcula fecha de vencimiento: +1 año desde expedición
   const calcularVencimiento = (fechaExpedicion) => {
     if (!fechaExpedicion) return ''
     const d = new Date(fechaExpedicion)
@@ -70,10 +78,8 @@ const LicenciasForm = ({
     return d.toISOString().split('T')[0]
   }
 
-  // Si el usuario NO ha tocado vencimiento, usamos el calculado
   const vencimientoValue = formData.fecha_vencimiento || calcularVencimiento(formData.fecha_expedicion)
 
-  // Juegos de la solicitud seleccionada para mostrar como referencia
   const juegosReferencia = (() => {
     if (!solicitudSeleccionada?.juegos) return []
     if (Array.isArray(solicitudSeleccionada.juegos)) return solicitudSeleccionada.juegos
@@ -83,19 +89,13 @@ const LicenciasForm = ({
   return (
     <CForm onSubmit={onSubmit}>
 
-      {/* ═══════════════════════════════════════════════════════════════
-           PASO 1 — SOLICITUD DE ORIGEN
-         ═══════════════════════════════════════════════════════════════ */}
-
-      <h6 className="text-primary fw-semibold mb-3 mt-1" style={{ letterSpacing: '0.04em' }}>
-        1. Solicitud de Origen
-      </h6>
+      {/* ═══ PASO 1 — SOLICITUD DE ORIGEN ═══ */}
+      <SectionTitle step="1" title="Solicitud de Origen" />
 
       <CRow className="mb-3">
-        <CCol md={12} className="mb-3">
+        <CCol md={12}>
           <CFormLabel>
-            Solicitud Pendiente <span className="text-danger">*</span>
-            <span className="text-muted small ms-2">(Solo aparecen solicitudes de tipo Licencia pendientes)</span>
+            Solicitud Pendiente
           </CFormLabel>
           <CInputGroup>
             <CInputGroupText><CIcon icon={cilList} /></CInputGroupText>
@@ -106,7 +106,7 @@ const LicenciasForm = ({
               required
               disabled={loadingDeps || isEditMode}
             >
-              <option value="">Seleccione la solicitud pendiente...</option>
+              <option value="">Seleccione una solicitud...</option>
               {solicitudes.map((sol) => (
                 <option key={sol.id_solicitudes} value={sol.id_solicitudes}>
                   {sol.comercializador
@@ -123,43 +123,41 @@ const LicenciasForm = ({
         </CCol>
       </CRow>
 
-      {/* ── Panel autocompletado: datos heredados de la solicitud ── */}
+      {/* Panel autocompletado */}
       {!loadingDetalleSolicitud && solicitudSeleccionada && (
         <>
-          {/* Datos de la Comercializadora + Representante */}
           <InfoCard
             titulo="📋 Comercializadora"
             campos={[
               { label: 'Razón Social', value: solicitudSeleccionada.comercializador },
               { label: 'RIF', value: solicitudSeleccionada.comercializador_rif },
-              { label: 'Dirección Fiscal', value: solicitudSeleccionada.comercializador_direccion },
+              { label: 'Dirección', value: solicitudSeleccionada.comercializador_direccion },
               { label: 'Teléfono', value: solicitudSeleccionada.comercializador_telefono },
               { label: 'Email', value: solicitudSeleccionada.comercializador_email },
-              { label: 'Categoría Solicitada', value: solicitudSeleccionada.categoria_licencia },
+              { label: 'Categoría', value: solicitudSeleccionada.categoria_licencia },
             ]}
           >
             <div className="mt-3 pt-2 border-top">
               <p className="text-info fw-semibold small mb-2" style={{ letterSpacing: '0.05em' }}>
-                👤 Representante Legal Titular (Firmante)
+                👤 Representante Legal
               </p>
-              <CRow className="gy-1 mb-2">
-                <CCol md={6}>
+              <CRow className="gy-1">
+                <CCol md={4}>
                   <span className="text-muted small">Cédula / RIF: </span>
                   <span className="small fw-semibold">{solicitudSeleccionada.ci_rif || '—'}</span>
                 </CCol>
-                <CCol md={6}>
-                  <span className="text-muted small">Nombre / Razón Social: </span>
+                <CCol md={4}>
+                  <span className="text-muted small">Nombre: </span>
                   <span className="small fw-semibold">{solicitudSeleccionada.persona || '—'}</span>
                 </CCol>
-                <CCol md={6}>
-                  <span className="text-muted small">Tipo de Persona: </span>
+                <CCol md={4}>
+                  <span className="text-muted small">Tipo: </span>
                   <span className="small fw-semibold">{solicitudSeleccionada.tipo_persona || '—'}</span>
                 </CCol>
               </CRow>
             </div>
           </InfoCard>
 
-          {/* Centro de Apuesta de la solicitud */}
           {solicitudSeleccionada.centro_apuesta && (
             <InfoCard
               titulo="🏢 Centro de Apuesta"
@@ -173,13 +171,13 @@ const LicenciasForm = ({
                   <p className="text-info fw-semibold small mb-2" style={{ letterSpacing: '0.05em' }}>
                     👤 Dueño / Representante
                   </p>
-                  <CRow className="gy-1 mb-2">
+                  <CRow className="gy-1">
                     <CCol md={6}>
                       <span className="text-muted small">Cédula / RIF: </span>
                       <span className="small fw-semibold">{solicitudSeleccionada.centro_apuesta_representante_ci || '—'}</span>
                     </CCol>
                     <CCol md={6}>
-                      <span className="text-muted small">Nombre / Razón Social: </span>
+                      <span className="text-muted small">Nombre: </span>
                       <span className="small fw-semibold">{solicitudSeleccionada.centro_apuesta_representante || '—'}</span>
                     </CCol>
                   </CRow>
@@ -188,7 +186,6 @@ const LicenciasForm = ({
             </InfoCard>
           )}
 
-          {/* Juegos incluidos en la solicitud */}
           {juegosReferencia.length > 0 && (
             <InfoCard titulo="🎮 Juegos Autorizados">
               <div className="d-flex flex-wrap gap-1 mt-1">
@@ -205,18 +202,13 @@ const LicenciasForm = ({
 
       <Separator />
 
-      {/* ═══════════════════════════════════════════════════════════════
-           PASO 2 — DATOS DEL DOCUMENTO
-         ═══════════════════════════════════════════════════════════════ */}
+      {/* ═══ PASO 2 — DATOS DEL DOCUMENTO ═══ */}
+      <SectionTitle step="2" title="Datos del Documento" />
 
-      <h6 className="text-primary fw-semibold mb-3" style={{ letterSpacing: '0.04em' }}>
-        2. Datos del Documento
-      </h6>
-
-      {/* Fila 1: LOT y N° de Licencia */}
+      {/* Fila 1: LOT + N° de Licencia */}
       <CRow className="mb-3">
-        <CCol md={4} className="mb-3">
-          <CFormLabel>LOT N° <span className="text-danger">*</span></CFormLabel>
+        <CCol md={4}>
+          <CFormLabel>LOT N°</CFormLabel>
           <CInputGroup>
             <CInputGroupText><CIcon icon={cilDescription} /></CInputGroupText>
             <CFormInput
@@ -229,8 +221,8 @@ const LicenciasForm = ({
           </CInputGroup>
         </CCol>
 
-        <CCol md={8} className="mb-3">
-          <CFormLabel>N° de Licencia <span className="text-danger">*</span></CFormLabel>
+        <CCol md={8}>
+          <CFormLabel>N° de Licencia</CFormLabel>
           <CInputGroup>
             <CInputGroupText><CIcon icon={cilClipboard} /></CInputGroupText>
             <CFormInput
@@ -244,10 +236,10 @@ const LicenciasForm = ({
         </CCol>
       </CRow>
 
-      {/* Fila 2: Tipo de Emisión + Fecha Expedición + Fecha Vencimiento */}
+      {/* Fila 2: Tipo Emisión + Expedición + Vencimiento */}
       <CRow className="mb-3">
-        <CCol md={4} className="mb-3">
-          <CFormLabel>Tipo de Emisión <span className="text-danger">*</span></CFormLabel>
+        <CCol md={4}>
+          <CFormLabel>Tipo de Emisión</CFormLabel>
           <CInputGroup>
             <CInputGroupText><CIcon icon={cilList} /></CInputGroupText>
             <CFormSelect
@@ -255,14 +247,14 @@ const LicenciasForm = ({
               value={formData.tipo_emision}
               onChange={handleInputChange}
             >
-              <option value="Inscripcion">Inscripción (nueva)</option>
+              <option value="Inscripcion">Inscripción</option>
               <option value="Renovacion">Renovación</option>
             </CFormSelect>
           </CInputGroup>
         </CCol>
 
-        <CCol md={4} className="mb-3">
-          <CFormLabel>Fecha de Expedición <span className="text-danger">*</span></CFormLabel>
+        <CCol md={4}>
+          <CFormLabel>Fecha de Expedición</CFormLabel>
           <CInputGroup>
             <CInputGroupText><CIcon icon={cilCalendar} /></CInputGroupText>
             <CFormInput
@@ -275,7 +267,7 @@ const LicenciasForm = ({
           </CInputGroup>
         </CCol>
 
-        <CCol md={4} className="mb-3">
+        <CCol md={4}>
           <CFormLabel>Fecha de Vencimiento</CFormLabel>
           <CInputGroup>
             <CInputGroupText><CIcon icon={cilCalendar} /></CInputGroupText>
@@ -291,8 +283,8 @@ const LicenciasForm = ({
 
       {/* Fila 3: Papel de Seguridad + Dirección */}
       <CRow className="mb-3">
-        <CCol md={4} className="mb-3">
-          <CFormLabel>Papel de Seguridad <span className="text-danger">*</span></CFormLabel>
+        <CCol md={4}>
+          <CFormLabel>Papel de Seguridad</CFormLabel>
           <CInputGroup>
             <CInputGroupText><CIcon icon={cilClipboard} /></CInputGroupText>
             <CFormInput
@@ -305,44 +297,43 @@ const LicenciasForm = ({
           </CInputGroup>
         </CCol>
 
-        <CCol md={8} className="mb-3">
+        <CCol md={8}>
           <CFormLabel>Dirección del Establecimiento</CFormLabel>
-          <CFormInput
-            name="direccion_establecimiento"
-            value={formData.direccion_establecimiento || ''}
-            onChange={handleInputChange}
-            placeholder="Dirección fiscal del establecimiento"
-          />
+          <CInputGroup>
+            <CInputGroupText><CIcon icon={cilHome} /></CInputGroupText>
+            <CFormInput
+              name="direccion_establecimiento"
+              value={formData.direccion_establecimiento || ''}
+              onChange={handleInputChange}
+              placeholder="Dirección fiscal del establecimiento"
+            />
+          </CInputGroup>
         </CCol>
       </CRow>
 
-      {/* Fila 4: Observaciones del documento */}
+      {/* Fila 4: Observaciones */}
       <CRow className="mb-3">
         <CCol md={12}>
-          <CFormLabel>Observaciones del Documento (Opcional)</CFormLabel>
+          <CFormLabel>Observaciones <span className="text-muted small fw-normal">(Opcional)</span></CFormLabel>
           <CFormTextarea
             name="observaciones_documento"
             value={formData.observaciones_documento || ''}
             onChange={handleInputChange}
             rows={2}
-            placeholder="Anotaciones adicionales sobre este documento..."
+            placeholder="Anotaciones adicionales sobre el documento..."
           />
         </CCol>
       </CRow>
 
       <Separator />
 
-      {/* ═══════════════════════════════════════════════════════════════
-           PASO 3 — DATOS DEL PAGO
-         ═══════════════════════════════════════════════════════════════ */}
+      {/* ═══ PASO 3 — DATOS DEL PAGO ═══ */}
+      <SectionTitle step="3" title="Datos del Pago" />
 
-      <h6 className="text-primary fw-semibold mb-3" style={{ letterSpacing: '0.04em' }}>
-        3. Datos del Pago
-      </h6>
-
+      {/* Fila 1: Banco + Referencia */}
       <CRow className="mb-3">
-        <CCol md={6} className="mb-3">
-          <CFormLabel>Banco <span className="text-danger">*</span></CFormLabel>
+        <CCol md={6}>
+          <CFormLabel>Banco</CFormLabel>
           <CInputGroup>
             <CInputGroupText><CIcon icon={cilList} /></CInputGroupText>
             <CFormSelect
@@ -351,7 +342,7 @@ const LicenciasForm = ({
               onChange={handleInputChange}
               required
             >
-              <option value="">Seleccione el banco...</option>
+              <option value="">Seleccione un banco...</option>
               {bancos.map((banco) => (
                 <option key={banco.id_banco} value={banco.id_banco}>
                   {banco.nombre}
@@ -361,49 +352,59 @@ const LicenciasForm = ({
           </CInputGroup>
         </CCol>
 
-        <CCol md={6} className="mb-3">
-          <CFormLabel>N° de Referencia <span className="text-danger">*</span></CFormLabel>
-          <CFormInput
-            name="num_referencia"
-            value={formData.num_referencia || ''}
-            onChange={handleInputChange}
-            placeholder="Número de referencia bancaria"
-            required
-          />
+        <CCol md={6}>
+          <CFormLabel>N° de Referencia</CFormLabel>
+          <CInputGroup>
+            <CInputGroupText><CIcon icon={cilClipboard} /></CInputGroupText>
+            <CFormInput
+              name="num_referencia"
+              value={formData.num_referencia || ''}
+              onChange={handleInputChange}
+              placeholder="Referencia bancaria"
+              required
+            />
+          </CInputGroup>
         </CCol>
       </CRow>
 
+      {/* Fila 2: Monto + Tasa + Fecha de Pago */}
       <CRow className="mb-3">
-        <CCol md={4} className="mb-3">
-          <CFormLabel>Monto (Bs.) <span className="text-danger">*</span></CFormLabel>
-          <CFormInput
-            name="monto"
-            type="number"
-            step="0.01"
-            min="0"
-            value={formData.monto || ''}
-            onChange={handleInputChange}
-            placeholder="0.00"
-            required
-          />
+        <CCol md={4}>
+          <CFormLabel>Monto (Bs.)</CFormLabel>
+          <CInputGroup>
+            <CInputGroupText><CIcon icon={cilDollar} /></CInputGroupText>
+            <CFormInput
+              name="monto"
+              type="number"
+              step="0.01"
+              min="0"
+              value={formData.monto || ''}
+              onChange={handleInputChange}
+              placeholder="0.00"
+              required
+            />
+          </CInputGroup>
         </CCol>
 
-        <CCol md={4} className="mb-3">
-          <CFormLabel>Tasa del Día <span className="text-danger">*</span></CFormLabel>
-          <CFormInput
-            name="tasa_dia"
-            type="number"
-            step="0.0001"
-            min="0"
-            value={formData.tasa_dia || ''}
-            onChange={handleInputChange}
-            placeholder="Tasa BCV"
-            required
-          />
+        <CCol md={4}>
+          <CFormLabel>Tasa del Día</CFormLabel>
+          <CInputGroup>
+            <CInputGroupText><CIcon icon={cilDollar} /></CInputGroupText>
+            <CFormInput
+              name="tasa_dia"
+              type="number"
+              step="0.0001"
+              min="0"
+              value={formData.tasa_dia || ''}
+              onChange={handleInputChange}
+              placeholder="Tasa BCV"
+              required
+            />
+          </CInputGroup>
         </CCol>
 
-        <CCol md={4} className="mb-3">
-          <CFormLabel>Fecha de Pago <span className="text-danger">*</span></CFormLabel>
+        <CCol md={4}>
+          <CFormLabel>Fecha de Pago</CFormLabel>
           <CInputGroup>
             <CInputGroupText><CIcon icon={cilCalendar} /></CInputGroupText>
             <CFormInput
@@ -417,24 +418,31 @@ const LicenciasForm = ({
         </CCol>
       </CRow>
 
+      {/* Fila 3: Responsable + Observaciones de Pago */}
       <CRow className="mb-3">
-        <CCol md={6} className="mb-3">
-          <CFormLabel>Responsable del Pago (Opcional)</CFormLabel>
-          <CFormInput
-            name="responsable_texto"
-            value={formData.responsable_texto || ''}
-            onChange={handleInputChange}
-            placeholder="Nombre del responsable"
-          />
+        <CCol md={6}>
+          <CFormLabel>Responsable <span className="text-muted small fw-normal">(Opcional)</span></CFormLabel>
+          <CInputGroup>
+            <CInputGroupText><CIcon icon={cilUser} /></CInputGroupText>
+            <CFormInput
+              name="responsable_texto"
+              value={formData.responsable_texto || ''}
+              onChange={handleInputChange}
+              placeholder="Nombre del responsable"
+            />
+          </CInputGroup>
         </CCol>
-        <CCol md={6} className="mb-3">
-          <CFormLabel>Observaciones del Pago (Opcional)</CFormLabel>
-          <CFormInput
-            name="observaciones_pago"
-            value={formData.observaciones_pago || ''}
-            onChange={handleInputChange}
-            placeholder="Notas sobre el pago"
-          />
+        <CCol md={6}>
+          <CFormLabel>Observaciones del Pago <span className="text-muted small fw-normal">(Opcional)</span></CFormLabel>
+          <CInputGroup>
+            <CInputGroupText><CIcon icon={cilNotes} /></CInputGroupText>
+            <CFormInput
+              name="observaciones_pago"
+              value={formData.observaciones_pago || ''}
+              onChange={handleInputChange}
+              placeholder="Notas sobre el pago"
+            />
+          </CInputGroup>
         </CCol>
       </CRow>
 

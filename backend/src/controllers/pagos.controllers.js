@@ -1,7 +1,6 @@
 import {
   get_pagos,
   get_pagos_id,
-  get_pago_referencia,
   buscar_pagos_por_licencia,
   buscar_pagos_por_autorizacion,
   buscar_pagos_por_participacion,

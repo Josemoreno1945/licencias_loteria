@@ -79,7 +79,7 @@ export const crear_c_documento_emitido = async (req, res, next) => {
     }
 
     const rows = await crear_documento_emitido(parseDE.data);
-    return res.json(rows);
+    return res.status(201).json(rows);
   } catch (error) {
     next(error);
   }

@@ -35,6 +35,16 @@ const PARTICIPACIONES_SEARCH_FIELDS = [
   'tipo',
 ]
 
+const getEstadoBadge = (estado) => {
+  switch (estado) {
+    case 'vigente':    return 'success'
+    case 'vencido':    return 'warning'
+    case 'suspendido': return 'danger'
+    case 'anulado':    return 'secondary'
+    default:           return 'info'
+  }
+}
+
 const ParticipacionesListaView = () => {
   const navigate = useNavigate()
   const { data: participaciones, loading, error, refetch } = useFetch('/participaciones')
@@ -66,7 +76,7 @@ const ParticipacionesListaView = () => {
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
         <CCardHeader className="bg-white d-flex justify-content-between align-items-center pb-0">
           <div>
-            <h4 className="mb-1 text-primary">Lista de Participaciones</h4>
+            <h4 className="mb-1 text-primary">Participaciones</h4>
             <p className="text-muted small mb-3">
               Participaciones registradas en el sistema.
             </p>
@@ -119,12 +129,12 @@ const ParticipacionesListaView = () => {
                     <CTableRow>
                       <CTableHeaderCell>#</CTableHeaderCell>
                       <CTableHeaderCell>Nro. Documento</CTableHeaderCell>
-                      <CTableHeaderCell>Nro. Archivo</CTableHeaderCell>
+                      <CTableHeaderCell>N° Archivo</CTableHeaderCell>
                       <CTableHeaderCell>N° LOT</CTableHeaderCell>
                       <CTableHeaderCell>Persona</CTableHeaderCell>
                       <CTableHeaderCell>Comercializador</CTableHeaderCell>
-                      <CTableHeaderCell>Tipo</CTableHeaderCell>
-                      <CTableHeaderCell>Estado</CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">Tipo</CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">Estado</CTableHeaderCell>
                       <CTableHeaderCell>Vencimiento</CTableHeaderCell>
                       <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
                     </CTableRow>
@@ -145,7 +155,7 @@ const ParticipacionesListaView = () => {
                           <div className="text-muted small">{par.persona}</div>
                         </CTableDataCell>
                         <CTableDataCell>{par.comercializador || <span className="text-muted">—</span>}</CTableDataCell>
-                        <CTableDataCell>
+                        <CTableDataCell className="text-center">
                           <CBadge
                             color={
                               par.tipo === 'Archivo' ? 'primary' :
@@ -156,18 +166,18 @@ const ParticipacionesListaView = () => {
                             shape="rounded-pill"
                             className="px-2"
                           >
-                            {par.tipo ?? <span className="text-muted">—</span>}
+                            {par.tipo ?? '—'}
                           </CBadge>
                         </CTableDataCell>
-                        <CTableDataCell>
-                          <CBadge color={par.estado_documento === 'vigente' ? 'success' : par.estado_documento === 'vencido' ? 'warning' : 'danger'}>
+                        <CTableDataCell className="text-center">
+                          <CBadge color={getEstadoBadge(par.estado_documento)} shape="rounded-pill">
                             {par.estado_documento}
                           </CBadge>
                         </CTableDataCell>
                         <CTableDataCell>
                           {par.fecha_vencimiento?.slice(0, 10)}
                         </CTableDataCell>
-                        <CTableDataCell>
+                        <CTableDataCell className="text-center">
                           <CButton
                             size="sm"
                             color="primary"

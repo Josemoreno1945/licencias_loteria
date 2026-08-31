@@ -155,6 +155,11 @@ const AutorizacionesDetalleModal = ({ idAutorizacion, onClose }) => {
                  <CFormInput type="text" value={`${data.ci_rif} — ${data.persona}`} readOnly className="bg-light fw-semibold" />
                </CCol>
 
+               <CCol md={12}>
+                 <CFormLabel className="text-muted small fw-semibold mb-1">Comercializador Asociado</CFormLabel>
+                 <CFormInput type="text" value={data.comercializador || 'Ninguno'} readOnly className="bg-light" />
+               </CCol>
+
                <CCol md={6}>
                  <CFormLabel className="text-muted small fw-semibold mb-1">Centro de Apuesta</CFormLabel>
                  <CFormInput type="text" value={data.centro_apuesta || 'Ninguno'} readOnly className="bg-light" />
@@ -171,7 +176,7 @@ const AutorizacionesDetalleModal = ({ idAutorizacion, onClose }) => {
                </CCol>
 
                <CCol md={12}>
-                 <CFormLabel className="text-muted small fw-semibold mb-1">Dirección del Establecimiento (Centro Asignado)</CFormLabel>
+                 <CFormLabel className="text-muted small fw-semibold mb-1">Dir. Centro Asignado</CFormLabel>
                  <CFormInput type="text" value={data.direccion_centro_asignado || data.direccion_establecimiento || 'No registrada'} readOnly className="bg-light" />
                </CCol>
 

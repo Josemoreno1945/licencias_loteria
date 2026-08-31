@@ -2,14 +2,7 @@ import { pool } from "../db.js";
 import crypto from "crypto";
 
 import { errors, throwError } from "../utils/errors.js";
-
-const buildDateString = (value) => {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    throwError(errors.invalidData);
-  }
-  return date.toISOString().slice(0, 10);
-};
+import { buildDateString } from "../utils/validators.js";
 
 /**
  * Crea una participación de forma transaccional, espejando el flujo de
@@ -88,6 +81,29 @@ export const crear_participacion_completa = async (data) => {
     }
 
 
+
+    // 4. Validar representantes legales (personas) si se proveen
+    const normalizeRepresentantes = (reps) => {
+      if (!reps) return [];
+      return reps
+        .map((r) => (r && typeof r === "object" ? r : { id_persona: r }))
+        .filter((r) => r && r.id_persona);
+    };
+    const representantes = normalizeRepresentantes(data.representantes);
+    if (representantes.length > 0) {
+      const valuesList = representantes.map((_, idx) => `($${idx + 1})`).join(", ");
+      const valuesFlat = representantes.map((r) => r.id_persona);
+      const repCheck = await client.query(
+        `SELECT id_persona FROM personas WHERE id_persona IN (${valuesList})`,
+        valuesFlat,
+      );
+      const found = new Set(repCheck.rows.map((r) => r.id_persona));
+      for (const rep of representantes) {
+        if (!found.has(rep.id_persona)) {
+          throwError(errors.persona_no_encontrada);
+        }
+      }
+    }
 
     // 5. Validar el banco del pago
     const bancoExiste = await client.query(
@@ -203,6 +219,15 @@ export const crear_participacion_completa = async (data) => {
     );
 
 
+
+    // 12. Insertar representantes legales (N:M) si se proveen
+    for (const rep of representantes) {
+      await client.query(
+        `INSERT INTO participaciones_representantes (id_documento, id_persona, rol, cargo)
+         VALUES ($1, $2, $3, $4)`,
+        [documento.id_documento, rep.id_persona, rep.rol ?? null, rep.cargo ?? null],
+      );
+    }
 
     // 13. Insertar juegos (N:M) si se proveen
     if (Array.isArray(data.juegos) && data.juegos.length > 0) {

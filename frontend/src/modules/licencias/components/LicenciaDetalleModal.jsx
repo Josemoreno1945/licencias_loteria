@@ -111,8 +111,8 @@ const LicenciaDetalleModal = ({ idLicencia, onClose }) => {
               </CCol>
               
               <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Categoría</CFormLabel>
-                <CFormInput type="text" value={data.categoria || '—'} readOnly className="bg-light" />
+                <CFormLabel className="text-muted small fw-semibold mb-1">Tipo de Licencia</CFormLabel>
+                <CFormInput type="text" value={data.categoria || '—'} readOnly className="bg-light fw-bold" />
               </CCol>
               <CCol md={6}>
                 <CFormLabel className="text-muted small fw-semibold mb-1">Tipo de Emisión</CFormLabel>

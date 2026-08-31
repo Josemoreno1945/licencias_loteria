@@ -66,12 +66,12 @@ export const crear_c_centros_apuesta = async (req, res, next) => {
       return next(zodValidationError(parseCA.error));
     }
 
-    const duplicado = await get_centros_apuesta_nombre(data.nombre_agencia);
+    const duplicado = await get_centros_apuesta_nombre(parseCA.data.nombre_agencia);
     if (duplicado) {
       throwError(errors.centros_apuesta_nombre_duplicado);
     }
 
-    const rows = await crear_centros_apuesta(data);
+    const rows = await crear_centros_apuesta(parseCA.data);
     return res.status(201).json({
       message: "Centro de apuesta registrado exitosamente",
       centro_apuesta: rows,

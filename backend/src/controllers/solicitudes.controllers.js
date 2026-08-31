@@ -67,7 +67,7 @@ export const crear_c_solicitud = async (req, res, next) => {
     }
 
     const rows = await crear_solicitud(parseS.data);
-    return res.json(rows);
+    return res.status(201).json(rows);
   } catch (error) {
     next(error);
   }

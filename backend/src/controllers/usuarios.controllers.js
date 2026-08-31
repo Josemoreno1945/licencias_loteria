@@ -56,20 +56,20 @@ export const crear_c_usuario = async (req, res, next) => {
       return next(zodValidationError(parseU.error));
     }
 
-    const emailExiste = await get_usuario_email(data.email);
+    const emailExiste = await get_usuario_email(parseU.data.email);
     if (emailExiste) {
       throwError(errors.usuario_email_duplicado);
     }
 
-    const usernameExiste = await get_nombre_de_usuario(data.nombre_usuario);
+    const usernameExiste = await get_nombre_de_usuario(parseU.data.nombre_usuario);
     if (usernameExiste) {
       throwError(errors.usuario_duplicado);
     }
 
-    const hashedPassword = await bcrypt.hash(data.password, 8);
-    const userData = { ...data, password_hash: hashedPassword }; //puede dar error
+    const hashedPassword = await bcrypt.hash(parseU.data.password, 8);
+    const userData = { ...parseU.data, password_hash: hashedPassword };
     const rows = await crear_usuario(userData);
-    return res.json(rows);
+    return res.status(201).json(rows);
   } catch (error) {
     next(error);
   }

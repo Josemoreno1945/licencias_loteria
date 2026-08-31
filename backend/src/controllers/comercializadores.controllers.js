@@ -65,17 +65,17 @@ export const crear_c_comercializador = async (req, res, next) => {
       return next(zodValidationError(parseC.error));
     }
 
-    const emailExiste = await get_comercializador_email(data.email);
+    const emailExiste = await get_comercializador_email(parseC.data.email);
     if (emailExiste) {
       throwError(errors.comercializadora_email_duplicado);
     }
 
-    const rifExiste = await get_comercializador_rif(data.rif);
+    const rifExiste = await get_comercializador_rif(parseC.data.rif);
     if (rifExiste) {
       throwError(errors.comercializadora_rif_duplicado);
     }
 
-    const rows = await crear_comercializador(data);
+    const rows = await crear_comercializador(parseC.data);
     return res.status(201).json({
       message: "Comercializador registrado exitosamente",
       comercializador: rows,

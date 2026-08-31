@@ -66,7 +66,7 @@ export const crear_c_autorizacion_completa = async (req, res, next) => {
     }
 
     const result = await crear_autorizacion_completa(parseAE.data);
-    return res.json(result);
+    return res.status(201).json(result);
   } catch (error) {
     next(error);
   }

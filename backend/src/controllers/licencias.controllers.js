@@ -70,8 +70,8 @@ export const crear_c_licencia_completa = async (req, res, next) => {
       return next(zodValidationError(parseL.error));
     }
 
-    const result = await crear_licencia_completa(data);
-    return res.json(result);
+    const result = await crear_licencia_completa(parseL.data);
+    return res.status(201).json(result);
   } catch (error) {
     next(error);
   }

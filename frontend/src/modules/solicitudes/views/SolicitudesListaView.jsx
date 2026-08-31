@@ -17,7 +17,7 @@ import {
 } from '@coreui/react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import CIcon from '@coreui/icons-react';
-import { cilMagnifyingGlass } from '@coreui/icons';
+import { cilMagnifyingGlass, cilPlus } from '@coreui/icons';
 import useFetch from '../../../hooks/useFetch';
 import useDebounce from '../../../hooks/useDebounce';
 import { filterBySearch } from '../../../utils/helpers';
@@ -92,7 +92,7 @@ const SolicitudesListaView = () => {
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
         <CCardHeader className="bg-white d-flex justify-content-between align-items-center pb-0">
           <div>
-            <h4 className="mb-1 text-primary">Lista de Solicitudes</h4>
+            <h4 className="mb-1 text-primary">Solicitudes</h4>
             <p className="text-muted small mb-3">
               Trámites iniciados por personas o comercializadores.
             </p>
@@ -100,10 +100,9 @@ const SolicitudesListaView = () => {
           {user?.rol !== 'supervisor' && (
             <CButton
               color="primary"
-              size="sm"
               onClick={() => navigate('/solicitudes/registro')}
             >
-              + Nueva Solicitud
+              <CIcon icon={cilPlus} className="me-2" /> Nueva Solicitud
             </CButton>
           )}
         </CCardHeader>
@@ -152,7 +151,7 @@ const SolicitudesListaView = () => {
                       <CTableHeaderCell>Tipo de Trámite</CTableHeaderCell>
                       <CTableHeaderCell>Categoría</CTableHeaderCell>
                       <CTableHeaderCell>Fecha</CTableHeaderCell>
-                      <CTableHeaderCell>Estado</CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">Estado</CTableHeaderCell>
                       <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
@@ -183,8 +182,8 @@ const SolicitudesListaView = () => {
                         <CTableDataCell>
                           {new Date(sol.created_at).toLocaleDateString()}
                         </CTableDataCell>
-                        <CTableDataCell>
-                          <CBadge color={getEstadoBadge(sol.estado)}>
+                        <CTableDataCell className="text-center">
+                          <CBadge color={getEstadoBadge(sol.estado)} shape="rounded-pill">
                             {sol.estado}
                           </CBadge>
                         </CTableDataCell>

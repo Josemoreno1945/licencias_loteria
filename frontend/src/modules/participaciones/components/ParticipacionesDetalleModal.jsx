@@ -175,12 +175,8 @@ const ParticipacionesDetalleModal = ({ idParticipacion, onClose }) => {
                </CCol>
 
                <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Licencia Previa</CFormLabel>
-                <CFormInput type="text" value={data.licencia_numero || 'Ninguna'} readOnly className="bg-light" />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">ID Licencia</CFormLabel>
-                <CFormInput type="text" value={data.id_licencia || 'Ninguna'} readOnly className="bg-light" />
+                 <CFormLabel className="text-muted small fw-semibold mb-1">Licencia Previa</CFormLabel>
+                 <CFormInput type="text" value={data.licencia_numero || 'Ninguna'} readOnly className="bg-light" />
                </CCol>
 
                <CCol md={12}>
@@ -189,12 +185,22 @@ const ParticipacionesDetalleModal = ({ idParticipacion, onClose }) => {
                </CCol>
 
                <CCol md={12}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Representante Legal</CFormLabel>
-                <CFormInput type="text"
-                  value={Array.isArray(data.representantes) && data.representantes.length > 0
-                    ? data.representantes.map((r) => r.razon_social || r.ci_rif || '').filter(Boolean).join(', ')
-                    : 'Ninguno'}
-                  readOnly className="bg-light" />
+                 <CFormLabel className="text-muted small fw-semibold mb-1">Representante Legal</CFormLabel>
+                 {Array.isArray(data.representantes) && data.representantes.length > 0 ? (
+                   <div className="border rounded bg-light px-3 py-2">
+                     {data.representantes.map((r, i) => (
+                       <div key={r.id_persona || i} className="d-flex justify-content-between align-items-center py-1 border-bottom last-child-no-border">
+                         <div>
+                           <span className="fw-semibold small">{r.razon_social || '—'}</span>
+                           <span className="text-muted small ms-2">{r.ci_rif}</span>
+                         </div>
+                         <CBadge color="info" className="px-2">{r.cargo || 'Sin cargo'}</CBadge>
+                       </div>
+                     ))}
+                   </div>
+                 ) : (
+                   <CFormInput type="text" value="Ninguno" readOnly className="bg-light" />
+                 )}
                </CCol>
 
                <CCol md={12}>

@@ -64,7 +64,7 @@ const ComercializadoresTabla = ({
     <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
       <CCardHeader className="bg-white d-flex justify-content-between align-items-center pb-0">
         <div>
-          <h4 className="mb-1 text-primary">Lista de Comercializadores</h4>
+          <h4 className="mb-1 text-primary">Comercializadores</h4>
           <p className="text-muted small mb-3">
             Empresas autorizadas a comercializar juegos de azar.
           </p>
@@ -72,10 +72,9 @@ const ComercializadoresTabla = ({
         {user?.rol !== 'supervisor' && (
           <CButton
             color="primary"
-            size="sm"
             onClick={onNavegarRegistro}
           >
-            <CIcon icon={cilPlus} className="me-1" />Nuevo Comercializador
+            <CIcon icon={cilPlus} className="me-2" />Nuevo Comercializador
           </CButton>
         )}
       </CCardHeader>
@@ -121,7 +120,7 @@ const ComercializadoresTabla = ({
                         <CTableHeaderCell>Teléfono</CTableHeaderCell>
                         <CTableHeaderCell>Email</CTableHeaderCell>
                         <CTableHeaderCell>Representante Legal</CTableHeaderCell>
-                        <CTableHeaderCell>Estado</CTableHeaderCell>
+                        <CTableHeaderCell className="text-center">Estado</CTableHeaderCell>
                         <CTableHeaderCell className="text-center">Detalle</CTableHeaderCell>
                         <CTableHeaderCell className="text-center">Editar</CTableHeaderCell>
                       </CTableRow>
@@ -153,8 +152,8 @@ const ComercializadoresTabla = ({
                              <span className="text-muted">—</span>
                            )}
                          </CTableDataCell>
-                         <CTableDataCell>
-                           <CBadge color={com.estado === 'activo' ? 'success' : 'secondary'}>
+                         <CTableDataCell className="text-center">
+                           <CBadge color={com.estado === 'activo' ? 'success' : 'secondary'} shape="rounded-pill">
                              {com.estado === 'activo' ? 'Activo' : 'Inactivo'}
                            </CBadge>
                          </CTableDataCell>

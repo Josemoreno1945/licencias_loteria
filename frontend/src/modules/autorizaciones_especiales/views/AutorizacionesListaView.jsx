@@ -34,6 +34,25 @@ const AUTORIZACIONES_SEARCH_FIELDS = [
   'agencia_texto',
 ]
 
+const getEstadoBadge = (estado) => {
+  switch (estado) {
+    case 'vigente':    return 'success'
+    case 'vencido':    return 'warning'
+    case 'suspendido': return 'danger'
+    case 'anulado':    return 'secondary'
+    default:           return 'info'
+  }
+}
+
+const getTipoBadge = (tipo) => {
+  switch (tipo) {
+    case 'Mesa':      return 'primary'
+    case 'Movil':     return 'info'
+    case 'Localidad': return 'warning'
+    default:          return 'dark'
+  }
+}
+
 const AutorizacionesListaView = () => {
   const navigate = useNavigate()
   const { data: autorizaciones, loading, error, refetch } = useFetch('/autorizaciones-especiales')
@@ -56,21 +75,6 @@ const AutorizacionesListaView = () => {
     setPaginaActual(1)
   }, [debouncedBusqueda])
 
-  const getEstadoBadge = (estado) => {
-    switch (estado) {
-      case 'vigente':
-        return 'success'
-      case 'vencido':
-        return 'warning'
-      case 'suspendido':
-        return 'danger'
-      case 'anulado':
-        return 'secondary'
-      default:
-        return 'info'
-    }
-  }
-
   return (
     <CContainer fluid>
       <AutorizacionesDetalleModal
@@ -80,7 +84,7 @@ const AutorizacionesListaView = () => {
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
         <CCardHeader className="bg-white d-flex justify-content-between align-items-center pb-0">
           <div>
-            <h4 className="mb-1 text-primary">Lista de Autorizaciones Especiales</h4>
+            <h4 className="mb-1 text-primary">Autorizaciones Especiales</h4>
             <p className="text-muted small mb-3">
               Autorizaciones especiales registradas en el sistema.
             </p>
@@ -136,7 +140,8 @@ const AutorizacionesListaView = () => {
                       <CTableHeaderCell>Nro. Mesa</CTableHeaderCell>
                       <CTableHeaderCell>Persona</CTableHeaderCell>
                       <CTableHeaderCell>Agencia</CTableHeaderCell>
-                      <CTableHeaderCell>Estado</CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">Tipo</CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">Estado</CTableHeaderCell>
                       <CTableHeaderCell>Vencimiento</CTableHeaderCell>
                       <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
                     </CTableRow>
@@ -158,15 +163,20 @@ const AutorizacionesListaView = () => {
                         <CTableDataCell>
                           {aut.centro_apuesta || aut.agencia_texto || <span className="text-muted">—</span>}
                         </CTableDataCell>
-                        <CTableDataCell>
-                          <CBadge color={getEstadoBadge(aut.estado_documento)}>
+                        <CTableDataCell className="text-center">
+                          <CBadge color={getTipoBadge(aut.tipo)} shape="rounded-pill" className="px-2">
+                            {aut.tipo || '—'}
+                          </CBadge>
+                        </CTableDataCell>
+                        <CTableDataCell className="text-center">
+                          <CBadge color={getEstadoBadge(aut.estado_documento)} shape="rounded-pill">
                             {aut.estado_documento}
                           </CBadge>
                         </CTableDataCell>
                         <CTableDataCell>
                           {aut.fecha_vencimiento?.slice(0, 10)}
                         </CTableDataCell>
-                        <CTableDataCell>
+                        <CTableDataCell className="text-center">
                           <CButton
                             size="sm"
                             color="primary"

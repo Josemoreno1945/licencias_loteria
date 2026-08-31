@@ -176,6 +176,12 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
         ]);
         setDetalleComercializador(resDetalle.data);
         setCentros(resCentros.data || []);
+
+        if (resDetalle.data?.representantes?.length > 0) {
+          handleInputChange({
+            target: { name: 'id_persona', value: resDetalle.data.representantes[0].id_persona }
+          });
+        }
       } catch (err) {
         console.error('Error al cargar detalle del comercializador:', err);
         setDetalleComercializador(null);
@@ -227,7 +233,7 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
 
       <CRow className="mb-3">
         <CCol md={6} className="mb-3">
-          <CFormLabel>Tipo de Documento <span className="text-danger">*</span></CFormLabel>
+          <CFormLabel>Tipo de Documento</CFormLabel>
           <CInputGroup>
             <CInputGroupText><CIcon icon={cilDescription} /></CInputGroupText>
             <CFormSelect
@@ -247,7 +253,7 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
         {/* Categoría de licencia — aparece solo si tipo = Licencia */}
         {mostrarCamposLicencia && (
           <CCol md={6} className="mb-3">
-            <CFormLabel>Categoría de Licencia <span className="text-danger">*</span></CFormLabel>
+            <CFormLabel>Categoría de Licencia</CFormLabel>
             <CInputGroup>
               <CInputGroupText><CIcon icon={cilBriefcase} /></CInputGroupText>
               <CFormSelect
@@ -279,7 +285,7 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
       <CRow className="mb-2">
         {/* Select de Comercializador */}
         <CCol md={6} className="mb-3">
-          <CFormLabel>Comercializador <span className="text-danger">*</span></CFormLabel>
+          <CFormLabel>Comercializador</CFormLabel>
           <CInputGroup>
             <CInputGroupText><CIcon icon={cilBuilding} /></CInputGroupText>
             <CFormSelect
@@ -322,32 +328,16 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
             ]}
           />
 
-          {/* Selector de Representante Legal (id_persona) */}
+          {/* Representante Legal Titular (Auto-seleccionado) */}
           {detalleComercializador.representantes?.length > 0 ? (
-            <CRow className="mb-3">
-              <CCol md={12}>
-                <CFormLabel>
-                  Representante Legal Titular <span className="text-danger">*</span>
-                </CFormLabel>
-                <CInputGroup>
-                  <CInputGroupText><CIcon icon={cilUser} /></CInputGroupText>
-                  <CFormSelect
-                    name="id_persona"
-                    value={formData.id_persona || ''}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="">Seleccione el representante titular...</option>
-                    {detalleComercializador.representantes.map((rep) => (
-                      <option key={rep.id_persona} value={rep.id_persona}>
-                        {rep.ci_rif} — {rep.razon_social}
-                        {rep.cargo ? ` (${rep.cargo})` : ''}
-                      </option>
-                    ))}
-                  </CFormSelect>
-                </CInputGroup>
-              </CCol>
-            </CRow>
+            <InfoCard
+              titulo="👤 Representante Legal Titular"
+              campos={[
+                { label: 'Cédula / RIF', value: detalleComercializador.representantes[0].ci_rif },
+                { label: 'Nombre', value: detalleComercializador.representantes[0].razon_social },
+                { label: 'Tipo', value: detalleComercializador.representantes[0].tipo_persona || 'Natural' },
+              ]}
+            />
           ) : (
             <CAlert color="warning" className="py-2 small mb-3">
               <CIcon icon={cilX} className="me-1" />
@@ -428,7 +418,7 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
             {/* ─ LICENCIA ─ */}
             {mostrarCamposLicencia && (
               <CCol md={6} className="mb-3">
-                <CFormLabel>Tipo de Emisión <span className="text-danger">*</span></CFormLabel>
+                <CFormLabel>Tipo de Emisión</CFormLabel>
                 <CInputGroup>
                   <CInputGroupText><CIcon icon={cilTask} /></CInputGroupText>
                   <CFormSelect
@@ -449,7 +439,7 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
             {mostrarCamposParticipacion && (
               <>
                 <CCol md={6} className="mb-3">
-                  <CFormLabel>Subtipo de Participación <span className="text-danger">*</span></CFormLabel>
+                  <CFormLabel>Subtipo de Participación</CFormLabel>
                   <CInputGroup>
                     <CInputGroupText><CIcon icon={cilTask} /></CInputGroupText>
                     <CFormSelect
@@ -467,7 +457,7 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
                   </CInputGroup>
                 </CCol>
                 <CCol md={6} className="mb-3">
-                  <CFormLabel>N° de Autorización CONALOT <span className="text-danger">*</span></CFormLabel>
+                  <CFormLabel>N° de Autorización CONALOT</CFormLabel>
                   <CInputGroup>
                     <CInputGroupText><CIcon icon={cilDescription} /></CInputGroupText>
                     <CFormInput
@@ -481,7 +471,7 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
                   </CInputGroup>
                 </CCol>
                 <CCol md={6} className="mb-3">
-                  <CFormLabel>Fecha Emisión CONALOT <span className="text-danger">*</span></CFormLabel>
+                  <CFormLabel>Fecha Emisión CONALOT</CFormLabel>
                   <CInputGroup>
                     <CInputGroupText><CIcon icon={cilTask} /></CInputGroupText>
                     <CFormInput
@@ -494,7 +484,7 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
                   </CInputGroup>
                 </CCol>
                 <CCol md={6} className="mb-3">
-                  <CFormLabel>Fecha Vencimiento CONALOT <span className="text-danger">*</span></CFormLabel>
+                  <CFormLabel>Fecha Vencimiento CONALOT</CFormLabel>
                   <CInputGroup>
                     <CInputGroupText><CIcon icon={cilTask} /></CInputGroupText>
                     <CFormInput
@@ -507,7 +497,7 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
                   </CInputGroup>
                 </CCol>
                 <CCol md={12} className="mb-3">
-                  <CFormLabel>N° Licencia de Lotería del Táchira <span className="text-danger">*</span></CFormLabel>
+                  <CFormLabel>N° Licencia de Lotería del Táchira</CFormLabel>
                   <CInputGroup>
                     <CInputGroupText><CIcon icon={cilDescription} /></CInputGroupText>
                     <CFormInput
@@ -527,7 +517,7 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
             {mostrarCamposAutorizacion && (
               <>
                 <CCol md={6} className="mb-3">
-                  <CFormLabel>Tipo de Autorización Especial <span className="text-danger">*</span></CFormLabel>
+                  <CFormLabel>Tipo de Autorización Especial</CFormLabel>
                   <CInputGroup>
                     <CInputGroupText><CIcon icon={cilTask} /></CInputGroupText>
                     <CFormSelect
@@ -544,7 +534,7 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
                   </CInputGroup>
                 </CCol>
                 <CCol md={12} className="mb-3">
-                  <CFormLabel>Dirección de la Mesa / Localidad <span className="text-danger">*</span></CFormLabel>
+                  <CFormLabel>Dirección de la Mesa / Localidad</CFormLabel>
                   <CInputGroup>
                     <CInputGroupText><CIcon icon={cilHome} /></CInputGroupText>
                     <CFormInput
