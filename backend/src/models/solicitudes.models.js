@@ -21,7 +21,24 @@ export const get_solicitudes = async () => {
     s.numero_autorizacion_conalot,
     u.nombre_usuario    AS registrado_por,
     s.created_at,
-    s.updated_at
+    s.updated_at,
+    -- Todos los representantes activos de la comercializadora (JSON)
+    COALESCE(
+      (SELECT json_agg(
+               json_build_object(
+                 'id_persona',   rp.id_persona,
+                 'ci_rif',       rp.ci_rif,
+                 'razon_social', rp.razon_social,
+                 'tipo_persona', rp.tipo_persona,
+                 'cargo',        cr.cargo
+               ) ORDER BY rp.razon_social
+             )
+       FROM comercializadores_representantes AS cr
+       JOIN personas AS rp ON cr.id_persona = rp.id_persona
+       WHERE cr.id_comercializador = c.id_comercializadores
+         AND cr.estado = 'activo'),
+      '[]'::json
+    ) AS representantes
   FROM solicitudes AS s
   JOIN personas       AS p  ON s.id_persona         = p.id_persona
   JOIN usuarios       AS u  ON s.registrado_por      = u.id_usuario
@@ -45,12 +62,6 @@ export const get_solicitudes_id = async (id) => {
     c.direccion_fiscal  AS comercializador_direccion,
     c.telefono          AS comercializador_telefono,
     c.email             AS comercializador_email,
-    -- Centro de apuesta (vía tabla puente solicitud_centros)
-    sc_sub.id_centro,
-    ca.nombre_agencia   AS centro_apuesta,
-    ca.direccion        AS centro_apuesta_direccion,
-    p_ca.razon_social   AS centro_apuesta_representante,
-    p_ca.ci_rif         AS centro_apuesta_representante_ci,
     s.tipo_tramite,
     s.categoria_licencia,
     s.estado,
@@ -75,20 +86,43 @@ export const get_solicitudes_id = async (id) => {
        JOIN juegos j ON sj.id_juego = j.id_juego
        WHERE sj.id_solicitud = s.id_solicitudes),
       '[]'
-    ) AS juegos
-  FROM solicitudes AS s
-  JOIN personas           AS p   ON s.id_persona         = p.id_persona
-  JOIN usuarios           AS u   ON s.registrado_por      = u.id_usuario
-  LEFT JOIN comercializadores AS c ON s.id_comercializador = c.id_comercializadores
-  -- Primer centro vinculado (si existe)
-  LEFT JOIN LATERAL (
-    SELECT id_centro FROM solicitud_centros
-    WHERE id_solicitud = s.id_solicitudes
-    LIMIT 1
-  ) sc_sub ON true
-  LEFT JOIN centros_apuesta AS ca ON sc_sub.id_centro = ca.id_centro
-  LEFT JOIN personas        AS p_ca ON ca.id_persona      = p_ca.id_persona
-  WHERE s.id_solicitudes = $1
+    ) AS juegos,
+    -- Todos los centros de apuesta vinculados (JSON)
+    COALESCE(
+      (SELECT json_agg(
+               json_build_object(
+                 'id_centro',       ca.id_centro,
+                 'nombre_agencia',  ca.nombre_agencia,
+                 'direccion',       ca.direccion
+               ) ORDER BY ca.nombre_agencia
+             )
+       FROM solicitud_centros sc
+       JOIN centros_apuesta ca ON sc.id_centro = ca.id_centro
+       WHERE sc.id_solicitud = s.id_solicitudes),
+      '[]'::json
+    ) AS centros,
+    -- Todos los representantes activos de la comercializadora (JSON)
+    COALESCE(
+      (SELECT json_agg(
+               json_build_object(
+                 'id_persona',   rp.id_persona,
+                 'ci_rif',       rp.ci_rif,
+                 'razon_social', rp.razon_social,
+                 'tipo_persona', rp.tipo_persona,
+                 'cargo',        cr.cargo
+               ) ORDER BY rp.razon_social
+             )
+       FROM comercializadores_representantes AS cr
+       JOIN personas AS rp ON cr.id_persona = rp.id_persona
+       WHERE cr.id_comercializador = c.id_comercializadores
+         AND cr.estado = 'activo'),
+      '[]'::json
+    ) AS representantes
+   FROM solicitudes AS s
+   JOIN personas           AS p   ON s.id_persona         = p.id_persona
+   JOIN usuarios           AS u   ON s.registrado_por      = u.id_usuario
+   LEFT JOIN comercializadores AS c ON s.id_comercializador = c.id_comercializadores
+   WHERE s.id_solicitudes = $1
   `;
   const result = await pool.query(query, [id]);
   return result.rows;
@@ -168,7 +202,7 @@ export const crear_solicitud = async (data) => {
         await client.query(
           `INSERT INTO solicitud_juegos (id_solicitud, id_juego) VALUES ($1, $2)
            ON CONFLICT (id_solicitud, id_juego) DO NOTHING`,
-          [id_solicitudes, id_juego]
+          [id_solicitudes, id_juego],
         );
       }
     }
@@ -178,7 +212,7 @@ export const crear_solicitud = async (data) => {
       await client.query(
         `INSERT INTO solicitud_centros (id_solicitud, id_centro) VALUES ($1, $2)
          ON CONFLICT (id_solicitud, id_centro) DO NOTHING`,
-        [id_solicitudes, data.id_centro]
+        [id_solicitudes, data.id_centro],
       );
     }
 
@@ -192,49 +226,86 @@ export const crear_solicitud = async (data) => {
   }
 };
 
-//put---------------------------------------------------
 export const actualizar_solicitud_id = async (id, data) => {
-  const query = `
-    UPDATE solicitudes
-    SET
-      id_persona                  = $1,
-      id_comercializador          = $2,
-      tipo_tramite                = $3,
-      categoria_licencia          = $4,
-      tipo_participacion          = $5,
-      tipo_autorizacion_especial  = $6,
-      estado                      = $7,
-      descripcion_tramite         = $8,
-      observaciones               = $9,
-      justificacion_no_logrado    = $10,
-      tipo_emision                = $11,
-      numero_autorizacion_conalot = $12,
-      fecha_emision_conalot       = $13,
-      fecha_vencimiento_conalot   = $14,
-      numero_licencia_loteriatachira = $15,
-      direccion_autorizacion_especial = $16
-    WHERE id_solicitudes = $17 RETURNING *`;
-  const values = [
-    data.id_persona,
-    data.id_comercializador ?? null,
-    data.tipo_tramite,
-    data.categoria_licencia ?? null,
-    data.tipo_participacion ?? null,
-    data.tipo_autorizacion_especial ?? null,
-    data.estado,
-    data.descripcion_tramite ?? null,
-    data.observaciones ?? null,
-    data.justificacion_no_logrado ?? null,
-    data.tipo_emision ?? null,
-    data.numero_autorizacion_conalot ?? null,
-    data.fecha_emision_conalot ?? null,
-    data.fecha_vencimiento_conalot ?? null,
-    data.numero_licencia_loteriatachira ?? null,
-    data.direccion_autorizacion_especial ?? null,
-    id,
-  ];
-  const result = await pool.query(query, values);
-  return result.rows;
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    const query = `
+      UPDATE solicitudes
+      SET
+        id_persona                  = $1,
+        id_comercializador          = $2,
+        tipo_tramite                = $3,
+        categoria_licencia          = $4,
+        tipo_participacion          = $5,
+        tipo_autorizacion_especial  = $6,
+        estado                      = $7,
+        descripcion_tramite         = $8,
+        observaciones               = $9,
+        justificacion_no_logrado    = $10,
+        tipo_emision                = $11,
+        numero_autorizacion_conalot = $12,
+        fecha_emision_conalot       = $13,
+        fecha_vencimiento_conalot   = $14,
+        numero_licencia_loteriatachira = $15,
+        direccion_autorizacion_especial = $16,
+        updated_at                  = NOW()
+      WHERE id_solicitudes = $17 RETURNING *`;
+    const values = [
+      data.id_persona,
+      data.id_comercializador ?? null,
+      data.tipo_tramite,
+      data.categoria_licencia ?? null,
+      data.tipo_participacion ?? null,
+      data.tipo_autorizacion_especial ?? null,
+      data.estado,
+      data.descripcion_tramite ?? null,
+      data.observaciones ?? null,
+      data.justificacion_no_logrado ?? null,
+      data.tipo_emision ?? null,
+      data.numero_autorizacion_conalot ?? null,
+      data.fecha_emision_conalot ?? null,
+      data.fecha_vencimiento_conalot ?? null,
+      data.numero_licencia_loteriatachira ?? null,
+      data.direccion_autorizacion_especial ?? null,
+      id,
+    ];
+    const result = await client.query(query, values);
+
+    await client.query(`DELETE FROM solicitud_juegos WHERE id_solicitud = $1`, [
+      id,
+    ]);
+    if (data.id_juegos && data.id_juegos.length > 0) {
+      for (const id_juego of data.id_juegos) {
+        await client.query(
+          `INSERT INTO solicitud_juegos (id_solicitud, id_juego) VALUES ($1, $2)
+           ON CONFLICT (id_solicitud, id_juego) DO NOTHING`,
+          [id, id_juego],
+        );
+      }
+    }
+
+    await client.query(
+      `DELETE FROM solicitud_centros WHERE id_solicitud = $1`,
+      [id],
+    );
+    if (data.id_centro) {
+      await client.query(
+        `INSERT INTO solicitud_centros (id_solicitud, id_centro) VALUES ($1, $2)
+         ON CONFLICT (id_solicitud, id_centro) DO NOTHING`,
+        [id, data.id_centro],
+      );
+    }
+
+    await client.query("COMMIT");
+    return result.rows;
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
 };
 
 //busquedas avanzadas----------------------------------------------------
@@ -306,7 +377,9 @@ export const buscar_solicitudes_por_estado = async (estado) => {
   return result.rows;
 };
 
-export const buscar_solicitudes_por_comercializador = async (id_comercializador) => {
+export const buscar_solicitudes_por_comercializador = async (
+  id_comercializador,
+) => {
   const query = `
   SELECT
     s.id_solicitudes,

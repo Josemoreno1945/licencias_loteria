@@ -11,6 +11,11 @@ import {
   buscar_solicitudes_por_usuario,
 } from "../models/solicitudes.models.js";
 
+import { get_personas_id } from "../models/personas.models.js";
+import { get_comercializadores_id } from "../models/comercializadores.models.js";
+import { get_centros_apuesta_id } from "../models/centros_de_apuesta.models.js";
+import { get_juegos_id } from "../models/juegos.models.js";
+
 import { errors, throwError, zodValidationError } from "../utils/errors.js";
 import { uuidRegex } from "../utils/validators.js";
 import {
@@ -66,6 +71,39 @@ export const crear_c_solicitud = async (req, res, next) => {
       return next(zodValidationError(parseS.error));
     }
 
+    // Validar existencia de entidades relacionadas
+    if (parseS.data.id_persona) {
+      const personaExiste = await get_personas_id(parseS.data.id_persona);
+      if (!personaExiste || personaExiste.length === 0) {
+        throwError(errors.persona_no_encontrada);
+      }
+    }
+
+    if (parseS.data.id_comercializador) {
+      const comercializadorExiste = await get_comercializadores_id(
+        parseS.data.id_comercializador,
+      );
+      if (!comercializadorExiste || comercializadorExiste.length === 0) {
+        throwError(errors.comercializadora_no_encontrada);
+      }
+    }
+
+    if (parseS.data.id_centro) {
+      const centroExiste = await get_centros_apuesta_id(parseS.data.id_centro);
+      if (!centroExiste || centroExiste.length === 0) {
+        throwError(errors.centros_apuesta_no_encontrada);
+      }
+    }
+
+    if (parseS.data.id_juegos && parseS.data.id_juegos.length > 0) {
+      for (const id_juego of parseS.data.id_juegos) {
+        const juegoExiste = await get_juegos_id(id_juego);
+        if (!juegoExiste || juegoExiste.length === 0) {
+          throwError(errors.juegos_no_encontrados);
+        }
+      }
+    }
+
     const rows = await crear_solicitud(parseS.data);
     return res.status(201).json(rows);
   } catch (error) {
@@ -95,6 +133,39 @@ export const actualizar_solicitud = async (req, res, next) => {
       throwError(errors.solicitud_no_encontrada);
     }
 
+    // Validar existencia de entidades relacionadas
+    if (parseS.data.id_persona) {
+      const personaExiste = await get_personas_id(parseS.data.id_persona);
+      if (!personaExiste || personaExiste.length === 0) {
+        throwError(errors.persona_no_encontrada);
+      }
+    }
+
+    if (parseS.data.id_comercializador) {
+      const comercializadorExiste = await get_comercializadores_id(
+        parseS.data.id_comercializador,
+      );
+      if (!comercializadorExiste || comercializadorExiste.length === 0) {
+        throwError(errors.comercializadora_no_encontrada);
+      }
+    }
+
+    if (parseS.data.id_centro) {
+      const centroExiste = await get_centros_apuesta_id(parseS.data.id_centro);
+      if (!centroExiste || centroExiste.length === 0) {
+        throwError(errors.centros_apuesta_no_encontrada);
+      }
+    }
+
+    if (parseS.data.id_juegos && parseS.data.id_juegos.length > 0) {
+      for (const id_juego of parseS.data.id_juegos) {
+        const juegoExiste = await get_juegos_id(id_juego);
+        if (!juegoExiste || juegoExiste.length === 0) {
+          throwError(errors.juegos_no_encontrados);
+        }
+      }
+    }
+
     const rows = await actualizar_solicitud_id(id, parseS.data);
     res.json(rows);
   } catch (error) {
@@ -119,7 +190,12 @@ export const buscar_c_solicitudes_por_persona = async (req, res, next) => {
 export const buscar_c_solicitudes_por_tipo = async (req, res, next) => {
   try {
     const tipo = req.params.tipo;
-    const tiposValidos = ["Licencia", "Participacion", "Autorizacion_especial", "Otro"];
+    const tiposValidos = [
+      "Licencia",
+      "Participacion",
+      "Autorizacion_especial",
+      "Otro",
+    ];
     if (!tiposValidos.includes(tipo)) {
       throwError(errors.invalidData);
     }
@@ -144,7 +220,11 @@ export const buscar_c_solicitudes_por_estado = async (req, res, next) => {
   }
 };
 
-export const buscar_c_solicitudes_por_comercializador = async (req, res, next) => {
+export const buscar_c_solicitudes_por_comercializador = async (
+  req,
+  res,
+  next,
+) => {
   try {
     const id = req.params.id;
     if (!uuidRegex.test(id)) {

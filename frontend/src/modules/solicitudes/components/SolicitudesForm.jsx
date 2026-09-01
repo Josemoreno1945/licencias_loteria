@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import {
   CForm,
   CFormInput,
@@ -15,8 +15,8 @@ import {
   CBadge,
   CCard,
   CCardBody,
-} from '@coreui/react';
-import CIcon from '@coreui/icons-react';
+} from "@coreui/react";
+import CIcon from "@coreui/icons-react";
 import {
   cilDescription,
   cilBuilding,
@@ -28,21 +28,25 @@ import {
   cilCheckAlt,
   cilX,
   cilTask,
-} from '@coreui/icons';
-import axiosInstance from '../../../api/axiosInstance';
+} from "@coreui/icons";
+import axiosInstance from "../../../api/axiosInstance";
+import SelectConBusqueda from "../../../components/common/SelectConBusqueda";
 
 // ── Componente de tarjeta de información de entidad (solo lectura) ──────────
 const InfoCard = ({ titulo, campos }) => (
   <CCard className="border-start border-start-3 border-start-info mb-3">
     <CCardBody className="py-2 px-3">
-      <p className="text-info fw-semibold small mb-2" style={{ letterSpacing: '0.05em' }}>
+      <p
+        className="text-info fw-semibold small mb-2"
+        style={{ letterSpacing: "0.05em" }}
+      >
         {titulo}
       </p>
       <CRow className="gy-1">
         {campos.map(({ label, value }) => (
           <CCol key={label} md={6}>
             <span className="text-muted small">{label}: </span>
-            <span className="small fw-semibold">{value || '—'}</span>
+            <span className="small fw-semibold">{value || "—"}</span>
           </CCol>
         ))}
       </CRow>
@@ -68,13 +72,17 @@ const SelectorJuegos = ({ juegos, seleccionados, onChange, loading }) => {
   }
 
   if (!juegos.length) {
-    return <CAlert color="warning" className="py-2 small">No hay juegos activos disponibles.</CAlert>;
+    return (
+      <CAlert color="warning" className="py-2 small">
+        No hay juegos activos disponibles.
+      </CAlert>
+    );
   }
 
   return (
     <div
       className="border rounded p-2"
-      style={{ maxHeight: '180px', overflowY: 'auto', background: '#f8f9fa' }}
+      style={{ maxHeight: "180px", overflowY: "auto", background: "#f8f9fa" }}
     >
       {juegos.map((j) => {
         const checked = seleccionados.includes(j.id_juego);
@@ -83,19 +91,26 @@ const SelectorJuegos = ({ juegos, seleccionados, onChange, loading }) => {
             key={j.id_juego}
             onClick={() => toggle(j.id_juego)}
             className={`d-flex align-items-center gap-2 px-2 py-1 rounded mb-1 cursor-pointer ${
-              checked ? 'bg-primary bg-opacity-10 border border-primary' : 'hover-bg'
+              checked
+                ? "bg-primary bg-opacity-10 border border-primary"
+                : "hover-bg"
             }`}
-            style={{ cursor: 'pointer', userSelect: 'none' }}
+            style={{ cursor: "pointer", userSelect: "none" }}
           >
             <CIcon
               icon={checked ? cilCheckAlt : cilX}
               size="sm"
-              className={checked ? 'text-primary' : 'text-secondary'}
+              className={checked ? "text-primary" : "text-secondary"}
             />
             <span className="small fw-semibold">{j.nombre}</span>
             <span className="text-muted small ms-auto">{j.nombre}</span>
             {checked && (
-              <CBadge color="primary" shape="rounded-pill" className="ms-1" style={{ fontSize: '0.65rem' }}>
+              <CBadge
+                color="primary"
+                shape="rounded-pill"
+                className="ms-1"
+                style={{ fontSize: "0.65rem" }}
+              >
                 ✓
               </CBadge>
             )}
@@ -107,8 +122,14 @@ const SelectorJuegos = ({ juegos, seleccionados, onChange, loading }) => {
 };
 
 // ── Componente principal ──────────────────────────────────────────────────────
-const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSubmit }) => {
-
+const SolicitudesForm = ({
+  formData,
+  handleInputChange,
+  handleJuegosChange,
+  onSubmit,
+  loadingDeps = false,
+  isEditMode = false,
+}) => {
   // ── Listas de catálogos ──
   const [comercializadores, setComercializadores] = useState([]);
   const [centros, setCentros] = useState([]);
@@ -119,7 +140,8 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
   const [detalleCentro, setDetalleCentro] = useState(null);
 
   // ── Estados de carga ──
-  const [loadingComercializadores, setLoadingComercializadores] = useState(false);
+  const [loadingComercializadores, setLoadingComercializadores] =
+    useState(false);
   const [loadingDetalleC, setLoadingDetalleC] = useState(false);
   const [loadingCentros, setLoadingCentros] = useState(false);
   const [loadingDetalleCA, setLoadingDetalleCA] = useState(false);
@@ -130,10 +152,10 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
     const fetchComercializadores = async () => {
       setLoadingComercializadores(true);
       try {
-        const res = await axiosInstance.get('/comercializadores/activos');
+        const res = await axiosInstance.get("/comercializadores/activos");
         setComercializadores(res.data || []);
       } catch (err) {
-        console.error('Error al cargar comercializadores:', err);
+        console.error("Error al cargar comercializadores:", err);
       } finally {
         setLoadingComercializadores(false);
       }
@@ -146,10 +168,10 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
     const fetchJuegos = async () => {
       setLoadingJuegos(true);
       try {
-        const res = await axiosInstance.get('/juegos/activas');
+        const res = await axiosInstance.get("/juegos/activas");
         setJuegos(res.data || []);
       } catch (err) {
-        console.error('Error al cargar juegos:', err);
+        console.error("Error al cargar juegos:", err);
       } finally {
         setLoadingJuegos(false);
       }
@@ -171,19 +193,26 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
       setLoadingCentros(true);
       try {
         const [resDetalle, resCentros] = await Promise.all([
-          axiosInstance.get(`/comercializadores/${formData.id_comercializador}/detalle-completo`),
-          axiosInstance.get(`/centros_apuesta/por-comercializador/${formData.id_comercializador}`),
+          axiosInstance.get(
+            `/comercializadores/${formData.id_comercializador}/detalle-completo`,
+          ),
+          axiosInstance.get(
+            `/centros_apuesta/por-comercializador/${formData.id_comercializador}`,
+          ),
         ]);
         setDetalleComercializador(resDetalle.data);
         setCentros(resCentros.data || []);
 
         if (resDetalle.data?.representantes?.length > 0) {
           handleInputChange({
-            target: { name: 'id_persona', value: resDetalle.data.representantes[0].id_persona }
+            target: {
+              name: "id_persona",
+              value: resDetalle.data.representantes[0].id_persona,
+            },
           });
         }
       } catch (err) {
-        console.error('Error al cargar detalle del comercializador:', err);
+        console.error("Error al cargar detalle del comercializador:", err);
         setDetalleComercializador(null);
         setCentros([]);
       } finally {
@@ -204,10 +233,12 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
     const fetchDetalleCentro = async () => {
       setLoadingDetalleCA(true);
       try {
-        const res = await axiosInstance.get(`/centros_apuesta/${formData.id_centro}/detalle-completo`);
+        const res = await axiosInstance.get(
+          `/centros_apuesta/${formData.id_centro}/detalle-completo`,
+        );
         setDetalleCentro(res.data);
       } catch (err) {
-        console.error('Error al cargar detalle del centro:', err);
+        console.error("Error al cargar detalle del centro:", err);
         setDetalleCentro(null);
       } finally {
         setLoadingDetalleCA(false);
@@ -216,18 +247,54 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
     fetchDetalleCentro();
   }, [formData.id_centro]);
 
-  const mostrarCamposLicencia       = formData.tipo_tramite === 'Licencia';
-  const mostrarCamposParticipacion  = formData.tipo_tramite === 'Participacion';
-  const mostrarCamposAutorizacion   = formData.tipo_tramite === 'Autorizacion_especial';
-  const mostrarJuegos               = mostrarCamposLicencia || mostrarCamposParticipacion || mostrarCamposAutorizacion;
+  // Opciones para los selects con buscador (react-select)
+  const opcionesComercializadores = useMemo(
+    () =>
+      (comercializadores || []).map((c) => ({
+        value: c.id_comercializadores,
+        label: `${c.rif || ""} — ${c.razon_social || ""}`.trim(),
+      })),
+    [comercializadores],
+  );
+
+  const opcionesCentros = useMemo(
+    () =>
+      (centros || []).map((ca) => ({
+        value: ca.id_centro,
+        label: ca.nombre_agencia || "",
+      })),
+    [centros],
+  );
+
+  // Adapta react-select al manejador de formulario existente.
+  // react-select pasa el objeto opción ({ value, label }) — extraemos `value`
+  // y reenviamos un evento con forma { target: { name, value } }.
+  const handleSelectChange = useCallback(
+    (name) => (option) => {
+      const valor = option ? option.value : null;
+      handleInputChange({ target: { name, value: valor ?? "" } });
+    },
+    [handleInputChange],
+  );
+
+  const mostrarCamposLicencia = formData.tipo_tramite === "Licencia";
+  const mostrarCamposParticipacion = formData.tipo_tramite === "Participacion";
+  const mostrarCamposAutorizacion =
+    formData.tipo_tramite === "Autorizacion_especial";
+  const mostrarJuegos =
+    mostrarCamposLicencia ||
+    mostrarCamposParticipacion ||
+    mostrarCamposAutorizacion;
 
   return (
     <CForm onSubmit={onSubmit}>
-
       {/* ══════════════════════════════════════════════════
           PASO 1 — Tipo de Trámite
       ══════════════════════════════════════════════════ */}
-      <h6 className="text-primary fw-semibold mb-3 mt-1" style={{ letterSpacing: '0.04em' }}>
+      <h6
+        className="text-primary fw-semibold mb-3 mt-1"
+        style={{ letterSpacing: "0.04em" }}
+      >
         1. Tipo de Trámite
       </h6>
 
@@ -235,7 +302,9 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
         <CCol md={6} className="mb-3">
           <CFormLabel>Tipo de Documento</CFormLabel>
           <CInputGroup>
-            <CInputGroupText><CIcon icon={cilDescription} /></CInputGroupText>
+            <CInputGroupText>
+              <CIcon icon={cilDescription} />
+            </CInputGroupText>
             <CFormSelect
               name="tipo_tramite"
               value={formData.tipo_tramite}
@@ -245,7 +314,9 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
               <option value="">Seleccione el tipo...</option>
               <option value="Licencia">Licencia</option>
               <option value="Participacion">Participación</option>
-              <option value="Autorizacion_especial">Autorización Especial</option>
+              <option value="Autorizacion_especial">
+                Autorización Especial
+              </option>
             </CFormSelect>
           </CInputGroup>
         </CCol>
@@ -255,10 +326,12 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
           <CCol md={6} className="mb-3">
             <CFormLabel>Categoría de Licencia</CFormLabel>
             <CInputGroup>
-              <CInputGroupText><CIcon icon={cilBriefcase} /></CInputGroupText>
+              <CInputGroupText>
+                <CIcon icon={cilBriefcase} />
+              </CInputGroupText>
               <CFormSelect
                 name="categoria_licencia"
-                value={formData.categoria_licencia || ''}
+                value={formData.categoria_licencia || ""}
                 onChange={handleInputChange}
                 required
               >
@@ -266,7 +339,9 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
                 <option value="Operador">Operador</option>
                 <option value="Comercializador">Comercializador</option>
                 <option value="Centro_de_apuesta">Centro de Apuesta</option>
-                <option value="Responsable_de_programa_informatico">Responsable de Prog. Informático</option>
+                <option value="Responsable_de_programa_informatico">
+                  Responsable de Prog. Informático
+                </option>
               </CFormSelect>
             </CInputGroup>
           </CCol>
@@ -278,34 +353,39 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
       {/* ══════════════════════════════════════════════════
           PASO 2 — Selección de Entidades con Autocompletado
       ══════════════════════════════════════════════════ */}
-      <h6 className="text-primary fw-semibold mb-3" style={{ letterSpacing: '0.04em' }}>
+      <h6
+        className="text-primary fw-semibold mb-3"
+        style={{ letterSpacing: "0.04em" }}
+      >
         2. Entidades Vinculadas
       </h6>
 
       <CRow className="mb-2">
-        {/* Select de Comercializador */}
+        {/* Select de Comercializador con buscador integrado */}
         <CCol md={6} className="mb-3">
           <CFormLabel>Comercializador</CFormLabel>
           <CInputGroup>
-            <CInputGroupText><CIcon icon={cilBuilding} /></CInputGroupText>
-            <CFormSelect
+            <CInputGroupText>
+              <CIcon icon={cilBuilding} />
+            </CInputGroupText>
+            <SelectConBusqueda
               name="id_comercializador"
-              value={formData.id_comercializador || ''}
-              onChange={handleInputChange}
-              disabled={loadingComercializadores}
-              required
-            >
-              <option value="">Seleccione el comercializador...</option>
-              {comercializadores.map((c) => (
-                <option key={c.id_comercializadores} value={c.id_comercializadores}>
-                  {c.rif} — {c.razon_social}
-                </option>
-              ))}
-            </CFormSelect>
-            {loadingComercializadores && (
-              <CInputGroupText><CSpinner size="sm" /></CInputGroupText>
-            )}
+              value={formData.id_comercializador || null}
+              options={opcionesComercializadores}
+              onChange={handleSelectChange("id_comercializador")}
+              isDisabled={loadingComercializadores}
+              isClearable
+              placeholder="Seleccione el comercializador..."
+              loading={loadingComercializadores}
+              menuPortalTarget={document.body}
+            />
           </CInputGroup>
+          {!loadingComercializadores &&
+            opcionesComercializadores.length === 0 && (
+              <p className="text-muted small mt-1 mb-0">
+                No hay comercializadores activos disponibles.
+              </p>
+            )}
         </CCol>
       </CRow>
 
@@ -320,28 +400,39 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
           <InfoCard
             titulo="📋 Datos del Comercializador"
             campos={[
-              { label: 'RIF', value: detalleComercializador.rif },
-              { label: 'Razón Social', value: detalleComercializador.razon_social },
-              { label: 'Dirección Fiscal', value: detalleComercializador.direccion_fiscal },
-              { label: 'Teléfono', value: detalleComercializador.telefono },
-              { label: 'Email', value: detalleComercializador.email },
+              { label: "RIF", value: detalleComercializador.rif },
+              {
+                label: "Razón Social",
+                value: detalleComercializador.razon_social,
+              },
+              {
+                label: "Dirección Fiscal",
+                value: detalleComercializador.direccion_fiscal,
+              },
+              { label: "Teléfono", value: detalleComercializador.telefono },
+              { label: "Email", value: detalleComercializador.email },
             ]}
           />
 
-          {/* Representante Legal Titular (Auto-seleccionado) */}
+          {/* Representantes Legales (todos) — el primero se auto-selecciona como firmante */}
           {detalleComercializador.representantes?.length > 0 ? (
-            <InfoCard
-              titulo="👤 Representante Legal Titular"
-              campos={[
-                { label: 'Cédula / RIF', value: detalleComercializador.representantes[0].ci_rif },
-                { label: 'Nombre', value: detalleComercializador.representantes[0].razon_social },
-                { label: 'Tipo', value: detalleComercializador.representantes[0].tipo_persona || 'Natural' },
-              ]}
-            />
+            detalleComercializador.representantes.map((r, i) => (
+              <InfoCard
+                key={r.id_persona || i}
+                titulo={`👤 Representante ${i + 1}${i === 0 ? " (Firmante)" : ""}`}
+                campos={[
+                  { label: "Cédula / RIF", value: r.ci_rif },
+                  { label: "Nombre", value: r.razon_social },
+                  { label: "Tipo", value: r.tipo_persona || "Natural" },
+                  { label: "Cargo", value: r.cargo || "—" },
+                ]}
+              />
+            ))
           ) : (
             <CAlert color="warning" className="py-2 small mb-3">
               <CIcon icon={cilX} className="me-1" />
-              Este comercializador no tiene representantes activos registrados. Regístrelos primero.
+              Este comercializador no tiene representantes activos registrados.
+              Regístrelos primero.
             </CAlert>
           )}
         </>
@@ -356,21 +447,20 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
               <span className="text-muted small ms-2">(Opcional)</span>
             </CFormLabel>
             <CInputGroup>
-              <CInputGroupText><CIcon icon={cilHome} /></CInputGroupText>
-              <CFormSelect
+              <CInputGroupText>
+                <CIcon icon={cilHome} />
+              </CInputGroupText>
+              <SelectConBusqueda
                 name="id_centro"
-                value={formData.id_centro || ''}
-                onChange={handleInputChange}
-                disabled={loadingCentros}
-              >
-                <option value="">Ninguno / No aplica</option>
-                {centros.map((ca) => (
-                  <option key={ca.id_centro} value={ca.id_centro}>
-                    {ca.nombre_agencia}
-                  </option>
-                ))}
-              </CFormSelect>
-              {loadingCentros && <CInputGroupText><CSpinner size="sm" /></CInputGroupText>}
+                value={formData.id_centro || null}
+                options={opcionesCentros}
+                onChange={handleSelectChange("id_centro")}
+                isDisabled={loadingCentros}
+                isClearable
+                placeholder="Ninguno / No aplica"
+                loading={loadingCentros}
+                menuPortalTarget={document.body}
+              />
             </CInputGroup>
             {!loadingCentros && centros.length === 0 && (
               <p className="text-muted small mt-1 mb-0">
@@ -391,13 +481,15 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
         <InfoCard
           titulo="🏢 Datos del Centro de Apuesta"
           campos={[
-            { label: 'Agencia', value: detalleCentro.nombre_agencia },
-            { label: 'Dirección', value: detalleCentro.direccion },
+            { label: "Agencia", value: detalleCentro.nombre_agencia },
+            { label: "Dirección", value: detalleCentro.direccion },
             {
-              label: 'Representantes',
+              label: "Representantes",
               value: detalleCentro.representantes?.length
-                ? detalleCentro.representantes.map((r) => `${r.razon_social} (${r.cargo || 'Rep.'}`).join(', ')
-                : 'Sin representantes activos',
+                ? detalleCentro.representantes
+                    .map((r) => `${r.razon_social} (${r.cargo || "Rep."}`)
+                    .join(", ")
+                : "Sin representantes activos",
             },
           ]}
         />
@@ -410,7 +502,10 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
       ══════════════════════════════════════════════════ */}
       {formData.tipo_tramite && (
         <>
-          <h6 className="text-primary fw-semibold mb-3" style={{ letterSpacing: '0.04em' }}>
+          <h6
+            className="text-primary fw-semibold mb-3"
+            style={{ letterSpacing: "0.04em" }}
+          >
             3. Detalles del Trámite
           </h6>
 
@@ -420,10 +515,12 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
               <CCol md={6} className="mb-3">
                 <CFormLabel>Tipo de Emisión</CFormLabel>
                 <CInputGroup>
-                  <CInputGroupText><CIcon icon={cilTask} /></CInputGroupText>
+                  <CInputGroupText>
+                    <CIcon icon={cilTask} />
+                  </CInputGroupText>
                   <CFormSelect
                     name="tipo_emision"
-                    value={formData.tipo_emision || ''}
+                    value={formData.tipo_emision || ""}
                     onChange={handleInputChange}
                     required
                   >
@@ -441,10 +538,12 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
                 <CCol md={6} className="mb-3">
                   <CFormLabel>Subtipo de Participación</CFormLabel>
                   <CInputGroup>
-                    <CInputGroupText><CIcon icon={cilTask} /></CInputGroupText>
+                    <CInputGroupText>
+                      <CIcon icon={cilTask} />
+                    </CInputGroupText>
                     <CFormSelect
                       name="tipo_participacion"
-                      value={formData.tipo_participacion || ''}
+                      value={formData.tipo_participacion || ""}
                       onChange={handleInputChange}
                       required
                     >
@@ -459,12 +558,14 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
                 <CCol md={6} className="mb-3">
                   <CFormLabel>N° de Autorización CONALOT</CFormLabel>
                   <CInputGroup>
-                    <CInputGroupText><CIcon icon={cilDescription} /></CInputGroupText>
+                    <CInputGroupText>
+                      <CIcon icon={cilDescription} />
+                    </CInputGroupText>
                     <CFormInput
                       type="text"
                       name="numero_autorizacion_conalot"
                       placeholder="Ej: CONALOT-2024-001"
-                      value={formData.numero_autorizacion_conalot || ''}
+                      value={formData.numero_autorizacion_conalot || ""}
                       onChange={handleInputChange}
                       required
                     />
@@ -473,11 +574,13 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
                 <CCol md={6} className="mb-3">
                   <CFormLabel>Fecha Emisión CONALOT</CFormLabel>
                   <CInputGroup>
-                    <CInputGroupText><CIcon icon={cilTask} /></CInputGroupText>
+                    <CInputGroupText>
+                      <CIcon icon={cilTask} />
+                    </CInputGroupText>
                     <CFormInput
                       type="date"
                       name="fecha_emision_conalot"
-                      value={formData.fecha_emision_conalot || ''}
+                      value={formData.fecha_emision_conalot || ""}
                       onChange={handleInputChange}
                       required
                     />
@@ -486,11 +589,13 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
                 <CCol md={6} className="mb-3">
                   <CFormLabel>Fecha Vencimiento CONALOT</CFormLabel>
                   <CInputGroup>
-                    <CInputGroupText><CIcon icon={cilTask} /></CInputGroupText>
+                    <CInputGroupText>
+                      <CIcon icon={cilTask} />
+                    </CInputGroupText>
                     <CFormInput
                       type="date"
                       name="fecha_vencimiento_conalot"
-                      value={formData.fecha_vencimiento_conalot || ''}
+                      value={formData.fecha_vencimiento_conalot || ""}
                       onChange={handleInputChange}
                       required
                     />
@@ -499,12 +604,14 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
                 <CCol md={12} className="mb-3">
                   <CFormLabel>N° Licencia de Lotería del Táchira</CFormLabel>
                   <CInputGroup>
-                    <CInputGroupText><CIcon icon={cilDescription} /></CInputGroupText>
+                    <CInputGroupText>
+                      <CIcon icon={cilDescription} />
+                    </CInputGroupText>
                     <CFormInput
                       type="text"
                       name="numero_licencia_loteriatachira"
                       placeholder="Ej: 06°-L000403-CA-2026"
-                      value={formData.numero_licencia_loteriatachira || ''}
+                      value={formData.numero_licencia_loteriatachira || ""}
                       onChange={handleInputChange}
                       required
                     />
@@ -519,10 +626,12 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
                 <CCol md={6} className="mb-3">
                   <CFormLabel>Tipo de Autorización Especial</CFormLabel>
                   <CInputGroup>
-                    <CInputGroupText><CIcon icon={cilTask} /></CInputGroupText>
+                    <CInputGroupText>
+                      <CIcon icon={cilTask} />
+                    </CInputGroupText>
                     <CFormSelect
                       name="tipo_autorizacion_especial"
-                      value={formData.tipo_autorizacion_especial || ''}
+                      value={formData.tipo_autorizacion_especial || ""}
                       onChange={handleInputChange}
                       required
                     >
@@ -536,12 +645,14 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
                 <CCol md={12} className="mb-3">
                   <CFormLabel>Dirección de la Mesa / Localidad</CFormLabel>
                   <CInputGroup>
-                    <CInputGroupText><CIcon icon={cilHome} /></CInputGroupText>
+                    <CInputGroupText>
+                      <CIcon icon={cilHome} />
+                    </CInputGroupText>
                     <CFormInput
                       type="text"
                       name="direccion_autorizacion_especial"
                       placeholder="Ej: Palotal Parte Alta, Barrio Bolivariano..."
-                      value={formData.direccion_autorizacion_especial || ''}
+                      value={formData.direccion_autorizacion_especial || ""}
                       onChange={handleInputChange}
                       required
                     />
@@ -560,7 +671,8 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
                   Juegos Autorizados en esta Solicitud
                   {formData.id_juegos?.length > 0 && (
                     <CBadge color="primary" className="ms-2">
-                      {formData.id_juegos.length} seleccionado{formData.id_juegos.length > 1 ? 's' : ''}
+                      {formData.id_juegos.length} seleccionado
+                      {formData.id_juegos.length > 1 ? "s" : ""}
                     </CBadge>
                   )}
                 </CFormLabel>
@@ -581,20 +693,25 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
       {/* ══════════════════════════════════════════════════
           PASO 4 — Notas y Observaciones
       ══════════════════════════════════════════════════ */}
-      <h6 className="text-primary fw-semibold mb-3" style={{ letterSpacing: '0.04em' }}>
-        {formData.tipo_tramite ? '4.' : '2.'} Notas Internas
+      <h6
+        className="text-primary fw-semibold mb-3"
+        style={{ letterSpacing: "0.04em" }}
+      >
+        {formData.tipo_tramite ? "4." : "2."} Notas Internas
       </h6>
 
       <CRow className="mb-3">
         <CCol md={6} className="mb-3">
           <CFormLabel>Descripción del Trámite</CFormLabel>
           <CInputGroup>
-            <CInputGroupText><CIcon icon={cilNotes} /></CInputGroupText>
+            <CInputGroupText>
+              <CIcon icon={cilNotes} />
+            </CInputGroupText>
             <CFormTextarea
               name="descripcion_tramite"
               rows={3}
               placeholder="Detalle breve del trámite..."
-              value={formData.descripcion_tramite || ''}
+              value={formData.descripcion_tramite || ""}
               onChange={handleInputChange}
             />
           </CInputGroup>
@@ -603,12 +720,14 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
         <CCol md={6} className="mb-3">
           <CFormLabel>Observaciones</CFormLabel>
           <CInputGroup>
-            <CInputGroupText><CIcon icon={cilNotes} /></CInputGroupText>
+            <CInputGroupText>
+              <CIcon icon={cilNotes} />
+            </CInputGroupText>
             <CFormTextarea
               name="observaciones"
               rows={3}
               placeholder="Anotaciones internas o adicionales..."
-              value={formData.observaciones || ''}
+              value={formData.observaciones || ""}
               onChange={handleInputChange}
             />
           </CInputGroup>
@@ -616,8 +735,8 @@ const SolicitudesForm = ({ formData, handleInputChange, handleJuegosChange, onSu
       </CRow>
 
       <div className="d-flex justify-content-end mt-3">
-        <CButton type="submit" color="primary" size="lg">
-          Registrar Solicitud
+        <CButton type="submit" color="primary" size="lg" disabled={loadingDeps}>
+          {isEditMode ? "Guardar Cambios" : "Registrar Solicitud"}
         </CButton>
       </div>
     </CForm>

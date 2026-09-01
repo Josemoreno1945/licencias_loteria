@@ -9,7 +9,7 @@ const base_solicitud_schema = z.object({
 
   tipo_tramite: z.enum(
     ["Licencia", "Participacion", "Autorizacion_especial", "Otro"],
-    { required_error: "El tipo de tramite es requerido" }
+    { required_error: "El tipo de tramite es requerido" },
   ),
 
   categoria_licencia: z
@@ -23,10 +23,7 @@ const base_solicitud_schema = z.object({
     .nullable(),
 
   // Aplica cuando tipo_tramite = 'Licencia'
-  tipo_emision: z
-    .enum(["Inscripcion", "Renovacion"])
-    .optional()
-    .nullable(),
+  tipo_emision: z.enum(["Inscripcion", "Renovacion"]).optional().nullable(),
 
   // Aplica cuando tipo_tramite = 'Participacion'
   numero_autorizacion_conalot: z
@@ -57,9 +54,17 @@ const base_solicitud_schema = z.object({
 
   estado: z.enum(["Pendiente", "Aprobado", "Rechazada"]).default("Pendiente"),
 
-  descripcion_tramite: z.string().min(1, "La descripcion no puede estar vacia").optional().nullable(),
+  descripcion_tramite: z
+    .string()
+    .min(1, "La descripcion no puede estar vacia")
+    .optional()
+    .nullable(),
 
-  observaciones: z.string().min(1, "Las observaciones no pueden estar vacias").optional().nullable(),
+  observaciones: z
+    .string()
+    .min(1, "Las observaciones no pueden estar vacias")
+    .optional()
+    .nullable(),
 
   justificacion_no_logrado: z
     .string()
@@ -68,10 +73,7 @@ const base_solicitud_schema = z.object({
     .nullable(),
 
   // Juegos seleccionados (relación N:M hacia solicitud_juegos)
-  id_juegos: z
-    .array(uuidSchema)
-    .optional()
-    .default([]),
+  id_juegos: z.array(uuidSchema).optional().default([]),
 
   // Centro de apuesta vinculado (relación hacia solicitud_centros)
   id_centro: uuidSchema.optional().nullable(),
@@ -81,4 +83,6 @@ const base_solicitud_schema = z.object({
 
 export const crear_solicitud_schema = base_solicitud_schema;
 
-export const actualizar_solicitud_schema = base_solicitud_schema.omit({ registrado_por: true });
+export const actualizar_solicitud_schema = base_solicitud_schema.omit({
+  registrado_por: true,
+});
