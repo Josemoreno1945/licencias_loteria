@@ -11,8 +11,6 @@ import {
   CInputGroupText,
   CFormTextarea,
   CBadge,
-  CCard,
-  CCardBody,
   CSpinner,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
@@ -27,36 +25,33 @@ import {
   cilHome,
   cilDescription,
   cilBuilding,
+  cilSave,
 } from '@coreui/icons'
 
 // ── Sub-componentes de UI ─────────────────────────────────────────────────────
-const Separator = () => <hr className="my-4 border-primary opacity-25" />
+const Separator = () => <hr className="form-separator" />
 
-const SectionTitle = ({ step, title }) => (
-  <h6 className="text-primary fw-semibold mb-3 mt-1" style={{ letterSpacing: '0.04em' }}>
-    {step}. {title}
-  </h6>
+const SectionTitle = ({ title }) => (
+  <p className="form-section-title">{title}</p>
 )
 
 const InfoCard = ({ titulo, campos, children }) => (
-  <CCard className="border-start border-start-3 border-start-info mb-3">
-    <CCardBody className="py-3 px-3">
-      <p className="text-info fw-semibold small mb-2" style={{ letterSpacing: '0.05em' }}>
-        {titulo}
-      </p>
-      {campos && (
-        <CRow className="gy-1 mb-2">
-          {campos.map(({ label, value }) => (
-            <CCol key={label} md={6}>
-              <span className="text-muted small">{label}: </span>
-              <span className="small fw-semibold">{value || '—'}</span>
-            </CCol>
-          ))}
-        </CRow>
-      )}
-      {children}
-    </CCardBody>
-  </CCard>
+  <div className="info-card mb-3">
+    <p className="info-card-title">{titulo}</p>
+    {campos && (
+      <CRow className="gy-1 mb-2">
+        {campos.map(({ label, value }) => (
+          <CCol key={label} md={6}>
+            <span className="info-card-field">
+              <span className="label">{label}: </span>
+              <span className="value">{value || '—'}</span>
+            </span>
+          </CCol>
+        ))}
+      </CRow>
+    )}
+    {children}
+  </div>
 )
 
 // ── Componente principal ──────────────────────────────────────────────────────
@@ -64,6 +59,7 @@ const AutorizacionesForm = ({
   formData,
   handleInputChange,
   onSubmit,
+  onCancel,
   solicitudes,
   solicitudSeleccionada,
   loadingDeps,
@@ -81,13 +77,35 @@ const AutorizacionesForm = ({
   }
 
   const vencimientoValue = formData.fecha_vencimiento || calcularVencimiento(formData.fecha_expedicion)
-  const tipoActual = formData.tipo || solicitudSeleccionada?.tipo_autorizacion_especial || 'Mesa'
+  const tipoActual = solicitudSeleccionada?.tipo_autorizacion_especial || formData.tipo || 'Mesa'
+
+  const juegosReferencia = (() => {
+    if (!solicitudSeleccionada?.juegos) return []
+    if (Array.isArray(solicitudSeleccionada.juegos))
+      return solicitudSeleccionada.juegos
+    try {
+      return JSON.parse(solicitudSeleccionada.juegos)
+    } catch {
+      return []
+    }
+  })()
+
+  const representantesList = (() => {
+    if (!solicitudSeleccionada?.representantes) return []
+    if (Array.isArray(solicitudSeleccionada.representantes))
+      return solicitudSeleccionada.representantes
+    try {
+      return JSON.parse(solicitudSeleccionada.representantes)
+    } catch {
+      return []
+    }
+  })()
 
   return (
     <CForm onSubmit={onSubmit}>
 
-      {/* ═══ PASO 1 — SOLICITUD DE ORIGEN ═══ */}
-      <SectionTitle step="1" title="Solicitud de Origen" />
+      {/* ═══ SOLICITUD DE ORIGEN ═══ */}
+      <SectionTitle title="Solicitud de Origen" />
 
       <CRow className="mb-3">
         <CCol md={12}>
@@ -104,7 +122,7 @@ const AutorizacionesForm = ({
               disabled={loadingDeps || isEditMode}
             >
               <option value="">Seleccione una solicitud...</option>
-              {solicitudes.map((sol) => (
+              {solicitudes?.map((sol) => (
                 <option key={sol.id_solicitudes} value={sol.id_solicitudes}>
                   {sol.comercializador
                     ? `${sol.comercializador}${sol.persona ? ` — ${sol.persona}` : ''}`
@@ -135,32 +153,61 @@ const AutorizacionesForm = ({
           >
             {solicitudSeleccionada.tipo_autorizacion_especial && (
               <div className="mt-2 pt-2 border-top">
-                <p className="text-info fw-semibold small mb-1" style={{ letterSpacing: '0.05em' }}>
-                  🛡️ Tipo de Autorización
-                </p>
+                <p className="info-card-title">🛡️ Tipo de Autorización</p>
                 <CBadge color="primary" shape="rounded-pill" className="px-3 py-1">
                   {solicitudSeleccionada.tipo_autorizacion_especial}
                 </CBadge>
               </div>
             )}
             <div className="mt-3 pt-2 border-top">
-              <p className="text-info fw-semibold small mb-2" style={{ letterSpacing: '0.05em' }}>
-                👤 Representante Legal
-              </p>
-              <CRow className="gy-1">
-                <CCol md={4}>
-                  <span className="text-muted small">Cédula / RIF: </span>
-                  <span className="small fw-semibold">{solicitudSeleccionada.ci_rif || '—'}</span>
-                </CCol>
-                <CCol md={4}>
-                  <span className="text-muted small">Nombre: </span>
-                  <span className="small fw-semibold">{solicitudSeleccionada.persona || '—'}</span>
-                </CCol>
-                <CCol md={4}>
-                  <span className="text-muted small">Tipo: </span>
-                  <span className="small fw-semibold">{solicitudSeleccionada.tipo_persona || '—'}</span>
-                </CCol>
-              </CRow>
+              <p className="info-card-title">👤 Representante Legal</p>
+              {representantesList.length > 0 ? (
+                <CRow className="gy-1">
+                  {representantesList.map((rep, i) => (
+                    <React.Fragment key={rep.id_persona || i}>
+                      <CCol md={4}>
+                        <span className="info-card-field">
+                          <span className="label">Cédula / RIF: </span>
+                          <span className="value">{rep.ci_rif || '—'}</span>
+                        </span>
+                      </CCol>
+                      <CCol md={4}>
+                        <span className="info-card-field">
+                          <span className="label">Nombre: </span>
+                          <span className="value">{rep.razon_social || '—'}</span>
+                        </span>
+                      </CCol>
+                      <CCol md={4}>
+                        <span className="info-card-field">
+                          <span className="label">Cargo: </span>
+                          <span className="value">{rep.cargo || '—'}</span>
+                        </span>
+                      </CCol>
+                    </React.Fragment>
+                  ))}
+                </CRow>
+              ) : (
+                <CRow className="gy-1">
+                  <CCol md={4}>
+                    <span className="info-card-field">
+                      <span className="label">Cédula / RIF: </span>
+                      <span className="value">{solicitudSeleccionada.ci_rif || '—'}</span>
+                    </span>
+                  </CCol>
+                  <CCol md={4}>
+                    <span className="info-card-field">
+                      <span className="label">Nombre: </span>
+                      <span className="value">{solicitudSeleccionada.persona || '—'}</span>
+                    </span>
+                  </CCol>
+                  <CCol md={4}>
+                    <span className="info-card-field">
+                      <span className="label">Tipo: </span>
+                      <span className="value">{solicitudSeleccionada.tipo_persona || '—'}</span>
+                    </span>
+                  </CCol>
+                </CRow>
+              )}
             </div>
           </InfoCard>
 
@@ -174,21 +221,35 @@ const AutorizacionesForm = ({
             >
               {solicitudSeleccionada.centro_apuesta_representante && (
                 <div className="mt-3 pt-2 border-top">
-                  <p className="text-info fw-semibold small mb-2" style={{ letterSpacing: '0.05em' }}>
-                    👤 Dueño / Representante
-                  </p>
+                  <p className="info-card-title">👤 Dueño / Representante</p>
                   <CRow className="gy-1">
                     <CCol md={6}>
-                      <span className="text-muted small">Cédula / RIF: </span>
-                      <span className="small fw-semibold">{solicitudSeleccionada.centro_apuesta_representante_ci || '—'}</span>
+                      <span className="info-card-field">
+                        <span className="label">Cédula / RIF: </span>
+                        <span className="value">{solicitudSeleccionada.centro_apuesta_representante_ci || '—'}</span>
+                      </span>
                     </CCol>
                     <CCol md={6}>
-                      <span className="text-muted small">Nombre: </span>
-                      <span className="small fw-semibold">{solicitudSeleccionada.centro_apuesta_representante || '—'}</span>
+                      <span className="info-card-field">
+                        <span className="label">Nombre: </span>
+                        <span className="value">{solicitudSeleccionada.centro_apuesta_representante || '—'}</span>
+                      </span>
                     </CCol>
                   </CRow>
                 </div>
               )}
+            </InfoCard>
+          )}
+
+          {juegosReferencia.length > 0 && (
+            <InfoCard titulo="🎮 Juegos Autorizados">
+              <div className="d-flex flex-wrap gap-1 mt-1">
+                {juegosReferencia.map((j) => (
+                  <CBadge key={j.id_juego} color="primary" shape="rounded-pill" className="game-badge">
+                    {j.nombre}
+                  </CBadge>
+                ))}
+              </div>
             </InfoCard>
           )}
         </>
@@ -196,29 +257,12 @@ const AutorizacionesForm = ({
 
       <Separator />
 
-      {/* ═══ PASO 2 — DATOS DEL DOCUMENTO ═══ */}
-      <SectionTitle step="2" title="Datos del Documento" />
+      {/* ═══ DATOS DEL DOCUMENTO ═══ */}
+      <SectionTitle title="Datos del Documento" />
 
-      {/* Fila 1: Tipo de Autorización + N° de Mesa */}
+      {/* Fila 1: N° de Mesa */}
       <CRow className="mb-3">
-        <CCol md={6}>
-          <CFormLabel>Tipo de Autorización</CFormLabel>
-          <CInputGroup>
-            <CInputGroupText><CIcon icon={cilList} /></CInputGroupText>
-            <CFormSelect
-              name="tipo"
-              value={formData.tipo || 'Mesa'}
-              onChange={handleInputChange}
-              required
-            >
-              <option value="Movil">Móvil</option>
-              <option value="Localidad">Localidad</option>
-              <option value="Mesa">Mesa</option>
-            </CFormSelect>
-          </CInputGroup>
-        </CCol>
-
-        <CCol md={6}>
+        <CCol md={12}>
           <CFormLabel>
             N° de Mesa{' '}
             {tipoActual === 'Mesa' && <span className="text-danger">*</span>}
@@ -246,7 +290,7 @@ const AutorizacionesForm = ({
             <CInputGroupText><CIcon icon={cilClipboard} /></CInputGroupText>
             <CFormInput
               name="numero_documento"
-              value={formData.numero_documento}
+              value={formData.numero_documento || ''}
               onChange={handleInputChange}
               placeholder="Ej: 06°-AE000123-CA-2026"
               required
@@ -260,7 +304,7 @@ const AutorizacionesForm = ({
             <CInputGroupText><CIcon icon={cilClipboard} /></CInputGroupText>
             <CFormInput
               name="papel_seguridad"
-              value={formData.papel_seguridad}
+              value={formData.papel_seguridad || ''}
               onChange={handleInputChange}
               placeholder="Código del papel"
               required
@@ -277,7 +321,7 @@ const AutorizacionesForm = ({
             <CInputGroupText><CIcon icon={cilList} /></CInputGroupText>
             <CFormSelect
               name="tipo_emision"
-              value={formData.tipo_emision}
+              value={formData.tipo_emision || 'Inscripcion'}
               onChange={handleInputChange}
             >
               <option value="Inscripcion">Inscripción</option>
@@ -309,7 +353,7 @@ const AutorizacionesForm = ({
             <CFormInput
               name="fecha_expedicion"
               type="date"
-              value={formData.fecha_expedicion}
+              value={formData.fecha_expedicion || ''}
               onChange={handleInputChange}
               required
             />
@@ -323,7 +367,7 @@ const AutorizacionesForm = ({
             <CFormInput
               name="fecha_vencimiento"
               type="date"
-              value={vencimientoValue}
+              value={vencimientoValue || ''}
               onChange={handleInputChange}
             />
           </CInputGroup>
@@ -345,7 +389,7 @@ const AutorizacionesForm = ({
                 disabled={loadingDocs}
               >
                 <option value="">Seleccione el documento anterior...</option>
-                {documentosAnteriores.map((doc) => (
+                {documentosAnteriores?.map((doc) => (
                   <option key={doc.id_documento} value={doc.id_documento}>
                     {doc.numero_documento} — {doc.fecha_expedicion ? new Date(doc.fecha_expedicion).toLocaleDateString() : '—'}
                   </option>
@@ -356,22 +400,9 @@ const AutorizacionesForm = ({
         </CRow>
       )}
 
-      {/* Fila 6: Agencia + Dirección del Establecimiento */}
+      {/* Fila 6: Dirección del Establecimiento */}
       <CRow className="mb-3">
-        <CCol md={6}>
-          <CFormLabel>Agencia <span className="text-muted small fw-normal">(Opcional)</span></CFormLabel>
-          <CInputGroup>
-            <CInputGroupText><CIcon icon={cilBuilding} /></CInputGroupText>
-            <CFormInput
-              name="agencia_texto"
-              value={formData.agencia_texto || ''}
-              onChange={handleInputChange}
-              placeholder="Si no está en el catálogo"
-            />
-          </CInputGroup>
-        </CCol>
-
-        <CCol md={6}>
+        <CCol md={12}>
           <CFormLabel>Dirección del Establecimiento</CFormLabel>
           <CInputGroup>
             <CInputGroupText><CIcon icon={cilHome} /></CInputGroupText>
@@ -436,8 +467,8 @@ const AutorizacionesForm = ({
 
       <Separator />
 
-      {/* ═══ PASO 3 — DATOS DEL PAGO ═══ */}
-      <SectionTitle step="3" title="Datos del Pago" />
+      {/* ═══ DATOS DEL PAGO ═══ */}
+      <SectionTitle title="Datos del Pago" />
 
       {/* Fila 1: Banco + Referencia */}
       <CRow className="mb-3">
@@ -452,7 +483,7 @@ const AutorizacionesForm = ({
               required
             >
               <option value="">Seleccione un banco...</option>
-              {bancos.map((banco) => (
+              {bancos?.map((banco) => (
                 <option key={banco.id_banco} value={banco.id_banco}>
                   {banco.nombre}
                 </option>
@@ -555,9 +586,19 @@ const AutorizacionesForm = ({
         </CCol>
       </CRow>
 
-      <div className="d-flex justify-content-end mt-4">
+      <div className="form-footer">
+        {onCancel && (
+          <CButton
+            type="button"
+            color="secondary"
+            variant="outline"
+            onClick={onCancel}
+          >
+            Cancelar
+          </CButton>
+        )}
         <CButton type="submit" color="primary" disabled={loadingDeps} size="lg">
-          <CIcon icon={cilPlus} className="me-2" />
+          <CIcon icon={isEditMode ? cilSave : cilPlus} className="me-2" />
           {isEditMode ? 'Actualizar Autorización' : 'Emitir Autorización'}
         </CButton>
       </div>

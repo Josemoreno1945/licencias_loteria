@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   CContainer,
   CCard,
@@ -16,12 +16,14 @@ import {
   CButton,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilPlus, cilMagnifyingGlass } from '@coreui/icons'
-import AutorizacionesDetalleModal from '../components/AutorizacionesDetalleModal'
-import { useNavigate } from 'react-router-dom'
+import { cilPlus, cilMagnifyingGlass, cilPencil } from '@coreui/icons'
+import { useNavigate, useLocation } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
 import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
+import { useAuth } from '../../auth/store/AuthContext'
+import AutorizacionesDetalleModal from '../components/AutorizacionesDetalleModal'
+import AutorizacionesEditarModal from '../components/AutorizacionesEditarModal'
 import Buscador from '../../../components/Buscador'
 import Paginacion from '../../../components/Paginacion'
 
@@ -55,10 +57,15 @@ const getTipoBadge = (tipo) => {
 
 const AutorizacionesListaView = () => {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { user } = useAuth()
+  
   const { data: autorizaciones, loading, error, refetch } = useFetch('/autorizaciones-especiales')
+  
   const [paginaActual, setPaginaActual] = useState(1)
   const [busqueda, setBusqueda] = useState('')
   const [modalDetalleId, setModalDetalleId] = useState(null)
+  const [modalEditarId, setModalEditarId] = useState(null)
   const debouncedBusqueda = useDebounce(busqueda, 400)
 
   const autorizacionesFiltradas = useMemo(
@@ -75,12 +82,25 @@ const AutorizacionesListaView = () => {
     setPaginaActual(1)
   }, [debouncedBusqueda])
 
+  useEffect(() => {
+    if (location.state?.openModalId) {
+      setModalDetalleId(location.state.openModalId)
+      window.history.replaceState({}, "")
+    }
+  }, [location.state])
+
   return (
     <CContainer fluid>
       <AutorizacionesDetalleModal
         idAutorizacion={modalDetalleId}
         onClose={() => setModalDetalleId(null)}
       />
+      <AutorizacionesEditarModal
+        idAutorizacion={modalEditarId}
+        onClose={() => setModalEditarId(null)}
+        onUpdated={refetch}
+      />
+
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
         <CCardHeader className="bg-white d-flex justify-content-between align-items-center pb-0">
           <div>
@@ -89,9 +109,11 @@ const AutorizacionesListaView = () => {
               Autorizaciones especiales registradas en el sistema.
             </p>
           </div>
-          <CButton color="primary" onClick={() => navigate('/autorizaciones/registro')}>
-            <CIcon icon={cilPlus} className="me-2" /> Emitir Autorización
-          </CButton>
+          {user?.rol !== 'supervisor' && (
+            <CButton color="primary" onClick={() => navigate('/autorizaciones/registro')}>
+              <CIcon icon={cilPlus} className="me-2" /> Emitir Autorización
+            </CButton>
+          )}
         </CCardHeader>
 
         <CCardBody>
@@ -104,7 +126,6 @@ const AutorizacionesListaView = () => {
             />
           </div>
 
-          {/* Estado de carga */}
           {loading && (
             <div className="d-flex justify-content-center align-items-center py-5">
               <CSpinner color="primary" />
@@ -112,7 +133,6 @@ const AutorizacionesListaView = () => {
             </div>
           )}
 
-          {/* Error */}
           {error && !loading && (
             <CAlert color="danger" className="d-flex align-items-center gap-2">
               <span>{error}</span>
@@ -122,7 +142,6 @@ const AutorizacionesListaView = () => {
             </CAlert>
           )}
 
-          {/* Tabla */}
           {!loading && !error && (
             <>
               {autorizacionesFiltradas?.length === 0 ? (
@@ -132,7 +151,7 @@ const AutorizacionesListaView = () => {
                     : 'No se encontraron autorizaciones.'}
                 </CAlert>
               ) : (
-                <CTable hover responsive striped align="middle" className="mb-0">
+                <CTable hover responsive striped align="middle" className="mb-0 module-table">
                   <CTableHead>
                     <CTableRow>
                       <CTableHeaderCell>#</CTableHeaderCell>
@@ -144,18 +163,19 @@ const AutorizacionesListaView = () => {
                       <CTableHeaderCell className="text-center">Estado</CTableHeaderCell>
                       <CTableHeaderCell>Vencimiento</CTableHeaderCell>
                       <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">Editar</CTableHeaderCell>
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
                     {autorizacionesPaginadas.map((aut, index) => (
                       <CTableRow key={aut.id_documento}>
-                        <CTableDataCell className="text-muted small">
+                        <CTableDataCell className="row-number">
                           {startIndex + index + 1}
                         </CTableDataCell>
                         <CTableDataCell className="fw-semibold">
                           {aut.numero_documento}
                         </CTableDataCell>
-                        <CTableDataCell>{aut.nro_mesa}</CTableDataCell>
+                        <CTableDataCell>{aut.nro_mesa || <span className="text-muted">—</span>}</CTableDataCell>
                         <CTableDataCell>
                           <div className="fw-semibold">{aut.ci_rif}</div>
                           <div className="text-muted small">{aut.persona}</div>
@@ -164,12 +184,12 @@ const AutorizacionesListaView = () => {
                           {aut.centro_apuesta || aut.agencia_texto || <span className="text-muted">—</span>}
                         </CTableDataCell>
                         <CTableDataCell className="text-center">
-                          <CBadge color={getTipoBadge(aut.tipo)} shape="rounded-pill" className="px-2">
+                          <CBadge color={getTipoBadge(aut.tipo)} shape="rounded-pill" className="status-badge">
                             {aut.tipo || '—'}
                           </CBadge>
                         </CTableDataCell>
                         <CTableDataCell className="text-center">
-                          <CBadge color={getEstadoBadge(aut.estado_documento)} shape="rounded-pill">
+                          <CBadge color={getEstadoBadge(aut.estado_documento)} shape="rounded-pill" className="status-badge">
                             {aut.estado_documento}
                           </CBadge>
                         </CTableDataCell>
@@ -181,10 +201,24 @@ const AutorizacionesListaView = () => {
                             size="sm"
                             color="primary"
                             variant="outline"
+                            className="action-btn"
                             onClick={() => setModalDetalleId(aut.id_documento)}
                           >
                             <CIcon icon={cilMagnifyingGlass} />
                           </CButton>
+                        </CTableDataCell>
+                        <CTableDataCell className="text-center">
+                          {user?.rol !== 'supervisor' && (
+                            <CButton
+                              size="sm"
+                              color="warning"
+                              variant="outline"
+                              className="action-btn"
+                              onClick={() => setModalEditarId(aut.id_documento)}
+                            >
+                              <CIcon icon={cilPencil} />
+                            </CButton>
+                          )}
                         </CTableDataCell>
                       </CTableRow>
                     ))}

@@ -65,19 +65,43 @@ export const crear_autorizacion_completa = async (data) => {
       throwError(errors.documento_papel_duplicado);
     }
 
-    // 4. Validar centro de apuesta si se provee
-    if (data.id_centro) {
+    // 4. Extraer el centro de apuesta de la solicitud original (solicitud_centros)
+    let centroSolicitud = null;
+    const centrosRes = await client.query(
+      `SELECT id_centro FROM solicitud_centros WHERE id_solicitud = $1 LIMIT 1`,
+      [data.id_solicitud],
+    );
+    if (centrosRes.rows.length > 0) {
+      centroSolicitud = centrosRes.rows[0].id_centro;
+    }
+
+    const id_centro_final = data.id_centro ?? centroSolicitud ?? null;
+
+    if (id_centro_final) {
       const centroExiste = await client.query(
         `SELECT 1 FROM centros_apuesta WHERE id_centro = $1`,
-        [data.id_centro],
+        [id_centro_final],
       );
       if (!centroExiste.rows[0]) {
         throwError(errors.centros_apuesta_no_encontrada);
       }
     }
 
-    // 5. Validar representantes (personas) si se proveen
-    const representantes = normalizeRepresentantes(data.representantes);
+    // 5. Representantes legales: usar los enviados o extraer TODOS de la comercializadora
+    let representantes = normalizeRepresentantes(data.representantes);
+
+    if (representantes.length === 0 && solicitud.id_comercializador) {
+      const repRes = await client.query(
+        `SELECT cr.id_persona, cr.cargo, ''::text AS rol
+         FROM comercializadores_representantes AS cr
+         WHERE cr.id_comercializador = $1
+           AND cr.estado = 'activo'
+         ORDER BY cr.id_persona`,
+        [solicitud.id_comercializador],
+      );
+      representantes = repRes.rows;
+    }
+
     if (representantes.length > 0) {
       const valuesList = representantes.map((_, idx) => `($${idx + 1})`).join(", ");
       const valuesFlat = representantes.map((r) => r.id_persona);
@@ -89,6 +113,33 @@ export const crear_autorizacion_completa = async (data) => {
       for (const rep of representantes) {
         if (!found.has(rep.id_persona)) {
           throwError(errors.persona_no_encontrada);
+        }
+      }
+    }
+
+    // 5.5 Juegos: usar los enviados o extraerlos de la solicitud previa
+    let juegos = Array.isArray(data.juegos) && data.juegos.length > 0
+      ? [...new Set(data.juegos)]
+      : [];
+
+    if (juegos.length === 0) {
+      const juegosRes = await client.query(
+        `SELECT id_juego FROM solicitud_juegos WHERE id_solicitud = $1`,
+        [data.id_solicitud],
+      );
+      juegos = juegosRes.rows.map((r) => r.id_juego);
+    }
+
+    if (juegos.length > 0) {
+      const valuesList = juegos.map((_, idx) => `($${idx + 1})`).join(", ");
+      const juegoCheck = await client.query(
+        `SELECT id_juego FROM juegos WHERE id_juego IN (${valuesList})`,
+        juegos,
+      );
+      const foundJuegos = new Set(juegoCheck.rows.map((r) => r.id_juego));
+      for (const id_juego of juegos) {
+        if (!foundJuegos.has(id_juego)) {
+          throwError(errors.juegos_no_encontrados);
         }
       }
     }
@@ -185,7 +236,7 @@ export const crear_autorizacion_completa = async (data) => {
         data.tipo ?? "Mesa",
         solicitud.id_persona,
         data.id_comercializador ?? solicitud.id_comercializador ?? null,
-        data.id_centro ?? null,
+        id_centro_final,
         data.agencia_texto ?? null,
         data.numero_lot ?? null,
         data.direccion_centro_asignado ?? null,
@@ -202,6 +253,18 @@ export const crear_autorizacion_completa = async (data) => {
          VALUES ($1, $2, $3, $4)`,
         [documento.id_documento, rep.id_persona, rep.rol ?? null, rep.cargo ?? null],
       );
+    }
+
+    // 10.5 Insertar juegos
+    if (juegos.length > 0) {
+      const uniqueJuegos = [...new Set(juegos)];
+      for (const id_juego of uniqueJuegos) {
+        await client.query(
+          `INSERT INTO documento_juegos (id_documento, id_juego)
+           VALUES ($1, $2)`,
+          [documento.id_documento, id_juego],
+        );
+      }
     }
 
     // 11. Marcar la solicitud como Aprobado si estaba Pendiente
