@@ -74,8 +74,24 @@ export const crear_licencia_completa = async (data) => {
           ),
         );
 
+    // Representantes legales: usar los enviados o extraer TODOS de la comercializadora
+    let representantes = normalizeRepresentantes(data.representantes);
+
+    if (representantes.length === 0 && solicitud.id_comercializador) {
+      // Auto-extracción de todos los representantes legales activos de la
+      // comercializadora (misma lógica de agregación usada por el módulo de solicitudes)
+      const repRes = await client.query(
+        `SELECT cr.id_persona, cr.cargo, ''::text AS rol
+         FROM comercializadores_representantes AS cr
+         WHERE cr.id_comercializador = $1
+           AND cr.estado = 'activo'
+         ORDER BY cr.id_persona`,
+        [solicitud.id_comercializador],
+      );
+      representantes = repRes.rows;
+    }
+
     // Validar representantes legales (personas) si se proveen
-    const representantes = normalizeRepresentantes(data.representantes);
     if (representantes.length > 0) {
       const valuesList = representantes.map((_, idx) => `($${idx + 1})`).join(", ");
       const valuesFlat = representantes.map((r) => r.id_persona);
@@ -87,6 +103,34 @@ export const crear_licencia_completa = async (data) => {
       for (const rep of representantes) {
         if (!found.has(rep.id_persona)) {
           throwError(errors.persona_no_encontrada);
+        }
+      }
+    }
+
+    // Juegos: usar los enviados o extraerlos de la solicitud previa
+    let juegos = Array.isArray(data.juegos) && data.juegos.length > 0
+      ? [...new Set(data.juegos)]
+      : [];
+
+    if (juegos.length === 0) {
+      const juegosRes = await client.query(
+        `SELECT id_juego FROM solicitud_juegos WHERE id_solicitud = $1`,
+        [data.id_solicitud],
+      );
+      juegos = juegosRes.rows.map((r) => r.id_juego);
+    }
+
+    // Validar que todos los juegos existen
+    if (juegos.length > 0) {
+      const valuesList = juegos.map((_, idx) => `($${idx + 1})`).join(", ");
+      const juegoCheck = await client.query(
+        `SELECT id_juego FROM juegos WHERE id_juego IN (${valuesList})`,
+        juegos,
+      );
+      const foundJuegos = new Set(juegoCheck.rows.map((r) => r.id_juego));
+      for (const id_juego of juegos) {
+        if (!foundJuegos.has(id_juego)) {
+          throwError(errors.juegos_no_encontrados);
         }
       }
     }
@@ -182,8 +226,8 @@ export const crear_licencia_completa = async (data) => {
       );
     }
 
-    if (Array.isArray(data.juegos) && data.juegos.length > 0) {
-      const uniqueJuegos = [...new Set(data.juegos)];
+    if (juegos.length > 0) {
+      const uniqueJuegos = [...new Set(juegos)];
       for (const id_juego of uniqueJuegos) {
         await client.query(
           `INSERT INTO documento_juegos (id_documento, id_juego)

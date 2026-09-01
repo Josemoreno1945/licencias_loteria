@@ -198,7 +198,7 @@ const SolicitudesListaView = () => {
                   responsive
                   striped
                   align="middle"
-                  className="mb-0"
+                  className="mb-0 module-table"
                 >
                   <CTableHead>
                     <CTableRow>
@@ -222,7 +222,7 @@ const SolicitudesListaView = () => {
                   <CTableBody>
                     {solicitudesPaginadas.map((sol, index) => (
                       <CTableRow key={sol.id_solicitudes}>
-                        <CTableDataCell className="text-muted small">
+                        <CTableDataCell className="row-number">
                           {startIndex + index + 1}
                         </CTableDataCell>
                         <CTableDataCell className="fw-semibold">
@@ -280,6 +280,7 @@ const SolicitudesListaView = () => {
                           <CBadge
                             color={getEstadoBadge(sol.estado)}
                             shape="rounded-pill"
+                            className="status-badge"
                           >
                             {sol.estado}
                           </CBadge>
@@ -289,6 +290,7 @@ const SolicitudesListaView = () => {
                             size="sm"
                             color="primary"
                             variant="outline"
+                            className="action-btn"
                             onClick={() => setModalDataId(sol.id_solicitudes)}
                           >
                             <CIcon icon={cilMagnifyingGlass} />
@@ -300,6 +302,7 @@ const SolicitudesListaView = () => {
                               size="sm"
                               color="warning"
                               variant="outline"
+                              className="action-btn"
                               onClick={() =>
                                 setModalEditarId(sol.id_solicitudes)
                               }

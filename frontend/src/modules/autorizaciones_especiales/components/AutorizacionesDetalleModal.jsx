@@ -135,10 +135,6 @@ const AutorizacionesDetalleModal = ({ idAutorizacion, onClose }) => {
                 <CFormLabel className="text-muted small fw-semibold mb-1">Papel de Seguridad</CFormLabel>
                 <CFormInput type="text" value={data.papel_seguridad || '—'} readOnly className="bg-light" />
               </CCol>
-              <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Emitido Por (Usuario)</CFormLabel>
-                <CFormInput type="text" value={data.emitido_por || '—'} readOnly className="bg-light" />
-              </CCol>
 
               <CCol md={12}>
                 <CFormLabel className="text-muted small fw-semibold mb-1">Observaciones / Detalles Extra</CFormLabel>

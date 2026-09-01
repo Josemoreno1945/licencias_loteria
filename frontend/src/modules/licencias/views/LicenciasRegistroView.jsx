@@ -184,6 +184,18 @@ const LicenciasRegistroView = () => {
       }
 
       // Construir payload limpio
+      const parseArrayField = (val) => {
+        if (!val) return []
+        if (Array.isArray(val)) return val
+        try { return JSON.parse(val) } catch { return [] }
+      }
+
+      // Extraer juegos e representantes de la solicitud seleccionada
+      const juegosSolicitud = parseArrayField(solicitudSeleccionada?.juegos)
+        .map((j) => j.id_juego).filter(Boolean)
+      const representantesSolicitud = parseArrayField(solicitudSeleccionada?.representantes)
+        .map((r) => r.id_persona).filter(Boolean)
+
       const payload = {
         id_solicitud:    formData.id_solicitud,
         emitido_por:     emitterId,
@@ -191,6 +203,8 @@ const LicenciasRegistroView = () => {
         papel_seguridad: formData.papel_seguridad,
         tipo_emision:    formData.tipo_emision || 'Inscripcion',
         fecha_expedicion:formData.fecha_expedicion,
+        ...(juegosSolicitud.length > 0              ? { juegos: juegosSolicitud }              : {}),
+        ...(representantesSolicitud.length > 0       ? { representantes: representantesSolicitud } : {}),
         ...(formData.numero_lot?.trim()                  ? { numero_lot:                formData.numero_lot }                : {}),
         ...(formData.fecha_vencimiento                   ? { fecha_vencimiento:         formData.fecha_vencimiento }         : {}),
         ...(formData.id_documento_anterior?.trim()       ? { id_documento_anterior:     formData.id_documento_anterior }     : {}),

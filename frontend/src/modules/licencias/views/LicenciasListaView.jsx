@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from "react";
 import {
   CContainer,
   CCard,
@@ -14,81 +14,84 @@ import {
   CSpinner,
   CAlert,
   CButton,
-} from '@coreui/react'
-import CIcon from '@coreui/icons-react'
-import { cilPlus, cilMagnifyingGlass, cilPencil } from '@coreui/icons'
-import { useNavigate, useLocation } from 'react-router-dom'
-import useFetch from '../../../hooks/useFetch'
-import useDebounce from '../../../hooks/useDebounce'
-import { filterBySearch } from '../../../utils/helpers'
-import { useAuth } from '../../auth/store/AuthContext'
-import LicenciaDetalleModal from '../components/LicenciaDetalleModal'
-import LicenciasEditarModal from '../components/LicenciasEditarModal'
-import Buscador from '../../../components/Buscador'
-import Paginacion from '../../../components/Paginacion'
+} from "@coreui/react";
+import { useNavigate, useLocation } from "react-router-dom";
+import CIcon from "@coreui/icons-react";
+import { cilMagnifyingGlass, cilPlus, cilPencil } from "@coreui/icons";
+import useFetch from "../../../hooks/useFetch";
+import useDebounce from "../../../hooks/useDebounce";
+import { filterBySearch } from "../../../utils/helpers";
+import { useAuth } from "../../auth/store/AuthContext";
+import LicenciaDetalleModal from "../components/LicenciaDetalleModal";
+import LicenciasEditarModal from "../components/LicenciasEditarModal";
+import Buscador from "../../../components/Buscador";
+import Paginacion from "../../../components/Paginacion";
 
 const LICENCIAS_SEARCH_FIELDS = [
-  'numero_documento',
-  'persona',
-  'ci_rif',
-  'categoria',
-  'estado_documento',
-  'comercializador',
-  'numero_lot',
-]
+  "numero_documento",
+  "persona",
+  "ci_rif",
+  "categoria",
+  "estado_documento",
+  "comercializador",
+  "numero_lot",
+];
 
 const getEstadoBadge = (estado) => {
   switch (estado) {
-    case 'vigente':    return 'success'
-    case 'vencido':    return 'warning'
-    case 'suspendido': return 'danger'
-    case 'anulado':    return 'secondary'
-    default:           return 'info'
+    case "vigente":    return "success";
+    case "vencido":    return "warning";
+    case "suspendido": return "danger";
+    case "anulado":    return "secondary";
+    default:           return "info";
   }
-}
+};
 
 const getCategoriaBadge = (categoria) => {
   switch (categoria) {
-    case 'Operador':                            return 'primary'
-    case 'Comercializador':                     return 'info'
-    case 'Centro_de_apuesta':                   return 'warning'
-    case 'Responsable_de_programa_informatico': return 'secondary'
-    default:                                    return 'dark'
+    case "Operador":                            return "primary";
+    case "Comercializador":                     return "info";
+    case "Centro_de_apuesta":                   return "warning";
+    case "Responsable_de_programa_informatico": return "secondary";
+    default:                                    return "dark";
   }
-}
+};
 
 const LicenciasListaView = () => {
-  const navigate   = useNavigate()
-  const location   = useLocation()
-  const { user }   = useAuth()
-  const { data: licencias, loading, error, refetch } = useFetch('/licencias')
+  const navigate  = useNavigate();
+  const location  = useLocation();
+  const { user }  = useAuth();
+  const { data: licencias, loading, error, refetch } = useFetch("/licencias");
 
-  const [modalDataId,   setModalDataId]   = useState(null)
-  const [modalEditarId, setModalEditarId] = useState(null)
-  const [paginaActual,  setPaginaActual]  = useState(1)
-  const [busqueda,      setBusqueda]      = useState('')
-  const debouncedBusqueda = useDebounce(busqueda, 400)
+  const [modalDataId,   setModalDataId]   = useState(null);
+  const [modalEditarId, setModalEditarId] = useState(null);
+  const [paginaActual,  setPaginaActual]  = useState(1);
+  const [busqueda,      setBusqueda]      = useState("");
+  const debouncedBusqueda = useDebounce(busqueda, 400);
 
   const licenciasFiltradas = useMemo(
     () => filterBySearch(licencias, debouncedBusqueda, LICENCIAS_SEARCH_FIELDS),
-    [licencias, debouncedBusqueda]
-  )
+    [licencias, debouncedBusqueda],
+  );
 
-  const PAGE_SIZE     = 10
-  const totalPaginas  = licenciasFiltradas ? Math.ceil(licenciasFiltradas.length / PAGE_SIZE) : 0
-  const startIndex    = (paginaActual - 1) * PAGE_SIZE
-  const licenciasPaginadas = licenciasFiltradas?.slice(startIndex, startIndex + PAGE_SIZE) || []
+  const PAGE_SIZE     = 10;
+  const totalPaginas  = licenciasFiltradas
+    ? Math.ceil(licenciasFiltradas.length / PAGE_SIZE)
+    : 0;
+  const startIndex    = (paginaActual - 1) * PAGE_SIZE;
+  const licenciasPaginadas =
+    licenciasFiltradas?.slice(startIndex, startIndex + PAGE_SIZE) || [];
 
   useEffect(() => {
-    setPaginaActual(1)
-  }, [debouncedBusqueda])
+    setPaginaActual(1);
+  }, [debouncedBusqueda]);
 
   useEffect(() => {
     if (location.state?.openModalId) {
-      setModalDataId(location.state.openModalId)
-      window.history.replaceState({}, '')
+      setModalDataId(location.state.openModalId);
+      window.history.replaceState({}, "");
     }
-  }, [location.state])
+  }, [location.state]);
 
   return (
     <CContainer fluid>
@@ -106,11 +109,18 @@ const LicenciasListaView = () => {
         <CCardHeader className="bg-white d-flex justify-content-between align-items-center pb-0">
           <div>
             <h4 className="mb-1 text-primary">Licencias</h4>
-            <p className="text-muted small mb-3">Listado de licencias emitidas en el sistema.</p>
+            <p className="text-muted small mb-3">
+              Documentos emitidos a operadores, comercializadores y centros de apuesta.
+            </p>
           </div>
-          <CButton color="primary" onClick={() => navigate('/licencias/registro')}>
-            <CIcon icon={cilPlus} className="me-2" /> Emitir Licencia
-          </CButton>
+          {user?.rol !== "supervisor" && (
+            <CButton
+              color="primary"
+              onClick={() => navigate("/licencias/registro")}
+            >
+              <CIcon icon={cilPlus} className="me-2" /> Emitir Licencia
+            </CButton>
+          )}
         </CCardHeader>
 
         <CCardBody>
@@ -118,12 +128,11 @@ const LicenciasListaView = () => {
             <Buscador
               value={busqueda}
               onChange={setBusqueda}
-              onClear={() => setBusqueda('')}
+              onClear={() => setBusqueda("")}
               placeholder="Buscar licencia..."
             />
           </div>
 
-          {/* Estado de carga */}
           {loading && (
             <div className="d-flex justify-content-center align-items-center py-5">
               <CSpinner color="primary" />
@@ -131,7 +140,6 @@ const LicenciasListaView = () => {
             </div>
           )}
 
-          {/* Error */}
           {error && !loading && (
             <CAlert color="danger" className="d-flex align-items-center gap-2">
               <span>{error}</span>
@@ -141,17 +149,22 @@ const LicenciasListaView = () => {
             </CAlert>
           )}
 
-          {/* Tabla */}
           {!loading && !error && (
             <>
               {licenciasFiltradas?.length === 0 ? (
                 <CAlert color="info">
                   {licencias?.length === 0
-                    ? 'No hay licencias emitidas aún.'
-                    : 'No se encontraron licencias.'}
+                    ? "No hay licencias emitidas aún."
+                    : "No se encontraron licencias."}
                 </CAlert>
               ) : (
-                <CTable hover responsive striped align="middle" className="mb-0">
+                <CTable
+                  hover
+                  responsive
+                  striped
+                  align="middle"
+                  className="mb-0 module-table"
+                >
                   <CTableHead>
                     <CTableRow>
                       <CTableHeaderCell>#</CTableHeaderCell>
@@ -169,45 +182,65 @@ const LicenciasListaView = () => {
                   <CTableBody>
                     {licenciasPaginadas.map((licencia, index) => (
                       <CTableRow key={licencia.id_documento}>
-                        <CTableDataCell className="text-muted small">
+                        <CTableDataCell className="row-number">
                           {startIndex + index + 1}
                         </CTableDataCell>
                         <CTableDataCell className="fw-semibold">
                           {licencia.numero_documento}
                         </CTableDataCell>
-                        <CTableDataCell>{licencia.numero_lot || <span className="text-muted">—</span>}</CTableDataCell>
+                        <CTableDataCell>
+                          {licencia.numero_lot || (
+                            <span className="text-muted">—</span>
+                          )}
+                        </CTableDataCell>
                         <CTableDataCell>
                           <div className="fw-semibold">{licencia.ci_rif}</div>
                           <div className="text-muted small">{licencia.persona}</div>
                         </CTableDataCell>
-                        <CTableDataCell>{licencia.comercializador || <span className="text-muted">—</span>}</CTableDataCell>
+                        <CTableDataCell>
+                          {licencia.comercializador || (
+                            <span className="text-muted">—</span>
+                          )}
+                        </CTableDataCell>
                         <CTableDataCell className="text-center">
-                          <CBadge color={getCategoriaBadge(licencia.categoria)} shape="rounded-pill" className="px-2">
-                            {licencia.categoria || '—'}
+                          <CBadge
+                            color={getCategoriaBadge(licencia.categoria)}
+                            shape="rounded-pill"
+                            className="status-badge"
+                          >
+                            {licencia.categoria || "—"}
                           </CBadge>
                         </CTableDataCell>
                         <CTableDataCell className="text-center">
-                          <CBadge color={getEstadoBadge(licencia.estado_documento)} shape="rounded-pill">
+                          <CBadge
+                            color={getEstadoBadge(licencia.estado_documento)}
+                            shape="rounded-pill"
+                            className="status-badge"
+                          >
                             {licencia.estado_documento}
                           </CBadge>
                         </CTableDataCell>
-                        <CTableDataCell>{licencia.fecha_vencimiento?.slice(0, 10)}</CTableDataCell>
+                        <CTableDataCell>
+                          {licencia.fecha_vencimiento?.slice(0, 10)}
+                        </CTableDataCell>
                         <CTableDataCell className="text-center">
                           <CButton
                             size="sm"
                             color="primary"
                             variant="outline"
+                            className="action-btn"
                             onClick={() => setModalDataId(licencia.id_documento)}
                           >
                             <CIcon icon={cilMagnifyingGlass} />
                           </CButton>
                         </CTableDataCell>
                         <CTableDataCell className="text-center">
-                          {user?.rol !== 'supervisor' && (
+                          {user?.rol !== "supervisor" && (
                             <CButton
                               size="sm"
                               color="warning"
                               variant="outline"
+                              className="action-btn"
                               onClick={() => setModalEditarId(licencia.id_documento)}
                             >
                               <CIcon icon={cilPencil} />
@@ -231,7 +264,7 @@ const LicenciasListaView = () => {
         </CCardBody>
       </CCard>
     </CContainer>
-  )
-}
+  );
+};
 
-export default LicenciasListaView
+export default LicenciasListaView;

@@ -1,0 +1,252 @@
+/* ============================================================
+   MODULES.CSS — Sistema de estilos unificado para módulos
+   Aplica a: Licencias, Solicitudes y cualquier módulo futuro
+   ============================================================ */
+
+/* ── CARD DEL MÓDULO ─────────────────────────────────────────── */
+/* La card principal de lista/detalle ya usa shadow-sm y border-top
+   de CoreUI. Solo se añaden ajustes de refinamiento. */
+.module-card-header {
+  background-color: #ffffff;
+  padding-bottom: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.module-card-header h4 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.2rem;
+}
+
+.module-card-subtitle {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 0.9rem;
+  line-height: 1.4;
+}
+
+/* ── TABLA DEL MÓDULO ────────────────────────────────────────── */
+.module-table thead th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  background-color: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+  padding: 0.65rem 0.85rem;
+  white-space: nowrap;
+}
+
+.module-table tbody td {
+  font-size: 0.86rem;
+  padding: 0.6rem 0.85rem;
+  vertical-align: middle;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.module-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.module-table tbody tr:hover td {
+  background-color: #f8faff;
+}
+
+/* Número de fila */
+.row-number {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── BADGES DE ESTADO ────────────────────────────────────────── */
+.status-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 0.3em 0.75em;
+}
+
+/* ── BOTONES DE ACCIÓN EN TABLA ──────────────────────────────── */
+.action-btn {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+/* ── MODALES DE DETALLE ──────────────────────────────────────── */
+
+/* Label de campo */
+.detail-field-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+  margin-bottom: 0.3rem;
+}
+
+/* Input de solo lectura — reemplaza bg-light de CoreUI */
+.detail-field-value {
+  background-color: #f9fafb !important;
+  border: 1px solid #e5e7eb !important;
+  color: #111827 !important;
+  font-size: 0.875rem;
+  border-radius: 6px !important;
+  padding: 0.45rem 0.75rem;
+  cursor: default;
+  transition: none;
+}
+
+.detail-field-value:focus {
+  box-shadow: none !important;
+  border-color: #e5e7eb !important;
+}
+
+/* Separador de sección */
+.section-divider {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 1.5rem 0 1rem;
+  opacity: 1;
+}
+
+/* Título de sección */
+.section-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #374151;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-title::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 1em;
+  background: var(--color-primary, #6384ff);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Badge de representante */
+.rep-badge {
+  font-size: 0.72rem;
+  padding: 0.3em 0.8em;
+  margin-bottom: 0.75rem;
+}
+
+/* Juegos autorizados — badges en detalle */
+.game-badge {
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.35em 0.9em;
+}
+
+/* ── FORMULARIOS DE MÓDULO ───────────────────────────────────── */
+
+/* Título de paso/sección en formularios */
+.form-section-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-primary, #6384ff);
+  margin-bottom: 1rem;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-section-title::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 1em;
+  background: var(--color-primary, #6384ff);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Separador de formulario */
+.form-separator {
+  border: none;
+  border-top: 1px dashed #e5e7eb;
+  margin: 1.5rem 0;
+  opacity: 1;
+}
+
+/* Footer de botones del formulario */
+.form-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+/* ── INFO CARD (autocompletado en formularios) ───────────────── */
+.info-card {
+  background: #f0f7ff;
+  border: 1px solid #bfdbfe;
+  border-left: 4px solid #3b82f6;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.info-card-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #2563eb;
+  margin-bottom: 0.5rem;
+}
+
+.info-card-field {
+  font-size: 0.82rem;
+}
+
+.info-card-field .label {
+  color: #6b7280;
+}
+
+.info-card-field .value {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* ── BUSCADOR CONTAINER ──────────────────────────────────────── */
+.buscador-container {
+  max-width: 380px;
+}
+
+@media (max-width: 576px) {
+  .buscador-container {
+    max-width: 100%;
+  }
+}

@@ -7,6 +7,9 @@
 /* Layout estilos */
 @import './layout.css';
 
+/* Estilos unificados de módulos */
+@import './modules.css';
+
 /* Variables globales */
 :root {
   --color-primary: #6384ff;

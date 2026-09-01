@@ -32,22 +32,22 @@ const getEstadoBadge = (estado) => {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const Campo = ({ label, value, md = 6, bold = false }) => (
   <CCol md={md}>
-    <CFormLabel className="text-muted small fw-semibold mb-1">
+    <CFormLabel className="detail-field-label">
       {label}
     </CFormLabel>
     <CFormInput
       type="text"
       value={value || "—"}
       readOnly
-      className={`bg-light${bold ? " fw-bold" : ""}`}
+      className={`detail-field-value${bold ? " fw-semibold" : ""}`}
     />
   </CCol>
 );
 
 const Seccion = ({ titulo }) => (
   <>
-    <hr className="text-muted opacity-25 my-4" />
-    <h5 className="text-primary fw-semibold mb-3">{titulo}</h5>
+    <hr className="section-divider" />
+    <h5 className="section-title">{titulo}</h5>
   </>
 );
 
@@ -179,13 +179,14 @@ const SolicitudDetalleModal = ({ idSolicitud, onClose }) => {
                 md={6}
               />
               <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">
+                <CFormLabel className="detail-field-label">
                   Estado
                 </CFormLabel>
                 <div className="pt-1">
                   <CBadge
                     color={getEstadoBadge(data.estado)}
-                    className="fs-6 px-3 py-2"
+                    shape="rounded-pill"
+                    className="status-badge fs-6 px-3 py-2"
                   >
                     {data.estado}
                   </CBadge>

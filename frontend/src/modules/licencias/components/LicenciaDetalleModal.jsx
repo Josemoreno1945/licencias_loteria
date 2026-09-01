@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from "react";
 import {
   CModal,
   CModalHeader,
@@ -11,276 +11,321 @@ import {
   CAlert,
   CRow,
   CCol,
-  CFormInput,
-  CFormLabel,
-  CTable,
-  CTableHead,
-  CTableRow,
-  CTableHeaderCell,
-  CTableBody,
-  CTableDataCell,
-} from '@coreui/react'
-import axiosInstance from '../../../api/axiosInstance'
+} from "@coreui/react";
+import axiosInstance from "../../../api/axiosInstance";
+import { Campo, Seccion } from "../../../components/common/DetailField";
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
 const getEstadoDocColor = (estado) => {
   switch (estado) {
-    case 'vigente':    return 'success'
-    case 'vencido':    return 'danger'
-    case 'suspendido': return 'warning'
-    case 'anulado':    return 'secondary'
-    default:           return 'secondary'
+    case "vigente":    return "success";
+    case "vencido":    return "danger";
+    case "suspendido": return "warning";
+    case "anulado":    return "secondary";
+    default:           return "secondary";
   }
-}
+};
 
 const getDetallesExtra = (val) => {
-  if (val == null) return 'No registrado'
+  if (val == null) return null;
   try {
-    const obj = typeof val === 'string' ? JSON.parse(val) : val
-    if (obj && typeof obj === 'object' && obj.observaciones != null) {
-      return obj.observaciones || 'No registrado'
+    const obj = typeof val === "string" ? JSON.parse(val) : val;
+    if (obj && typeof obj === "object" && obj.observaciones != null) {
+      return obj.observaciones || null;
     }
-    return JSON.stringify(obj)
+    return JSON.stringify(obj);
   } catch {
-    return String(val)
+    return String(val);
   }
-}
+};
 
+// ── Componente principal ──────────────────────────────────────────────────────
 const LicenciaDetalleModal = ({ idLicencia, onClose }) => {
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [juegos, setJuegos] = useState([])
-  const [loadingJuegos, setLoadingJuegos] = useState(false)
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [juegos, setJuegos] = useState([]);
+  const [loadingJuegos, setLoadingJuegos] = useState(false);
 
   useEffect(() => {
-    if (!idLicencia) return
+    if (!idLicencia) return;
+    setData(null);
+
     const fetchData = async () => {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
       try {
-        const res = await axiosInstance.get(`/licencias/${idLicencia}`)
-        setData(Array.isArray(res.data) ? res.data[0] : res.data)
+        const res = await axiosInstance.get(`/licencias/${idLicencia}`);
+        setData(Array.isArray(res.data) ? res.data[0] : res.data);
       } catch (err) {
-        setError(err.response?.data?.message || 'Error al cargar el detalle de la licencia')
+        setError(
+          err.response?.data?.message ||
+            "Error al cargar el detalle de la licencia",
+        );
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
 
-      setLoadingJuegos(true)
+      setLoadingJuegos(true);
       try {
-        const resJ = await axiosInstance.get(`/documento-juegos/por-documento/${idLicencia}`)
-        setJuegos(resJ.data || [])
+        const resJ = await axiosInstance.get(
+          `/documento-juegos/por-documento/${idLicencia}`,
+        );
+        setJuegos(resJ.data || []);
       } catch {
-        setJuegos([])
+        setJuegos([]);
       } finally {
-        setLoadingJuegos(false)
+        setLoadingJuegos(false);
       }
-    }
-    fetchData()
-  }, [idLicencia])
+    };
 
-  if (!idLicencia) return null
+    fetchData();
+  }, [idLicencia]);
+
+  if (!idLicencia) return null;
 
   return (
-    <CModal visible={!!idLicencia} onClose={onClose} alignment="center" size="lg" backdrop="static">
+    <CModal
+      visible={!!idLicencia}
+      onClose={onClose}
+      alignment="center"
+      size="lg"
+      backdrop="static"
+    >
       <CModalHeader>
         <CModalTitle>Detalle de la Licencia</CModalTitle>
       </CModalHeader>
+
       <CModalBody>
         {loading && (
           <div className="d-flex justify-content-center py-4">
             <CSpinner color="primary" />
           </div>
         )}
+
         {error && !loading && <CAlert color="danger">{error}</CAlert>}
+
         {!loading && !error && data && (
           <div className="px-2">
-            <h5 className="text-primary fw-semibold mb-3">Información del Documento</h5>
-            <CRow className="gy-3 mb-4">
+
+            {/* ── SECCIÓN 1: Información del Documento ── */}
+            <h5 className="section-title">Información del Documento</h5>
+            <CRow className="gy-3 mb-2">
+              <Campo
+                label="Nº de Documento"
+                value={data.numero_documento}
+                md={6}
+                bold
+              />
               <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Nº de Documento</CFormLabel>
-                <CFormInput type="text" value={data.numero_documento || ''} readOnly className="bg-light fw-bold" />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Estado</CFormLabel>
-                <div>
-                  <CBadge color={getEstadoDocColor(data.estado_documento)} className="fs-6 px-3 py-2">
+                <label className="detail-field-label">Estado</label>
+                <div className="pt-1">
+                  <CBadge
+                    color={getEstadoDocColor(data.estado_documento)}
+                    shape="rounded-pill"
+                    className="status-badge fs-6 px-3 py-2"
+                  >
                     {data.estado_documento}
                   </CBadge>
                 </div>
               </CCol>
-              
-              <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Tipo de Licencia</CFormLabel>
-                <CFormInput type="text" value={data.categoria || '—'} readOnly className="bg-light fw-bold" />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Tipo de Emisión</CFormLabel>
-                <CFormInput type="text" value={data.tipo_emision || '—'} readOnly className="bg-light" />
-              </CCol>
-              
-              <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Expedición</CFormLabel>
-                <CFormInput type="text" value={data.fecha_expedicion ? new Date(data.fecha_expedicion).toLocaleDateString() : '—'} readOnly className="bg-light" />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Vencimiento</CFormLabel>
-                <CFormInput type="text" value={data.fecha_vencimiento ? new Date(data.fecha_vencimiento).toLocaleDateString() : '—'} readOnly className="bg-light fw-bold" />
-              </CCol>
 
-              <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Papel de Seguridad</CFormLabel>
-                <CFormInput type="text" value={data.papel_seguridad || '—'} readOnly className="bg-light" />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Emitido Por (Usuario)</CFormLabel>
-                <CFormInput type="text" value={data.emitido_por || '—'} readOnly className="bg-light" />
-              </CCol>
+              <Campo label="Tipo de Licencia" value={data.categoria} md={6} bold />
+              <Campo label="Tipo de Emisión" value={data.tipo_emision} md={6} />
 
-              <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Número LOT</CFormLabel>
-                <CFormInput type="text" value={data.numero_lot || '—'} readOnly className="bg-light fw-bold" />
-              </CCol>
-              <CCol md={12}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Observaciones / Detalles Extra</CFormLabel>
-                <CFormInput type="text" value={getDetallesExtra(data.detalles_extra)} readOnly className="bg-light" />
-              </CCol>
+              <Campo
+                label="Fecha de Expedición"
+                value={
+                  data.fecha_expedicion
+                    ? new Date(data.fecha_expedicion).toLocaleDateString()
+                    : null
+                }
+                md={6}
+              />
+              <Campo
+                label="Fecha de Vencimiento"
+                value={
+                  data.fecha_vencimiento
+                    ? new Date(data.fecha_vencimiento).toLocaleDateString()
+                    : null
+                }
+                md={6}
+                bold
+              />
+
+              <Campo label="Papel de Seguridad" value={data.papel_seguridad} md={6} />
+              <Campo label="Número LOT" value={data.numero_lot} md={6} bold />
+
+              {getDetallesExtra(data.detalles_extra) && (
+                <Campo
+                  label="Observaciones / Detalles Extra"
+                  value={getDetallesExtra(data.detalles_extra)}
+                  md={12}
+                />
+              )}
             </CRow>
 
-            <hr className="text-muted opacity-25 my-4" />
-
-             <h5 className="text-primary fw-semibold mb-3">Asignaciones & Dirección</h5>
-             <CRow className="gy-3 mb-2">
-               <CCol md={12}>
-                 <CFormLabel className="text-muted small fw-semibold mb-1">Persona Titular</CFormLabel>
-                 <CFormInput type="text" value={`${data.ci_rif} — ${data.persona}`} readOnly className="bg-light fw-semibold" />
-               </CCol>
-               
-               <CCol md={12}>
-                 <CFormLabel className="text-muted small fw-semibold mb-1">Comercializador Asociado</CFormLabel>
-                 <CFormInput type="text" value={data.comercializador || 'Ninguno'} readOnly className="bg-light" />
-               </CCol>
-
-                <CCol md={6}>
-                  <CFormLabel className="text-muted small fw-semibold mb-1">Centro de Apuesta</CFormLabel>
-                  <CFormInput type="text" value={data.centro_apuesta || 'Ninguno'} readOnly className="bg-light" />
-                </CCol>
-
-                {data.representantes && data.representantes.length > 0 && (
-                  <CCol md={12} className="mt-2">
-                    <CFormLabel className="text-muted small fw-semibold mb-1">Representantes Legales</CFormLabel>
-                    <CTable hover responsive striped className="mb-0">
-                      <CTableHead>
-                        <CTableRow>
-                          <CTableHeaderCell>Cédula/RIF</CTableHeaderCell>
-                          <CTableHeaderCell>Razón Social</CTableHeaderCell>
-                          <CTableHeaderCell>Cargo</CTableHeaderCell>
-                          <CTableHeaderCell>Rol</CTableHeaderCell>
-                        </CTableRow>
-                      </CTableHead>
-                      <CTableBody>
-                        {data.representantes.map((rep) => (
-                          <CTableRow key={rep.id_persona}>
-                            <CTableDataCell>{rep.ci_rif || '—'}</CTableDataCell>
-                            <CTableDataCell>{rep.razon_social || '—'}</CTableDataCell>
-                            <CTableDataCell>{rep.cargo || '—'}</CTableDataCell>
-                            <CTableDataCell>{rep.rol || '—'}</CTableDataCell>
-                          </CTableRow>
-                        ))}
-                      </CTableBody>
-                    </CTable>
-                  </CCol>
-                )}
-
-                <CCol md={12}>
-                  <CFormLabel className="text-muted small fw-semibold mb-1">Tipo de Persona</CFormLabel>
-                  <CFormInput type="text" value={data.tipo_persona || '—'} readOnly className="bg-light" />
-                </CCol>
-               
-                <CCol md={12}>
-                  <CFormLabel className="text-muted small fw-semibold mb-1">Dirección del Establecimiento</CFormLabel>
-                   <CFormInput type="text" value={data.direccion_establecimiento || 'No registrada'} readOnly className="bg-light" />
-                 </CCol>
-
-                 <CCol md={12}>
-                   <CFormLabel className="text-muted small fw-semibold mb-1">Observaciones del Documento</CFormLabel>
-                   <CFormInput type="text" value={data.observaciones_documento || 'Sin observaciones'} readOnly className="bg-light" />
-                 </CCol>
-               </CRow>
-
-              <hr className="text-muted opacity-25 my-4" />
-
-              <h5 className="text-primary fw-semibold mb-3">Datos del Pago</h5>
-              {data.pago_numero_referencia ? (
-                <CRow className="gy-3 mb-2">
-                  <CCol md={6}>
-                    <CFormLabel className="text-muted small fw-semibold mb-1">Banco</CFormLabel>
-                    <CFormInput type="text" value={data.pago_banco || '—'} readOnly className="bg-light" />
-                  </CCol>
-                  <CCol md={6}>
-                    <CFormLabel className="text-muted small fw-semibold mb-1">Número de Referencia</CFormLabel>
-                    <CFormInput type="text" value={data.pago_numero_referencia || '—'} readOnly className="bg-light fw-semibold" />
-                  </CCol>
-                  <CCol md={4}>
-                    <CFormLabel className="text-muted small fw-semibold mb-1">Monto</CFormLabel>
-                    <CFormInput type="text" value={data.pago_monto ? new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'VES' }).format(data.pago_monto) : '—'} readOnly className="bg-light fw-bold" />
-                  </CCol>
-                  <CCol md={4}>
-                    <CFormLabel className="text-muted small fw-semibold mb-1">Tasa del Día</CFormLabel>
-                    <CFormInput type="text" value={data.pago_tasa_dia ? data.pago_tasa_dia.toLocaleString('es-VE') : '—'} readOnly className="bg-light" />
-                  </CCol>
-                  <CCol md={4}>
-                    <CFormLabel className="text-muted small fw-semibold mb-1">Fecha de Pago</CFormLabel>
-                    <CFormInput type="text" value={data.pago_fecha_pago ? new Date(data.pago_fecha_pago).toLocaleDateString() : '—'} readOnly className="bg-light" />
-                  </CCol>
-                  <CCol md={6}>
-                    <CFormLabel className="text-muted small fw-semibold mb-1">Responsable</CFormLabel>
-                    <CFormInput type="text" value={data.pago_responsable || '—'} readOnly className="bg-light" />
-                  </CCol>
-                  <CCol md={6}>
-                    <CFormLabel className="text-muted small fw-semibold mb-1">Observaciones</CFormLabel>
-                    <CFormInput type="text" value={data.pago_observaciones || '—'} readOnly className="bg-light" />
-                  </CCol>
-                </CRow>
-              ) : (
-                <CAlert color="info" className="small">Esta licencia no tiene pago registrado.</CAlert>
+            {/* ── SECCIÓN 2: Asignaciones & Dirección ── */}
+            <Seccion titulo="Asignaciones & Dirección" />
+            <CRow className="gy-3 mb-2">
+              <Campo
+                label="Persona Titular"
+                value={`${data.ci_rif || ""} — ${data.persona || ""}`}
+                md={12}
+                bold
+              />
+              <Campo
+                label="Comercializador Asociado"
+                value={data.comercializador}
+                md={12}
+              />
+              <Campo
+                label="Centro de Apuesta"
+                value={data.centro_apuesta}
+                md={6}
+              />
+              <Campo label="Tipo de Persona" value={data.tipo_persona} md={6} />
+              <Campo
+                label="Dirección del Establecimiento"
+                value={data.direccion_establecimiento}
+                md={12}
+              />
+              {data.observaciones_documento && (
+                <Campo
+                  label="Observaciones del Documento"
+                  value={data.observaciones_documento}
+                  md={12}
+                />
               )}
+            </CRow>
 
-              <hr className="text-muted opacity-25 my-4" />
+            {/* ── SECCIÓN 3: Representantes Legales ── */}
+            {data.representantes && data.representantes.length > 0 && (
+              <>
+                <Seccion titulo="Representantes Legales" />
+                {data.representantes.map((rep, i) => (
+                  <div key={rep.id_persona || i}>
+                    <CBadge
+                      color="primary"
+                      shape="rounded-pill"
+                      className="rep-badge"
+                    >
+                      Representante {i + 1}
+                    </CBadge>
+                    <CRow className="gy-3 mb-2 align-items-end">
+                      <Campo
+                        label="Cédula / RIF"
+                        value={rep.ci_rif}
+                        md={6}
+                        bold
+                      />
+                      <Campo
+                        label="Nombre / Razón Social"
+                        value={rep.razon_social}
+                        md={6}
+                      />
+                      <Campo label="Cargo" value={rep.cargo} md={6} />
+                      <Campo label="Rol" value={rep.rol} md={6} />
+                    </CRow>
+                    {i < data.representantes.length - 1 && (
+                      <hr className="section-divider" style={{ margin: "0.75rem 0 1rem" }} />
+                    )}
+                  </div>
+                ))}
+              </>
+            )}
 
-              <h5 className="text-primary fw-semibold mb-3">Juegos Autorizados</h5>
-              {loadingJuegos ? (
-                <div className="d-flex justify-content-center py-3">
-                  <CSpinner color="primary" size="sm" />
-                </div>
-              ) : juegos.length === 0 ? (
-                <CAlert color="info" className="small">Esta licencia no tiene juegos autorizados.</CAlert>
-              ) : (
-                <CTable hover responsive striped className="mb-0">
-                  <CTableHead>
-                    <CTableRow>
-                      <CTableHeaderCell>#</CTableHeaderCell>
-                      <CTableHeaderCell>Juego</CTableHeaderCell>
-                    </CTableRow>
-                  </CTableHead>
-                  <CTableBody>
-                    {juegos.map((j, index) => (
-                      <CTableRow key={j.id_juego}>
-                        <CTableDataCell className="text-muted small">{index + 1}</CTableDataCell>
-                        <CTableDataCell className="fw-semibold">{j.nombre_juego || '—'}</CTableDataCell>
-                      </CTableRow>
-                    ))}
-                  </CTableBody>
-                </CTable>
-              )}
-           </div>
+            {/* ── SECCIÓN 4: Datos del Pago ── */}
+            <Seccion titulo="Datos del Pago" />
+            {data.pago_numero_referencia ? (
+              <CRow className="gy-3 mb-2">
+                <Campo label="Banco" value={data.pago_banco} md={6} />
+                <Campo
+                  label="Número de Referencia"
+                  value={data.pago_numero_referencia}
+                  md={6}
+                  bold
+                />
+                <Campo
+                  label="Monto"
+                  value={
+                    data.pago_monto
+                      ? new Intl.NumberFormat("es-VE", {
+                          style: "currency",
+                          currency: "VES",
+                        }).format(data.pago_monto)
+                      : null
+                  }
+                  md={4}
+                  bold
+                />
+                <Campo
+                  label="Tasa del Día"
+                  value={
+                    data.pago_tasa_dia
+                      ? data.pago_tasa_dia.toLocaleString("es-VE")
+                      : null
+                  }
+                  md={4}
+                />
+                <Campo
+                  label="Fecha de Pago"
+                  value={
+                    data.pago_fecha_pago
+                      ? new Date(data.pago_fecha_pago).toLocaleDateString()
+                      : null
+                  }
+                  md={4}
+                />
+                <Campo label="Responsable" value={data.pago_responsable} md={6} />
+                <Campo
+                  label="Observaciones del Pago"
+                  value={data.pago_observaciones}
+                  md={6}
+                />
+              </CRow>
+            ) : (
+              <CAlert color="info" className="small">
+                Esta licencia no tiene pago registrado.
+              </CAlert>
+            )}
+
+            {/* ── SECCIÓN 5: Juegos Autorizados ── */}
+            <Seccion titulo="Juegos Autorizados" />
+            {loadingJuegos ? (
+              <div className="d-flex justify-content-center py-3">
+                <CSpinner color="primary" size="sm" />
+              </div>
+            ) : juegos.length === 0 ? (
+              <CAlert color="info" className="small">
+                Esta licencia no tiene juegos autorizados.
+              </CAlert>
+            ) : (
+              <div className="d-flex flex-wrap gap-2 pb-2">
+                {juegos.map((j) => (
+                  <CBadge
+                    key={j.id_juego}
+                    color="primary"
+                    shape="rounded-pill"
+                    className="game-badge"
+                  >
+                    {j.nombre_juego || "—"}
+                  </CBadge>
+                ))}
+              </div>
+            )}
+
+          </div>
         )}
       </CModalBody>
+
       <CModalFooter>
-        <CButton color="secondary" onClick={onClose}>Cerrar</CButton>
+        <CButton color="secondary" variant="outline" onClick={onClose}>
+          Cerrar
+        </CButton>
       </CModalFooter>
     </CModal>
-  )
-}
+  );
+};
 
-export default LicenciaDetalleModal
+export default LicenciaDetalleModal;
