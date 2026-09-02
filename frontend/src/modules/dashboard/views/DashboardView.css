@@ -1,3 +1,12 @@
+/* ============================================================
+   DASHBOARD — Estilos
+   - Tipografía fluida con clamp() para montos grandes
+   - Altura uniforme en cards de distribución (alineación 3 cols)
+   - Diseño plano, sin !important globales
+   ============================================================ */
+
+/* ====== Tarjetas de StatCard (Indicadores Clave) ====== */
+
 .stat-card {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -7,24 +16,73 @@
   box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08) !important;
 }
 
-.progress-sm {
-  height: 6px;
+/* Valor numérico por defecto: tipografía fluida */
+.stat-card__value {
+  font-size: clamp(1.25rem, 2vw + 0.5rem, 1.75rem);
+  line-height: 1.1;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
-.text-truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+/* Valor monetario: más pequeño y un poco más de tracking */
+.stat-card__value--money {
+  font-size: clamp(1rem, 1.4vw + 0.5rem, 1.4rem);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
 }
 
-.bg-primary-subtle { background-color: rgba(99, 132, 255, 0.1) !important; }
-.bg-success-subtle { background-color: rgba(25, 135, 84, 0.1) !important; }
-.bg-danger-subtle { background-color: rgba(220, 53, 69, 0.1) !important; }
-.bg-warning-subtle { background-color: rgba(255, 193, 7, 0.1) !important; }
-.bg-info-subtle { background-color: rgba(13, 202, 240, 0.1) !important; }
+/* ====== Etiquetas de sección ====== */
 
-.border-light-subtle { border-color: rgba(0, 0, 0, 0.05) !important; }
+.section-label {
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.75rem 0.15rem;
+}
 
+/* ====== ProductSummary (Totales por Producto) ====== */
+
+.product-summary {
+  transition: transform 0.2s ease;
+}
+
+.product-summary:hover {
+  transform: translateY(-1px);
+}
+
+.product-summary__value {
+  font-size: clamp(1.5rem, 2vw + 0.5rem, 2rem);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* ====== SectionCard (distribuciones) ====== */
+
+.section-card {
+  min-height: 240px;
+}
+
+.section-card__empty {
+  min-height: 120px;
+  padding: 1rem;
+  color: var(--bs-secondary-color, #9ca3af);
+  font-style: italic;
+}
+
+/* ====== Mobile ====== */
 @media (max-width: 576px) {
-  .fs-3 { font-size: 1.25rem !important; }
+  .stat-card__value {
+    font-size: 1.1rem;
+  }
+  .stat-card__value--money {
+    font-size: 0.95rem;
+  }
+  .product-summary__value {
+    font-size: 1.4rem;
+  }
+  .section-card {
+    min-height: 200px;
+  }
 }

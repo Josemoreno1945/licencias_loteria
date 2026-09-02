@@ -1,280 +1,320 @@
-import React from 'react'
-import {
-  CContainer,
-  CRow,
-  CCol,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CSpinner,
-  CProgress,
-  CBadge,
-} from '@coreui/react'
+import { CContainer, CRow, CCol, CCard, CCardBody, CCardHeader, CSpinner, CBadge } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import {
-  cilPeople,
-  cilUser,
   cilTask,
-  cilPaperclip,
-  cilBank,
-  cilFactory,
-  cilClock,
-  cilGraph,
-  cilMoney,
-  cilLayers,
   cilCheckCircle,
-  cilXCircle,
+  cilMoney,
   cilWarning,
-  cilBell,
+  cilPaperclip,
+  cilGraph,
+  cilDescription,
+  cilBriefcase,
+  cilClipboard,
 } from '@coreui/icons'
+
 import useFetch from '../../../hooks/useFetch'
+import StatCard from '../components/StatCard'
+import AlertItem from '../components/AlertItem'
+import SectionCard from '../components/SectionCard'
+
 import './DashboardView.css'
 
-const StatCard = ({ title, value, icon, colorClass, borderColor, subtitle, trend }) => (
-  <CCard className={`h-100 shadow-sm border-start border-4 ${borderColor} stat-card`}>
-    <CCardBody className="d-flex align-items-center gap-3 py-3">
+/* ============================================================
+   Helpers de formato
+   ============================================================ */
+const fmtBs = (value) =>
+  `Bs. ${Number(value ?? 0).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+
+const fmtInt = (value) => Number(value ?? 0).toLocaleString('es-VE')
+
+/* ============================================================
+   Componentes internos ultra-minimalistas
+   ============================================================ */
+
+/**
+ * ProductSummary: tarjeta de "Totales por Producto".
+ * SOLO icono + nombre + cifra total grande. Sin badges ni subtítulos.
+ */
+const ProductSummary = ({ icon, iconColor, name, value, loading }) => (
+  <CCard className="shadow-sm border-0 h-100 product-summary">
+    <CCardBody className="p-3 d-flex align-items-center gap-3">
       <div
-        className={`d-flex align-items-center justify-content-center rounded-3 flex-shrink-0 ${colorClass}`}
-        style={{ width: 48, height: 48 }}
+        className="d-flex align-items-center justify-content-center rounded-3 flex-shrink-0"
+        style={{ width: 44, height: 44, backgroundColor: iconColor + '1A' }}
       >
-        <CIcon icon={icon} style={{ width: 22, height: 22, color: '#fff' }} />
+        <CIcon icon={icon} style={{ width: 22, height: 22, color: iconColor }} />
       </div>
       <div className="flex-grow-1 min-w-0">
-        <div className="text-body-secondary small mb-1 text-truncate">{title}</div>
-        <div className="fs-3 fw-bold lh-1 text-dark">
-          {value === null || value === undefined ? (
-            <CSpinner size="sm" />
-          ) : (
-            value
-          )}
+        <div className="text-body-secondary small mb-1 text-truncate" title={name}>
+          {name}
         </div>
-        {subtitle && <div className="small text-body-secondary mt-1">{subtitle}</div>}
-        {trend && (
-          <div className={`small fw-semibold mt-1 ${trend > 0 ? 'text-success' : 'text-body-secondary'}`}>
-            {trend > 0 ? '+' : ''}{trend}% vs mes anterior
-          </div>
-        )}
+        <div className="fs-2 fw-bold text-dark lh-1 product-summary__value">
+          {loading ? <CSpinner size="sm" /> : fmtInt(value)}
+        </div>
       </div>
     </CCardBody>
   </CCard>
 )
 
-const AlertItem = ({ item }) => {
-  const diasRestantes = Math.ceil(
-    (new Date(item.fecha_vencimiento) - new Date()) / (1000 * 60 * 60 * 24)
-  )
-  const urgencyColor = diasRestantes <= 7 ? 'danger' : diasRestantes <= 14 ? 'warning' : 'info'
-  const urgencyIcon = diasRestantes <= 7 ? cilXCircle : diasRestantes <= 14 ? cilWarning : cilBell
-
-  return (
-    <div className="d-flex align-items-start gap-3 py-2 border-bottom border-light-subtle">
-      <div className={`flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle bg-${urgencyColor}-subtle text-${urgencyColor}`} style={{ width: 32, height: 32 }}>
-        <CIcon icon={urgencyIcon} style={{ width: 16, height: 16 }} />
-      </div>
-      <div className="flex-grow-1 min-w-0">
-        <div className="small fw-semibold text-dark text-truncate">
-          {item.tipo === 'licencia' ? 'Licencia' : item.tipo === 'autorizacion' ? 'Autorización' : 'Participación'} — {item.numero_documento}
-        </div>
-        <div className="small text-body-secondary text-truncate">{item.persona}</div>
-        <div className="small text-body-secondary">
-          Vence: {new Date(item.fecha_vencimiento).toLocaleDateString('es-VE')} <span className={`fw-semibold text-${urgencyColor}`}>({diasRestantes} días)</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const ProgressBar = ({ categories }) => {
-  const total = categories.reduce((sum, cat) => sum + cat.cantidad, 0)
-  const colors = ['primary', 'success', 'info', 'warning', 'danger']
-
-  return (
-    <div className="mt-3">
-      {categories.map((cat, idx) => (
-        <div key={cat.categoria} className="mb-2">
-          <div className="d-flex justify-content-between small mb-1">
-            <span className="text-body fw-medium text-truncate" style={{ maxWidth: '60%' }}>{cat.categoria}</span>
-            <span className="text-body-secondary fw-semibold">{cat.cantidad}</span>
-          </div>
-          <CProgress
-            value={total ? (cat.cantidad / total) * 100 : 0}
-            color={colors[idx % colors.length]}
-            className="progress-sm"
-            style={{ height: 6 }}
-          />
-        </div>
-      ))}
-    </div>
-  )
-}
-
+/* ============================================================
+   Vista principal
+   ============================================================ */
 const DashboardView = () => {
-  const { data: resumen, loading: loadingResumen } = useFetch('/dashboard/resumen')
-  const { data: proximos, loading: loadingProximos } = useFetch('/dashboard/proximos-vencer')
-  const { data: licenciasCat, loading: loadingLicCat } = useFetch('/dashboard/licencias-por-categoria')
+  const { data: resumen,     loading: loadingResumen }       = useFetch('/dashboard/resumen')
+  const { data: proximos,    loading: loadingProximos }      = useFetch('/dashboard/proximos-vencer')
 
-  const personas = resumen || {}
+  const { data: licCat,      loading: loadingLicCat }        = useFetch('/dashboard/licencias-por-categoria')
+  const { data: licEstado,   loading: loadingLicEstado }     = useFetch('/dashboard/licencias-por-estado')
+  const { data: licEmision,  loading: loadingLicEmision }    = useFetch('/dashboard/licencias-por-tipo-emision')
+
+  const { data: solEstado,   loading: loadingSolEstado }     = useFetch('/dashboard/solicitudes-por-estado')
+  const { data: solTipo,     loading: loadingSolTipo }       = useFetch('/dashboard/solicitudes-por-tipo-tramite')
+
+  const { data: parTipo,     loading: loadingParTipo }       = useFetch('/dashboard/participaciones-por-tipo')
+  const { data: parEstado,   loading: loadingParEstado }     = useFetch('/dashboard/participaciones-por-estado')
+
+  const { data: autTipo,     loading: loadingAutTipo }       = useFetch('/dashboard/autorizaciones-por-tipo')
+  const { data: autEstado,   loading: loadingAutEstado }     = useFetch('/dashboard/autorizaciones-por-estado')
+
+  const r = resumen || {}
+
+  const totalDocumentosVigentes =
+    (r.licencias_vigentes ?? 0) +
+    (r.participaciones_vigentes ?? 0) +
+    (r.autorizaciones_vigentes ?? 0)
 
   return (
-    <CContainer fluid className="px-3 px-md-4">
+    <CContainer fluid className="px-3 px-md-4 pb-4">
       {/* Encabezado */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
-        <div>
-          <h4 className="mb-1 fw-bold text-dark">Panel de Control</h4>
-          <p className="text-body-secondary mb-0 small">
-            Resumen general del sistema — Lotería del Táchira
+        <div className="min-w-0">
+          <h4 className="mb-1 fw-bold text-dark text-truncate">Panel de Control</h4>
+          <p className="text-body-secondary mb-0 small text-truncate">
+            Resumen de productos — Lotería del Táchira
           </p>
         </div>
-        <div className="text-body-secondary small d-flex align-items-center gap-2">
-          <CIcon icon={cilClock} style={{ width: 14, height: 14 }} />
-          {new Date().toLocaleDateString('es-VE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        <div className="text-body-secondary small text-nowrap">
+          {new Date().toLocaleDateString('es-VE', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+          })}
         </div>
       </div>
 
-      {/* Fila 1: KPIs Operativos Prioritarios */}
-      <div className="mb-2">
-        <p className="text-uppercase fw-semibold text-body-secondary small mb-3" style={{ letterSpacing: '0.08em' }}>
-          Indicadores Clave
-        </p>
-      </div>
+      {/* ====== Indicadores Clave ====== */}
+      <p className="section-label">Indicadores Clave</p>
       <CRow className="g-3 mb-4">
-        <CCol sm={6} xl={3}>
+        <CCol xs={12} sm={6} xl={3}>
           <StatCard
             title="Solicitudes Pendientes"
-            value={loadingResumen ? null : personas.solicitudes_pendientes}
+            value={loadingResumen ? null : fmtInt(r.solicitudes_pendientes)}
             icon={cilTask}
-            colorClass="bg-warning"
-            borderColor="border-start-warning"
-            subtitle="Requieren atención"
+            color="warning"
           />
         </CCol>
-        <CCol sm={6} xl={3}>
+        <CCol xs={12} sm={6} xl={3}>
           <StatCard
             title="Licencias Vigentes"
-            value={loadingResumen ? null : personas.licencias_vigentes}
+            value={loadingResumen ? null : fmtInt(r.licencias_vigentes)}
             icon={cilCheckCircle}
-            colorClass="bg-success"
-            borderColor="border-start-success"
-            subtitle={`de ${personas.total_licencias ?? 0} totales`}
+            color="success"
           />
         </CCol>
-        <CCol sm={6} xl={3}>
+        <CCol xs={12} sm={6} xl={3}>
           <StatCard
-            title="Total Personas"
-            value={loadingResumen ? null : personas.total_personas}
-            icon={cilPeople}
-            colorClass="bg-primary"
-            borderColor="border-start-primary"
-            subtitle={`${personas.personas_naturales ?? 0} natural · ${personas.personas_juridicas ?? 0} jurídica`}
+            title="Documentos Vigentes"
+            value={loadingResumen ? null : fmtInt(totalDocumentosVigentes)}
+            icon={cilPaperclip}
+            color="primary"
           />
         </CCol>
-        <CCol sm={6} xl={3}>
+        <CCol xs={12} sm={6} xl={3}>
           <StatCard
             title="Total Recaudado"
-            value={loadingResumen ? null : `$${Number(personas.total_recaudado ?? 0).toLocaleString('es-VE')}`}
+            value={loadingResumen ? null : fmtBs(r.total_recaudado)}
             icon={cilMoney}
-            colorClass="bg-info"
-            borderColor="border-start-info"
+            color="info"
+            isMoney
           />
         </CCol>
       </CRow>
 
-      {/* Fila 2: Métricas Secundarias */}
-      <div className="mb-2">
-        <p className="text-uppercase fw-semibold text-body-secondary small mb-3" style={{ letterSpacing: '0.08em' }}>
-          Entidades del Sistema
-        </p>
-      </div>
+      {/* ====== Totales por Producto (ultra minimalista) ====== */}
+      <p className="section-label">Totales por Producto</p>
       <CRow className="g-3 mb-4">
-        <CCol sm={6} xl={3}>
-          <StatCard
-            title="Bancos Registrados"
-            value={loadingResumen ? null : personas.total_bancos}
-            icon={cilBank}
-            colorClass="bg-secondary"
-            borderColor="border-start-secondary"
+        <CCol xs={12} sm={6} xl={3}>
+          <ProductSummary
+            icon={cilDescription}
+            iconColor="#f59f00"
+            name="Solicitudes"
+            value={r.solicitudes_total}
+            loading={loadingResumen}
           />
         </CCol>
-        <CCol sm={6} xl={3}>
-          <StatCard
-            title="Centros de Apuesta"
-            value={loadingResumen ? null : personas.centros_activos}
-            icon={cilLayers}
-            colorClass="bg-primary"
-            borderColor="border-start-primary"
+        <CCol xs={12} sm={6} xl={3}>
+          <ProductSummary
+            icon={cilClipboard}
+            iconColor="#6384ff"
+            name="Licencias"
+            value={r.licencias_total}
+            loading={loadingResumen}
           />
         </CCol>
-        <CCol sm={6} xl={3}>
-          <StatCard
-            title="Usuarios del Sistema"
-            value={loadingResumen ? null : personas.total_usuarios}
-            icon={cilUser}
-            colorClass="bg-info"
-            borderColor="border-start-info"
+        <CCol xs={12} sm={6} xl={3}>
+          <ProductSummary
+            icon={cilBriefcase}
+            iconColor="#198754"
+            name="Participaciones"
+            value={r.participaciones_total}
+            loading={loadingResumen}
+          />
+        </CCol>
+        <CCol xs={12} sm={6} xl={3}>
+          <ProductSummary
+            icon={cilPaperclip}
+            iconColor="#dc3545"
+            name="Autorizaciones"
+            value={r.autorizaciones_total}
+            loading={loadingResumen}
           />
         </CCol>
       </CRow>
 
-      {/* Fila 3: Documentos + Distribución */}
+      {/* ====== Desglose: Solicitudes (2 columnas) ====== */}
+      <p className="section-label">Solicitudes</p>
       <CRow className="g-3 mb-4">
-        {/* Documentos Emitidos */}
-        <CCol lg={5}>
-          <CCard className="shadow-sm border-0 h-100">
-            <CCardHeader className="bg-white border-0 py-3">
-              <h6 className="mb-0 fw-semibold text-dark d-flex align-items-center gap-2">
-                <CIcon icon={cilPaperclip} style={{ width: 18, height: 18, color: '#6384ff' }} />
-                Documentos Emitidos
-              </h6>
-            </CCardHeader>
-            <CCardBody>
-              <CRow className="g-3">
-                <CCol sm={4}>
-                  <div className="text-center p-3 rounded-3 bg-primary-subtle">
-                    <div className="fs-4 fw-bold text-primary">{loadingResumen ? <CSpinner size="sm" /> : personas.total_licencias ?? 0}</div>
-                    <div className="small text-body-secondary mt-1">Licencias</div>
-                  </div>
-                </CCol>
-                <CCol sm={4}>
-                  <div className="text-center p-3 rounded-3 bg-success-subtle">
-                    <div className="fs-4 fw-bold text-success">{loadingResumen ? <CSpinner size="sm" /> : personas.total_participaciones ?? 0}</div>
-                    <div className="small text-body-secondary mt-1">Participaciones</div>
-                  </div>
-                </CCol>
-                <CCol sm={4}>
-                  <div className="text-center p-3 rounded-3 bg-danger-subtle">
-                    <div className="fs-4 fw-bold text-danger">{loadingResumen ? <CSpinner size="sm" /> : personas.total_autorizaciones ?? 0}</div>
-                    <div className="small text-body-secondary mt-1">Autorizaciones</div>
-                  </div>
-                </CCol>
-              </CRow>
-            </CCardBody>
-          </CCard>
+        <CCol xs={12} lg={6}>
+          <SectionCard
+            title="Por Estado"
+            icon={cilTask}
+            iconColor="#f59f00"
+            items={solEstado}
+            loading={loadingSolEstado}
+            labelKey="estado"
+          />
         </CCol>
-
-        {/* Distribución por Categoría */}
-        <CCol lg={7}>
-          <CCard className="shadow-sm border-0 h-100">
-            <CCardHeader className="bg-white border-0 py-3">
-              <h6 className="mb-0 fw-semibold text-dark d-flex align-items-center gap-2">
-                <CIcon icon={cilGraph} style={{ width: 18, height: 18, color: '#6384ff' }} />
-                Licencias por Categoría
-              </h6>
-            </CCardHeader>
-            <CCardBody>
-              {loadingLicCat ? (
-                <div className="text-center py-4"><CSpinner /></div>
-              ) : (
-                <ProgressBar categories={licenciasCat || []} />
-              )}
-            </CCardBody>
-          </CCard>
+        <CCol xs={12} lg={6}>
+          <SectionCard
+            title="Por Tipo de Trámite"
+            icon={cilDescription}
+            iconColor="#6384ff"
+            items={solTipo}
+            loading={loadingSolTipo}
+            labelKey="tipo_tramite"
+          />
         </CCol>
       </CRow>
 
-      {/* Fila 4: Próximos a Vencer */}
+      {/* ====== Desglose: Licencias (3 columnas) ====== */}
+      <p className="section-label">Licencias</p>
+      <CRow className="g-3 mb-4">
+        <CCol xs={12} lg={4}>
+          <SectionCard
+            title="Por Categoría"
+            icon={cilGraph}
+            iconColor="#6384ff"
+            items={licCat}
+            loading={loadingLicCat}
+            labelKey="categoria"
+          />
+        </CCol>
+        <CCol xs={12} lg={4}>
+          <SectionCard
+            title="Por Estado del Documento"
+            icon={cilCheckCircle}
+            iconColor="#198754"
+            items={licEstado}
+            loading={loadingLicEstado}
+            labelKey="estado"
+          />
+        </CCol>
+        <CCol xs={12} lg={4}>
+          <SectionCard
+            title="Por Tipo de Emisión"
+            icon={cilClipboard}
+            iconColor="#0dcaf0"
+            items={licEmision}
+            loading={loadingLicEmision}
+            labelKey="tipo_emision"
+          />
+        </CCol>
+      </CRow>
+
+      {/* ====== Desglose: Participaciones (3 columnas) ====== */}
+      <p className="section-label">Participaciones</p>
+      <CRow className="g-3 mb-4">
+        <CCol xs={12} lg={4}>
+          <SectionCard
+            title="Por Tipo"
+            icon={cilBriefcase}
+            iconColor="#198754"
+            items={parTipo}
+            loading={loadingParTipo}
+            labelKey="tipo_participacion"
+          />
+        </CCol>
+        <CCol xs={12} lg={4}>
+          <SectionCard
+            title="Por Estado del Documento"
+            icon={cilCheckCircle}
+            iconColor="#0dcaf0"
+            items={parEstado}
+            loading={loadingParEstado}
+            labelKey="estado"
+          />
+        </CCol>
+        <CCol xs={12} lg={4}>
+          <SectionCard
+            title="Por Tipo de Emisión"
+            icon={cilClipboard}
+            iconColor="#9ca3af"
+            items={[]}
+            loading={false}
+            labelKey="tipo_emision"
+            emptyMessage="Sin emisiones registradas"
+          />
+        </CCol>
+      </CRow>
+
+      {/* ====== Desglose: Autorizaciones Especiales (3 columnas) ====== */}
+      <p className="section-label">Autorizaciones Especiales</p>
+      <CRow className="g-3 mb-4">
+        <CCol xs={12} lg={4}>
+          <SectionCard
+            title="Por Categoría"
+            icon={cilGraph}
+            iconColor="#dc3545"
+            items={[]}
+            loading={false}
+            labelKey="categoria"
+            emptyMessage="Sin categorías registradas"
+          />
+        </CCol>
+        <CCol xs={12} lg={4}>
+          <SectionCard
+            title="Por Estado del Documento"
+            icon={cilCheckCircle}
+            iconColor="#f59f00"
+            items={autEstado}
+            loading={loadingAutEstado}
+            labelKey="estado"
+          />
+        </CCol>
+        <CCol xs={12} lg={4}>
+          <SectionCard
+            title="Por Tipo / Emisión"
+            icon={cilClipboard}
+            iconColor="#dc3545"
+            items={autTipo}
+            loading={loadingAutTipo}
+            labelKey="tipo"
+          />
+        </CCol>
+      </CRow>
+
+      {/* ====== Próximos a Vencer ====== */}
       <CRow className="g-3">
-        <CCol lg={12}>
-          <CCard className="shadow-sm border-0 h-100">
+        <CCol xs={12}>
+          <CCard className="shadow-sm border-0">
             <CCardHeader className="bg-white border-0 py-3">
               <h6 className="mb-0 fw-semibold text-dark d-flex align-items-center gap-2">
                 <CIcon icon={cilWarning} style={{ width: 18, height: 18, color: '#f59f00' }} />
@@ -288,9 +328,12 @@ const DashboardView = () => {
               {loadingProximos ? (
                 <div className="text-center py-4"><CSpinner /></div>
               ) : proximos && proximos.length > 0 ? (
-                <div className="px-4">
+                <div className="px-3 px-md-4">
                   {proximos.slice(0, 6).map((item, idx) => (
-                    <AlertItem key={`${item.tipo}-${item.id}-${idx}`} item={item} />
+                    <AlertItem
+                      key={`${item.tipo}-${item.numero_documento}-${idx}`}
+                      item={item}
+                    />
                   ))}
                 </div>
               ) : (
