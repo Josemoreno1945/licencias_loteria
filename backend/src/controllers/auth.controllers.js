@@ -2,13 +2,16 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 import { get_usuario_para_login } from "../models/auth.models.js";
-import { crear_usuario } from "../models/usuarios.models.js";
-import { get_usuario_email, get_nombre_de_usuario } from "../models/usuarios.models.js";
 
 import { JWT_SECRET } from "../config.js";
 import { errors, throwError, zodValidationError } from "../utils/errors.js";
 import { login_schema } from "../schemas/auth.schemas.js";
-import { crear_usuario_schema } from "../schemas/usuarios.schemas.js";
+
+// ---------------------------------------------------------------
+// Hash "dummy" pre-computado para mitigar timing attacks.
+// bcrypt.compare siempre tardará ~mismo tiempo exista o no el usuario.
+// ---------------------------------------------------------------
+const DUMMY_HASH = bcrypt.hashSync("__no_user_dummy__", 12);
 
 // ---------------------------------------------------------------
 // POST /auth/login
@@ -23,25 +26,29 @@ export const login = async (req, res, next) => {
 
     const { email, password } = parseResult.data;
 
-    // 2. Buscar el usuario en la BD (con password_hash)
+    // 2. Buscar el usuario en la BD
     const usuario = await get_usuario_para_login(email);
+
+    // 3. Si el usuario no existe, hacer bcrypt.compare con hash dummy
+    //    para igualar el tiempo de respuesta y evitar enumeración por timing.
     if (!usuario) {
-      // No revelamos si el email existe o no (seguridad)
+      await bcrypt.compare(password, DUMMY_HASH);
       throwError(errors.InvalidPassword);
     }
 
-    // 3. Verificar que el usuario esté activo
+    // 4. Verificar que el usuario esté activo
     if (usuario.estado !== "activo") {
+      await bcrypt.compare(password, DUMMY_HASH);
       throwError(errors.InvalidPassword);
     }
 
-    // 4. Comparar contraseña ingresada contra el hash almacenado
+    // 5. Comparar contraseña
     const passwordValida = await bcrypt.compare(password, usuario.password_hash);
     if (!passwordValida) {
       throwError(errors.InvalidPassword);
     }
 
-    // 5. Generar el JWT
+    // 6. Generar JWT (8h)
     const payload = {
       id_usuario:     usuario.id_usuario,
       nombre_usuario: usuario.nombre_usuario,
@@ -50,7 +57,7 @@ export const login = async (req, res, next) => {
 
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "8h" });
 
-    // 6. Responder con el token y datos básicos del usuario
+    // 7. Responder
     return res.status(200).json({
       message: "Login exitoso",
       token,
@@ -67,65 +74,17 @@ export const login = async (req, res, next) => {
 };
 
 // ---------------------------------------------------------------
-// POST /auth/register
-// Registra un usuario nuevo y devuelve su token directamente.
-// (El admin también puede crear usuarios vía POST /usuarios)
+// POST /auth/register  →  ELIMINADO (sistema cerrado de 4 usuarios).
+// La creación de cuentas se realiza únicamente desde el módulo
+// interno de gestión de usuarios (POST /usuarios con verifyToken
+// + soloAdmins). Ver backend/src/routes/auth.routes.js
 // ---------------------------------------------------------------
-export const register = async (req, res, next) => {
-  try {
-    // 1. Validar body con Zod (mismo esquema que crear usuario)
-    const parseResult = crear_usuario_schema.safeParse(req.body);
-    if (!parseResult.success) {
-      return next(zodValidationError(parseResult.error));
-    }
-
-    const data = parseResult.data;
-
-    // 2. Verificar duplicados
-    const emailExiste = await get_usuario_email(data.email);
-    if (emailExiste) throwError(errors.usuario_email_duplicado);
-
-    const usernameExiste = await get_nombre_de_usuario(data.nombre_usuario);
-    if (usernameExiste) throwError(errors.usuario_duplicado);
-
-    // 3. Hashear contraseña
-    const password_hash = await bcrypt.hash(data.password, 8);
-    const userData = { ...data, password_hash };
-
-    // 4. Insertar en BD
-    const rows = await crear_usuario(userData);
-    const nuevoUsuario = rows[0];
-
-    // 5. Generar JWT para que el usuario quede autenticado de inmediato
-    const payload = {
-      id_usuario:     nuevoUsuario.id_usuario,
-      nombre_usuario: nuevoUsuario.nombre_usuario,
-      rol:            nuevoUsuario.rol,
-    };
-    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "24h" });
-
-    return res.status(201).json({
-      message: "Usuario registrado exitosamente",
-      token,
-      usuario: {
-        id_usuario:     nuevoUsuario.id_usuario,
-        nombre_usuario: nuevoUsuario.nombre_usuario,
-        email:          nuevoUsuario.email,
-        rol:            nuevoUsuario.rol,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
 
 // ---------------------------------------------------------------
-// GET /auth/me  (ruta protegida de ejemplo)
-// Devuelve el perfil del usuario autenticado según el JWT.
+// GET /auth/me  (ruta protegida)
 // ---------------------------------------------------------------
 export const me = async (req, res, next) => {
   try {
-    // req.user viene del middleware verifyToken
     return res.status(200).json({ usuario: req.user });
   } catch (error) {
     next(error);

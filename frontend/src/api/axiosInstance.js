@@ -11,27 +11,41 @@ const axiosInstance = axios.create({
 // Interceptor de solicitud: adjunta el token JWT automáticamente
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token')
+    const token =
+      localStorage.getItem('auth_token') ||
+      sessionStorage.getItem('auth_token') ||
+      localStorage.getItem('token') // legacy
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
     return config
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 )
 
-// Interceptor de respuesta: manejo global de errores
+// Interceptor de respuesta: manejo global de errores 401
+let onUnauthorized = null
+
+export const setUnauthorizedHandler = (handler) => {
+  onUnauthorized = handler
+}
+
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Limpiar AMBAS claves para evitar un estado de "usuario fantasma"
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      window.location.href = '/login'
+      ;['auth_token', 'auth_user', 'token', 'user'].forEach((k) => {
+        localStorage.removeItem(k)
+        sessionStorage.removeItem(k)
+      })
+      if (typeof onUnauthorized === 'function') {
+        onUnauthorized()
+      } else if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(error)
-  }
+  },
 )
 
 export default axiosInstance

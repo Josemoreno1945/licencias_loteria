@@ -4,7 +4,6 @@ import DefaultLayout from '../layout/DefaultLayout'
 
 // Auth
 import LoginView from '../modules/auth/views/LoginView'
-import RegisterView from '../modules/auth/views/RegisterView'
 
 // Dashboard
 import DashboardView from '../modules/dashboard/views/DashboardView'
@@ -67,7 +66,6 @@ const AppRouter = () => {
       <Routes>
         {/* Rutas publicas */}
         <Route path="/login" element={<LoginView />} />
-        <Route path="/register" element={<RegisterView />} />
 
         {/* Rutas protegidas bajo layout principal */}
         <Route

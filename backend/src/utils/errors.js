@@ -207,7 +207,11 @@ export const errors = {
   //login---------------------------------------------------
   InvalidPassword: {
     status: 401,
-    message: "Invalid Password",
+    message: "Usuario o contraseña incorrectos",
+  },
+  registerDisabled: {
+    status: 403,
+    message: "El registro público está deshabilitado. Contacte al administrador.",
   },
 
   // Errores generales de base de datos / consultas---------------------------------------------------------------

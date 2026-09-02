@@ -4,9 +4,6 @@ import { useAuth } from '../store/AuthContext'
 import { extractErrorMessage } from '../../../utils/errorHandler'
 import {
   CButton,
-  CCard,
-  CCardBody,
-  CCardFooter,
   CForm,
   CFormInput,
   CFormLabel,
@@ -20,113 +17,85 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import {
-  cilUser,
   cilLockLocked,
   cilEnvelopeClosed,
-  cilCheckCircle,
+  cilWarning,
 } from '@coreui/icons'
+import loteriaLogo from '../../../assets/images/loteria-del-tachira-logo-png_seeklogo-535936.png'
 import '../styles/auth.css'
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 /* ------------------------------------------------------------------ */
 /*  LoginView — Lotería del Táchira                                    */
+/*  Sistema cerrado: 4 usuarios. Sin registro público.                 */
+/*  Sin recuperación: contactar al administrador.                      */
 /* ------------------------------------------------------------------ */
 const LoginView = () => {
   const { login } = useAuth()
   const navigate = useNavigate()
 
-  // --- Estado del formulario ---
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  })
-
-  // --- Estados de UI ---
+  const [formData, setFormData] = useState({ email: '', password: '' })
+  const [showPassword, setShowPassword] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
   const [loadingAction, setLoadingAction] = useState(false)
-  const [actionLabel, setActionLabel] = useState('')
-
   const [mensajeError, setMensajeError] = useState('')
   const [modalError, setModalError] = useState(false)
 
-  // --- Modal recuperar contraseña ---
-  const [modalRecuperar, setModalRecuperar] = useState(false)
-  const [emailRecuperar, setEmailRecuperar] = useState('')
-  const [mensajeRecuperar, setMensajeRecuperar] = useState('')
-  const [modalExito, setModalExito] = useState(false)
-
-  /* ---- Handlers ---- */
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
+  const validar = () => {
+    if (!formData.email.trim() || !formData.password.trim()) {
+      return 'Por favor completa todos los campos.'
+    }
+    if (!EMAIL_REGEX.test(formData.email.trim())) {
+      return 'El correo electrónico no tiene un formato válido.'
+    }
+    return null
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    // Validación básica
-    if (!formData.email.trim() || !formData.password.trim()) {
-      setMensajeError('Por favor completa todos los campos.')
+    const validationError = validar()
+    if (validationError) {
+      setMensajeError(validationError)
       setModalError(true)
       return
     }
 
     setLoadingAction(true)
-    setActionLabel('Iniciando sesión...')
     try {
-      await login(formData)
-      // Primero apagamos el spinner, LUEGO navegamos para evitar el
-      // crash aria-hidden de CoreUI al desmontar un CModal abierto.
-      setLoadingAction(false)
-      setActionLabel('')
+      await login(
+        {
+          email: formData.email.trim(),
+          password: formData.password,
+        },
+        rememberMe,
+      )
       navigate('/dashboard')
     } catch (err) {
-      const errorMsg = extractErrorMessage(err, 'Credenciales inválidas. Intenta de nuevo.')
-      setMensajeError(errorMsg)
+      // Mensaje genérico para no filtrar si el email existe o no.
+      setMensajeError(extractErrorMessage(err, 'Usuario o contraseña incorrectos.'))
       setModalError(true)
     } finally {
       setLoadingAction(false)
-      setActionLabel('')
     }
   }
 
-  const handleRecuperar = async () => {
-    if (!emailRecuperar.trim()) {
-      setMensajeError('Ingresa tu correo electrónico.')
-      setModalError(true)
-      return
-    }
-    setModalRecuperar(false)
-    setLoadingAction(true)
-    setActionLabel('Enviando correo...')
-    try {
-      // Simulación — reemplazar con llamada real: authService.forgotPassword(emailRecuperar)
-      await new Promise((r) => setTimeout(r, 1200))
-      setMensajeRecuperar(
-        'Se ha enviado un enlace de recuperación a tu correo electrónico.',
-      )
-      setModalExito(true)
-    } catch (err) {
-      setMensajeError(
-        err?.response?.data?.error || 'No se pudo enviar el correo de recuperación.',
-      )
-      setModalError(true)
-    } finally {
-      setLoadingAction(false)
-      setActionLabel('')
-      setEmailRecuperar('')
-    }
-  }
-
-  /* ---- Render ---- */
   return (
     <div className="auth-page">
 
-      {/* ======== Overlay: Cargando (sin CModal para evitar aria-hidden crash) ======== */}
+      {/* ======== Overlay: Cargando ======== */}
       {loadingAction && (
         <div className="auth-loading-overlay">
           <div className="auth-loading-box">
-            <CSpinner style={{ color: 'var(--lot-azul-med, #321fdb)' }} />
-            <span style={{ color: 'var(--lot-azul, #321fdb)', fontWeight: 500, marginTop: '0.75rem' }}>
-              {actionLabel}
+            <CSpinner style={{ color: 'var(--lot-azul-med)' }} />
+            <span style={{ color: 'var(--lot-azul)', fontWeight: 500, marginTop: '0.75rem' }}>
+              Iniciando sesión...
             </span>
           </div>
         </div>
@@ -141,7 +110,7 @@ const LoginView = () => {
         alignment="center"
       >
         <CModalHeader className="auth-modal-header">Error</CModalHeader>
-        <CModalBody className="py-3">
+        <CModalBody className="py-3" role="alert" aria-live="assertive">
           {Array.isArray(mensajeError) ? (
             <ul className="mb-0 ps-3">
               {mensajeError.map((msg, idx) => (
@@ -159,86 +128,42 @@ const LoginView = () => {
         </CModalFooter>
       </CModal>
 
-      {/* ======== Modal: Éxito recuperación ======== */}
-      <CModal
-        visible={modalExito}
-        backdrop="static"
-        keyboard={false}
-        onClose={() => setModalExito(false)}
-        alignment="center"
-      >
-        <CModalHeader className="auth-modal-header">Mensaje</CModalHeader>
-        <CModalBody className="d-flex align-items-center gap-3 py-3">
-          <CIcon icon={cilCheckCircle} style={{ color: '#1b8a4e', fontSize: '1.4rem' }} />
-          <span>{String(mensajeRecuperar)}</span>
-        </CModalBody>
-        <CModalFooter>
-          <CButton
-            className="btn-auth-cerrar"
-            onClick={() => {
-              setModalExito(false)
-              setMensajeRecuperar('')
-            }}
-          >
-            Cerrar
-          </CButton>
-        </CModalFooter>
-      </CModal>
+      {/* ======== Split Card (branding + form) ======== */}
+      <div className="auth-card">
 
-      {/* ======== Modal: Recuperar contraseña ======== */}
-      <CModal
-        visible={modalRecuperar}
-        backdrop="static"
-        keyboard={false}
-        alignment="center"
-        onClose={() => setModalRecuperar(false)}
-      >
-        <CModalHeader className="auth-modal-header">Recuperar contraseña</CModalHeader>
-        <CModalBody className="py-3">
-          <CFormLabel className="auth-label">Correo electrónico registrado</CFormLabel>
-          <CInputGroup>
-            <CInputGroupText style={{ background: 'var(--lot-azul)', borderColor: 'var(--lot-azul)', color: '#fff' }}>
-              <CIcon icon={cilEnvelopeClosed} />
-            </CInputGroupText>
-            <CFormInput
-              type="email"
-              placeholder="tucorreo@ejemplo.com"
-              value={emailRecuperar}
-              onChange={(e) => setEmailRecuperar(e.target.value)}
-            />
-          </CInputGroup>
-        </CModalBody>
-        <CModalFooter className="gap-2">
-          <CButton className="btn-auth-cerrar" onClick={() => setModalRecuperar(false)}>
-            Cancelar
-          </CButton>
-          <CButton className="btn-auth-dorado" onClick={handleRecuperar}>
-            Enviar enlace
-          </CButton>
-        </CModalFooter>
-      </CModal>
-
-      {/* ======== Card principal ======== */}
-      <CCard className="auth-card">
-
-        {/* --- Cabecera --- */}
-        <div className="auth-card__header">
-          <div className="auth-card__logo-wrap">
-            <div className="auth-card__logo-placeholder">🎰</div>
+        {/* --- Panel izquierdo: branding --- */}
+        <aside className="auth-card__brand">
+          <div className="auth-card__brand-inner">
+            <div className="auth-card__logo-wrap">
+              <img
+                src={loteriaLogo}
+                alt="Logo Lotería del Táchira"
+                className="auth-card__logo"
+              />
+            </div>
+            <div className="auth-card__brand-divider" aria-hidden="true" />
+            <p className="auth-card__brand-tag">Sistema de Archivo y Consulta</p>
           </div>
-          <h1 className="auth-card__title">Lotería del Táchira</h1>
-          <p className="auth-card__subtitle">Sistema de Gestión de Licencias</p>
-        </div>
+          <div className="auth-card__brand-decor" aria-hidden="true">
+            <span className="decor-circle decor-circle--1" />
+            <span className="decor-circle decor-circle--2" />
+            <span className="decor-circle decor-circle--3" />
+          </div>
+        </aside>
 
-        {/* --- Cuerpo --- */}
-        <CCardBody className="auth-card__body">
-          <CForm onSubmit={handleSubmit} noValidate>
+        {/* --- Panel derecho: formulario --- */}
+        <main className="auth-card__form">
+          <div className="auth-card__form-head">
+            <h1 className="auth-card__title">Bienvenido</h1>
+            <p className="auth-card__subtitle">Inicia sesión para continuar</p>
+          </div>
 
-            {/* Email */}
+          <CForm onSubmit={handleSubmit} noValidate className="auth-form">
+
             <div className="auth-input-group">
               <CFormLabel className="auth-label">Correo electrónico</CFormLabel>
               <CInputGroup>
-                <CInputGroupText>
+                <CInputGroupText className="auth-input-icon">
                   <CIcon icon={cilEnvelopeClosed} />
                 </CInputGroupText>
                 <CFormInput
@@ -248,20 +173,20 @@ const LoginView = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   autoComplete="email"
+                  autoFocus
                   required
                 />
               </CInputGroup>
             </div>
 
-            {/* Contraseña */}
             <div className="auth-input-group">
               <CFormLabel className="auth-label">Contraseña</CFormLabel>
               <CInputGroup>
-                <CInputGroupText>
+                <CInputGroupText className="auth-input-icon">
                   <CIcon icon={cilLockLocked} />
                 </CInputGroupText>
                 <CFormInput
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   name="password"
                   placeholder="••••••••"
                   value={formData.password}
@@ -269,40 +194,62 @@ const LoginView = () => {
                   autoComplete="current-password"
                   required
                 />
+                <button
+                  type="button"
+                  className="auth-password-toggle"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  {showPassword ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.45 0 0 1-2.16 3.19" />
+                      <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
               </CInputGroup>
             </div>
 
-            {/* Acción principal */}
+            <div className="auth-form__row">
+              <label className="auth-remember" title="Mantener la sesión iniciada en este dispositivo">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                <span>Recordarme en este dispositivo</span>
+              </label>
+            </div>
+
             <CButton
               type="submit"
-              className="btn-auth-primary mt-2"
+              className="btn-auth-primary"
               disabled={loadingAction}
             >
               {loadingAction ? 'Ingresando...' : 'Iniciar Sesión'}
             </CButton>
-          </CForm>
-        </CCardBody>
 
-        {/* --- Footer con links --- */}
-        <CCardFooter className="auth-card__footer">
-          <div className="auth-footer__links">
-            <button
-              type="button"
-              className="btn-auth-link"
-              onClick={() => navigate('/register')}
-            >
-              ¿No tienes cuenta? Regístrate
-            </button>
-          </div>
-          <button
-            type="button"
-            className="btn-auth-link"
-            onClick={() => setModalRecuperar(true)}
-          >
-            ¿Olvidaste tu contraseña?
-          </button>
-        </CCardFooter>
-      </CCard>
+            <div className="auth-form__notice">
+              <CIcon icon={cilWarning} className="auth-form__notice-icon" />
+              <span>
+                ¿Problemas para acceder? Contacte al administrador del sistema
+                para restablecer sus credenciales.
+              </span>
+            </div>
+          </CForm>
+        </main>
+      </div>
+
+      <footer className="auth-page__footer">
+        © {new Date().getFullYear()} Lotería del Táchira · Gerencia de Productos
+      </footer>
     </div>
   )
 }

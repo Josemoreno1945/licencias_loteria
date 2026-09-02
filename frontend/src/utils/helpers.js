@@ -12,12 +12,6 @@ export const capitalize = (str) => {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
 }
 
-export const getToken = () => localStorage.getItem('token')
-
-export const setToken = (token) => localStorage.setItem('token', token)
-
-export const removeToken = () => localStorage.removeItem('token')
-
 export const filterBySearch = (items, searchTerm, fields) => {
   if (!items || !Array.isArray(items)) return []
   if (!searchTerm || typeof searchTerm !== 'string' || searchTerm.trim() === '') return items
