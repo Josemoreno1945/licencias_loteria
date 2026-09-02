@@ -5,52 +5,33 @@ import AppHeader from './AppHeader'
 import '../styles/layout.css'
 
 /**
- * DefaultLayout — Hub principal del panel de administración.
+ * DefaultLayout — Panel de administración.
  *
- * Layout con flexbox: sidebar + contenido en fila.
- * El sidebar NO está en position:fixed, empuja el contenido lateralmente.
+ * Arquitectura clásica de admin (sidebar a pantalla completa):
  *
- *   ┌──────────────────────────────────────────────────┐
- *   │  AppHeader (sticky, cubre todo el ancho)         │
- *   ├──────────────┬───────────────────────────────────┤
- *   │  AppSidebar  │   <Outlet />                      │
- *   │  (flex item) │   (contenido de cada ruta)        │
- *   └──────────────┴───────────────────────────────────┘
+ *   ┌────────┬────────────────────────────────────────────┐
+ *   │        │  AppHeader (sticky, blanco, shadow)        │
+ *   │ Side-  ├────────────────────────────────────────────┤
+ *   │  bar   │                                            │
+ *   │ (full  │   <Outlet />                               │
+ *   │  vh)   │   (contenido de la ruta activa)            │
+ *   │        │                                            │
+ *   └────────┴────────────────────────────────────────────┘
  */
 const DefaultLayout = () => {
   const [sidebarShow, setSidebarShow] = useState(true)
 
   return (
     <div className="admin-layout">
+      <AppSidebar sidebarShow={sidebarShow} />
 
-      {/* ── HEADER sticky arriba de todo ── */}
-      <AppHeader
-        sidebarShow={sidebarShow}
-        setSidebarShow={setSidebarShow}
-      />
-
-      {/* ── FILA: sidebar + contenido ── */}
-      <div className="admin-body">
-
-        {/* Sidebar colapsable */}
-        <AppSidebar
-          sidebarShow={sidebarShow}
-          setSidebarShow={setSidebarShow}
-        />
-
-        {/* Área central — vacía, lista para el contenido */}
+      <div className="admin-shell">
+        <AppHeader sidebarShow={sidebarShow} setSidebarShow={setSidebarShow} />
         <main className="admin-main">
-          {/*
-            ╔══════════════════════════════════════════════╗
-            ║  ÁREA CENTRAL — RESERVADA PARA VISTAS HIJAS  ║
-            ║  El buscador y contenido van aquí después.   ║
-            ╚══════════════════════════════════════════════╝
-          */}
           <div className="admin-content">
             <Outlet />
           </div>
         </main>
-
       </div>
     </div>
   )
