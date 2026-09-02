@@ -19,22 +19,28 @@ import SectionCard from '../components/SectionCard'
 
 import './DashboardView.css'
 
-/* ============================================================
-   Helpers de formato
-   ============================================================ */
 const fmtBs = (value) =>
   `Bs. ${Number(value ?? 0).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
 const fmtInt = (value) => Number(value ?? 0).toLocaleString('es-VE')
 
-/* ============================================================
-   Componentes internos ultra-minimalistas
-   ============================================================ */
-
 /**
- * ProductSummary: tarjeta de "Totales por Producto".
- * SOLO icono + nombre + cifra total grande. Sin badges ni subtítulos.
+ * Bloque envolvente de cada producto.
+ * Aporta jerarquía visual:
+ *  - fondo gris claro (`bg-body-tertiary`) que contrasta con las tarjetas blancas
+ *  - separador dorado superior
+ *  - padding y borde redondeado
  */
+const ProductBlock = ({ title, icon, iconColor, accent = '#d4a017', children }) => (
+  <section className="product-block">
+    <div className="product-block__header">
+      <CIcon icon={icon} style={{ width: 18, height: 18, color: accent }} />
+      <h2 className="product-block__title">{title}</h2>
+    </div>
+    <CRow className="g-3">{children}</CRow>
+  </section>
+)
+
 const ProductSummary = ({ icon, iconColor, name, value, loading }) => (
   <CCard className="shadow-sm border-0 h-100 product-summary">
     <CCardBody className="p-3 d-flex align-items-center gap-3">
@@ -56,9 +62,6 @@ const ProductSummary = ({ icon, iconColor, name, value, loading }) => (
   </CCard>
 )
 
-/* ============================================================
-   Vista principal
-   ============================================================ */
 const DashboardView = () => {
   const { data: resumen,     loading: loadingResumen }       = useFetch('/dashboard/resumen')
   const { data: proximos,    loading: loadingProximos }      = useFetch('/dashboard/proximos-vencer')
@@ -138,7 +141,7 @@ const DashboardView = () => {
         </CCol>
       </CRow>
 
-      {/* ====== Totales por Producto (ultra minimalista) ====== */}
+      {/* ====== Totales por Producto ====== */}
       <p className="section-label">Totales por Producto</p>
       <CRow className="g-3 mb-4">
         <CCol xs={12} sm={6} xl={3}>
@@ -179,12 +182,16 @@ const DashboardView = () => {
         </CCol>
       </CRow>
 
-      {/* ====== Desglose: Solicitudes (2 columnas) ====== */}
-      <p className="section-label">Solicitudes</p>
-      <CRow className="g-3 mb-4">
+      {/* ====== Solicitudes ====== */}
+      <ProductBlock
+        title="Solicitudes"
+        icon={cilDescription}
+        iconColor="#f59f00"
+        accent="#f59f00"
+      >
         <CCol xs={12} lg={6}>
           <SectionCard
-            title="Por Estado"
+            title="Estado"
             icon={cilTask}
             iconColor="#f59f00"
             items={solEstado}
@@ -194,7 +201,7 @@ const DashboardView = () => {
         </CCol>
         <CCol xs={12} lg={6}>
           <SectionCard
-            title="Por Tipo de Trámite"
+            title="Tipo de Trámite"
             icon={cilDescription}
             iconColor="#6384ff"
             items={solTipo}
@@ -202,14 +209,18 @@ const DashboardView = () => {
             labelKey="tipo_tramite"
           />
         </CCol>
-      </CRow>
+      </ProductBlock>
 
-      {/* ====== Desglose: Licencias (3 columnas) ====== */}
-      <p className="section-label">Licencias</p>
-      <CRow className="g-3 mb-4">
+      {/* ====== Licencias ====== */}
+      <ProductBlock
+        title="Licencias"
+        icon={cilClipboard}
+        iconColor="#6384ff"
+        accent="#6384ff"
+      >
         <CCol xs={12} lg={4}>
           <SectionCard
-            title="Por Categoría"
+            title="Categoría"
             icon={cilGraph}
             iconColor="#6384ff"
             items={licCat}
@@ -219,7 +230,7 @@ const DashboardView = () => {
         </CCol>
         <CCol xs={12} lg={4}>
           <SectionCard
-            title="Por Estado del Documento"
+            title="Estado"
             icon={cilCheckCircle}
             iconColor="#198754"
             items={licEstado}
@@ -229,7 +240,7 @@ const DashboardView = () => {
         </CCol>
         <CCol xs={12} lg={4}>
           <SectionCard
-            title="Por Tipo de Emisión"
+            title="Tipo de Emisión"
             icon={cilClipboard}
             iconColor="#0dcaf0"
             items={licEmision}
@@ -237,14 +248,18 @@ const DashboardView = () => {
             labelKey="tipo_emision"
           />
         </CCol>
-      </CRow>
+      </ProductBlock>
 
-      {/* ====== Desglose: Participaciones (3 columnas) ====== */}
-      <p className="section-label">Participaciones</p>
-      <CRow className="g-3 mb-4">
-        <CCol xs={12} lg={4}>
+      {/* ====== Participaciones ====== */}
+      <ProductBlock
+        title="Participaciones"
+        icon={cilBriefcase}
+        iconColor="#198754"
+        accent="#198754"
+      >
+        <CCol xs={12} lg={6}>
           <SectionCard
-            title="Por Tipo"
+            title="Tipo"
             icon={cilBriefcase}
             iconColor="#198754"
             items={parTipo}
@@ -252,9 +267,9 @@ const DashboardView = () => {
             labelKey="tipo_participacion"
           />
         </CCol>
-        <CCol xs={12} lg={4}>
+        <CCol xs={12} lg={6}>
           <SectionCard
-            title="Por Estado del Documento"
+            title="Estado"
             icon={cilCheckCircle}
             iconColor="#0dcaf0"
             items={parEstado}
@@ -262,36 +277,18 @@ const DashboardView = () => {
             labelKey="estado"
           />
         </CCol>
-        <CCol xs={12} lg={4}>
-          <SectionCard
-            title="Por Tipo de Emisión"
-            icon={cilClipboard}
-            iconColor="#9ca3af"
-            items={[]}
-            loading={false}
-            labelKey="tipo_emision"
-            emptyMessage="Sin emisiones registradas"
-          />
-        </CCol>
-      </CRow>
+      </ProductBlock>
 
-      {/* ====== Desglose: Autorizaciones Especiales (3 columnas) ====== */}
-      <p className="section-label">Autorizaciones Especiales</p>
-      <CRow className="g-3 mb-4">
-        <CCol xs={12} lg={4}>
+      {/* ====== Autorizaciones Especiales ====== */}
+      <ProductBlock
+        title="Autorizaciones Especiales"
+        icon={cilPaperclip}
+        iconColor="#dc3545"
+        accent="#dc3545"
+      >
+        <CCol xs={12} lg={6}>
           <SectionCard
-            title="Por Categoría"
-            icon={cilGraph}
-            iconColor="#dc3545"
-            items={[]}
-            loading={false}
-            labelKey="categoria"
-            emptyMessage="Sin categorías registradas"
-          />
-        </CCol>
-        <CCol xs={12} lg={4}>
-          <SectionCard
-            title="Por Estado del Documento"
+            title="Estado"
             icon={cilCheckCircle}
             iconColor="#f59f00"
             items={autEstado}
@@ -299,9 +296,9 @@ const DashboardView = () => {
             labelKey="estado"
           />
         </CCol>
-        <CCol xs={12} lg={4}>
+        <CCol xs={12} lg={6}>
           <SectionCard
-            title="Por Tipo / Emisión"
+            title="Tipo"
             icon={cilClipboard}
             iconColor="#dc3545"
             items={autTipo}
@@ -309,42 +306,41 @@ const DashboardView = () => {
             labelKey="tipo"
           />
         </CCol>
-      </CRow>
+      </ProductBlock>
 
       {/* ====== Próximos a Vencer ====== */}
-      <CRow className="g-3">
-        <CCol xs={12}>
-          <CCard className="shadow-sm border-0">
-            <CCardHeader className="bg-white border-0 py-3">
-              <h6 className="mb-0 fw-semibold text-dark d-flex align-items-center gap-2">
-                <CIcon icon={cilWarning} style={{ width: 18, height: 18, color: '#f59f00' }} />
-                Próximos a Vencer (30 días)
-                {proximos && proximos.length > 0 && (
-                  <CBadge color="warning" className="ms-auto">{proximos.length}</CBadge>
-                )}
-              </h6>
-            </CCardHeader>
-            <CCardBody className="p-0">
-              {loadingProximos ? (
-                <div className="text-center py-4"><CSpinner /></div>
-              ) : proximos && proximos.length > 0 ? (
-                <div className="px-3 px-md-4">
-                  {proximos.slice(0, 6).map((item, idx) => (
-                    <AlertItem
-                      key={`${item.tipo}-${item.numero_documento}-${idx}`}
-                      item={item}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-4 text-body-secondary small">
-                  No hay documentos próximos a vencer
-                </div>
+      <div className="mt-4">
+        <p className="section-label">Alertas</p>
+        <CCard className="shadow-sm border-0">
+          <CCardHeader className="bg-white border-0 py-3">
+            <h6 className="mb-0 fw-semibold text-dark d-flex align-items-center gap-2">
+              <CIcon icon={cilWarning} style={{ width: 18, height: 18, color: '#f59f00' }} />
+              Próximos a Vencer (30 días)
+              {proximos && proximos.length > 0 && (
+                <CBadge color="warning" className="ms-auto">{proximos.length}</CBadge>
               )}
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
+            </h6>
+          </CCardHeader>
+          <CCardBody className="p-0">
+            {loadingProximos ? (
+              <div className="text-center py-4"><CSpinner /></div>
+            ) : proximos && proximos.length > 0 ? (
+              <div className="px-3 px-md-4">
+                {proximos.slice(0, 6).map((item, idx) => (
+                  <AlertItem
+                    key={`${item.tipo}-${item.numero_documento}-${idx}`}
+                    item={item}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-4 text-body-secondary small">
+                No hay documentos próximos a vencer
+              </div>
+            )}
+          </CCardBody>
+        </CCard>
+      </div>
     </CContainer>
   )
 }

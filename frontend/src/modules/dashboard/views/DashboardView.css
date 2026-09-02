@@ -1,8 +1,9 @@
 /* ============================================================
    DASHBOARD — Estilos
-   - Tipografía fluida con clamp() para montos grandes
-   - Altura uniforme en cards de distribución (alineación 3 cols)
-   - Diseño plano, sin !important globales
+   - Jerarquía visual: cada producto en un ProductBlock con
+     fondo gris y separador dorado.
+   - Tipografía fluida con clamp() para montos grandes.
+   - Sin !important globales.
    ============================================================ */
 
 /* ====== Tarjetas de StatCard (Indicadores Clave) ====== */
@@ -16,7 +17,6 @@
   box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08) !important;
 }
 
-/* Valor numérico por defecto: tipografía fluida */
 .stat-card__value {
   font-size: clamp(1.25rem, 2vw + 0.5rem, 1.75rem);
   line-height: 1.1;
@@ -24,7 +24,6 @@
   overflow-wrap: anywhere;
 }
 
-/* Valor monetario: más pequeño y un poco más de tracking */
 .stat-card__value--money {
   font-size: clamp(1rem, 1.4vw + 0.5rem, 1.4rem);
   letter-spacing: -0.01em;
@@ -58,6 +57,54 @@
   overflow-wrap: anywhere;
 }
 
+/* ====== ProductBlock (contenedor por producto) ======
+   Aporta jerarquía: fondo gris que contrasta con las
+   tarjetas blancas internas y un separador dorado superior.
+   ─────────────────────────────────────────────────────────── */
+.product-block {
+  background-color: var(--bs-tertiary-bg, #f5f6fa);
+  border: 1px solid var(--bs-border-color-translucent, rgba(0, 0, 0, 0.06));
+  border-radius: 14px;
+  padding: 1.25rem 1.25rem 1.5rem;
+  margin-bottom: 1.75rem;
+  position: relative;
+  transition: box-shadow 0.2s ease;
+}
+
+.product-block:hover {
+  box-shadow: 0 0.4rem 1.2rem rgba(10, 36, 99, 0.06);
+}
+
+/* Acento dorado superior del bloque */
+.product-block::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 1rem;
+  right: 1rem;
+  height: 3px;
+  background: linear-gradient(90deg, var(--lot-dorado, #d4a017) 0%, var(--lot-dorado-clr, #f5c842) 50%, var(--lot-dorado, #d4a017) 100%);
+  border-radius: 0 0 3px 3px;
+  opacity: 0.85;
+}
+
+.product-block__header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--bs-border-color-translucent, rgba(0, 0, 0, 0.08));
+}
+
+.product-block__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--lot-azul, #0a2463);
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
 /* ====== SectionCard (distribuciones) ====== */
 
 .section-card {
@@ -73,16 +120,9 @@
 
 /* ====== Mobile ====== */
 @media (max-width: 576px) {
-  .stat-card__value {
-    font-size: 1.1rem;
-  }
-  .stat-card__value--money {
-    font-size: 0.95rem;
-  }
-  .product-summary__value {
-    font-size: 1.4rem;
-  }
-  .section-card {
-    min-height: 200px;
-  }
+  .stat-card__value { font-size: 1.1rem; }
+  .stat-card__value--money { font-size: 0.95rem; }
+  .product-summary__value { font-size: 1.4rem; }
+  .section-card { min-height: 200px; }
+  .product-block { padding: 1rem; margin-bottom: 1.25rem; }
 }
