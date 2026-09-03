@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   CModal,
   CModalHeader,
@@ -8,22 +8,30 @@ import {
   CButton,
   CSpinner,
   CAlert,
-} from '@coreui/react';
-import axiosInstance from '../../../api/axiosInstance';
-import FeedbackModal from '../../../components/FeedbackModal';
-import ComercializadoresForm from './ComercializadoresForm';
-import { extractErrorMessage } from '../../../utils/errorHandler';
+} from "@coreui/react";
+import FeedbackModal from "../../../components/FeedbackModal";
+import ComercializadoresForm from "./ComercializadoresForm";
+import { extractErrorMessage } from "../../../utils/errorHandler";
+import { getPersonas } from "../../personas/services/personas.service";
+import {
+  getComercializadorDetalleCompleto,
+  updateComercializador,
+} from "../services/comercializadores.service";
 
-const ComercializadoresEditarModal = ({ idComercializador, onClose, onUpdated }) => {
+const ComercializadoresEditarModal = ({
+  idComercializador,
+  onClose,
+  onUpdated,
+}) => {
   // Estado del formulario
   const [formData, setFormData] = useState({
-    rif: '',
-    razon_social: '',
-    direccion_fiscal: '',
-    telefono: '',
-    email: '',
-    estado: 'activo',
-    representantes: [{ id_persona: '', cargo: '' }],
+    rif: "",
+    razon_social: "",
+    direccion_fiscal: "",
+    telefono: "",
+    email: "",
+    estado: "activo",
+    representantes: [{ id_persona: "", cargo: "" }],
   });
 
   // Datos para los selects dinámicos
@@ -38,8 +46,8 @@ const ComercializadoresEditarModal = ({ idComercializador, onClose, onUpdated })
   // Estados para los modales de feedback
   const [feedbackModal, setFeedbackModal] = useState({
     visible: false,
-    type: '', // 'loading', 'success', 'error'
-    message: '',
+    type: "",
+    message: "",
   });
 
   // Precargamos los datos actuales del comercializador
@@ -51,35 +59,38 @@ const ComercializadoresEditarModal = ({ idComercializador, onClose, onUpdated })
       setErrorData(null);
       setErrorDeps(null);
       try {
-        const [resComercializador, resPersonas] = await Promise.all([
-          axiosInstance.get(`/comercializadores/${idComercializador}/detalle-completo`),
-          axiosInstance.get('/personas'),
+        const [comercializador, personasData] = await Promise.all([
+          getComercializadorDetalleCompleto(idComercializador),
+          getPersonas(),
         ]);
 
-        const comercializador = resComercializador.data;
-
-        // Mapear representantes desde la respuesta del backend
-        let representantesData = [{ id_persona: '', cargo: '' }];
-        if (comercializador.representantes && comercializador.representantes.length > 0) {
+        let representantesData = [{ id_persona: "", cargo: "" }];
+        if (
+          comercializador.representantes &&
+          comercializador.representantes.length > 0
+        ) {
           representantesData = comercializador.representantes.map((rep) => ({
-            id_persona: rep.id_persona || '',
-            cargo: rep.cargo || '',
+            id_persona: rep.id_persona || "",
+            cargo: rep.cargo || "",
           }));
         }
 
         setFormData({
-          rif: comercializador.rif || '',
-          razon_social: comercializador.razon_social || '',
-          direccion_fiscal: comercializador.direccion_fiscal || '',
-          telefono: comercializador.telefono || '',
-          email: comercializador.email || '',
-          estado: comercializador.estado || 'activo',
+          rif: comercializador.rif || "",
+          razon_social: comercializador.razon_social || "",
+          direccion_fiscal: comercializador.direccion_fiscal || "",
+          telefono: comercializador.telefono || "",
+          email: comercializador.email || "",
+          estado: comercializador.estado || "activo",
           representantes: representantesData,
         });
 
-        setPersonas(resPersonas.data || []);
+        setPersonas(personasData || []);
       } catch (err) {
-        const msg = err.response?.data?.message || 'Error al cargar el comercializador';
+        const msg = extractErrorMessage(
+          err,
+          "Error al cargar el comercializador",
+        );
         setErrorData(msg);
         setErrorDeps(msg);
       } finally {
@@ -105,17 +116,17 @@ const ComercializadoresEditarModal = ({ idComercializador, onClose, onUpdated })
 
     setFeedbackModal({
       visible: true,
-      type: 'loading',
-      message: 'Actualizando comercializador...',
+      type: "loading",
+      message: "Actualizando comercializador...",
     });
 
     try {
       // Construimos el payload solo con campos con valores reales
       const payload = {};
       Object.keys(formData).forEach((key) => {
-        if (key === 'representantes') return; // Se procesa aparte
+        if (key === "representantes") return;
         const val = formData[key];
-        if (val !== '' && val !== null && val !== undefined) {
+        if (val !== "" && val !== null && val !== undefined) {
           payload[key] = val;
         }
       });
@@ -126,27 +137,30 @@ const ComercializadoresEditarModal = ({ idComercializador, onClose, onUpdated })
         payload.representantes = repsFiltrados;
       }
 
-      const response = await axiosInstance.put(`/comercializadores/${idComercializador}`, payload);
+      const response = await updateComercializador(idComercializador, payload);
 
       setFeedbackModal({
         visible: true,
-        type: 'success',
-        message: response.data?.message || 'Comercializador actualizado exitosamente.',
+        type: "success",
+        message: response?.message || "Comercializador actualizado exitosamente.",
       });
 
-      // Actualizamos la lista y cerramos el modal de edición
       onUpdated && onUpdated();
       onClose();
     } catch (err) {
-      const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al actualizar el comercializador.');
-
+      const errorMsg = extractErrorMessage(
+        err,
+        "Ocurrió un error inesperado al actualizar el comercializador.",
+      );
       setFeedbackModal({
         visible: true,
-        type: 'error',
+        type: "error",
         message: errorMsg,
       });
     }
   };
+
+  if (!idComercializador) return null;
 
   return (
     <React.Fragment>
@@ -175,7 +189,9 @@ const ComercializadoresEditarModal = ({ idComercializador, onClose, onUpdated })
               <span className="ms-3 text-muted">Cargando comercializador...</span>
             </div>
           )}
-          {errorData && !loadingData && <CAlert color="danger">{errorData}</CAlert>}
+          {errorData && !loadingData && (
+            <CAlert color="danger">{errorData}</CAlert>
+          )}
           {!loadingData && !errorData && (
             <ComercializadoresForm
               formData={formData}

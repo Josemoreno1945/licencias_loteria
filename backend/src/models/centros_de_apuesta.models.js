@@ -19,7 +19,7 @@ export const get_centros_apuesta = async () => {
   JOIN comercializadores AS c ON ca.id_comercializador = c.id_comercializadores
   JOIN personas AS p ON ca.id_persona = p.id_persona
   LEFT JOIN centros_apuesta_representantes AS car ON ca.id_centro = car.id_centro AND car.estado = 'activo'
-  JOIN personas AS rp ON car.id_persona = rp.id_persona
+  LEFT JOIN personas AS rp ON car.id_persona = rp.id_persona
   GROUP BY ca.id_centro, c.razon_social, p.ci_rif, p.razon_social`;
   const result = await pool.query(query);
   return result.rows;
@@ -134,7 +134,7 @@ export const actualizar_centros_apuesta_id = async (id, data) => {
 
     if (fields.length > 0) {
       const query = `
-        UPDATE centros_apuesta SET ${fields.join(", ")}
+        UPDATE centros_apuesta SET ${fields.join(", ")}, updated_at = NOW()
         WHERE id_centro = $${i} RETURNING *`;
       values.push(id);
       const result = await client.query(query, values);
@@ -221,13 +221,19 @@ export const get_centros_por_comercializador = async (id_comercializador) => {
   return result.rows;
 };
 
-// Detalle completo: datos del centro + sus representantes activos
+// Detalle completo: datos del centro + comercializadora + representantes activos
 export const get_centro_detalle_completo = async (id) => {
-  // Datos del centro y su dueño/titular
+  // Datos del centro, su dueño/titular y la comercializadora asociada
   const centroQuery = `
   SELECT ca.id_centro, ca.id_comercializador, ca.nombre_agencia, ca.direccion, ca.estado,
-         p.id_persona, p.ci_rif, p.razon_social
+         p.id_persona, p.ci_rif, p.razon_social,
+         c.rif               AS comercializador_rif,
+         c.razon_social      AS comercializador_razon_social,
+         c.direccion_fiscal  AS comercializador_direccion,
+         c.telefono          AS comercializador_telefono,
+         c.email             AS comercializador_email
   FROM centros_apuesta AS ca
+  JOIN comercializadores AS c ON ca.id_comercializador = c.id_comercializadores
   JOIN personas AS p ON ca.id_persona = p.id_persona
   WHERE ca.id_centro = $1
   `;

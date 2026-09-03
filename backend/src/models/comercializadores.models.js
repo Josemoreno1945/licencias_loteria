@@ -122,7 +122,7 @@ export const actualizar_comercializador_id = async (id, data) => {
 
     if (fields.length > 0) {
       const query = `
-        UPDATE comercializadores SET ${fields.join(", ")}
+        UPDATE comercializadores SET ${fields.join(", ")}, updated_at = NOW()
         WHERE id_comercializadores = $${i} RETURNING *`;
       values.push(id);
       await client.query(query, values);

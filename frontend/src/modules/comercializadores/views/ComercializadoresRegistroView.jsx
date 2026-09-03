@@ -1,65 +1,76 @@
-import { useState, useEffect, useCallback } from 'react'
-import { CCard, CCardBody, CCardHeader, CContainer, CAlert } from '@coreui/react'
-import { createComercializador, getComercializadoresActivos } from '../services/comercializadores.service'
-import { getPersonas } from '../../personas/services/personas.service'
-import FeedbackModal from '../../../components/FeedbackModal'
-import ComercializadoresForm from '../components/ComercializadoresForm'
-import { extractErrorMessage } from '../../../utils/errorHandler'
+import { useState, useEffect, useCallback } from "react";
+import {
+  CCard,
+  CCardBody,
+  CCardHeader,
+  CContainer,
+  CAlert,
+} from "@coreui/react";
+import {
+  createComercializador,
+  getComercializadoresActivos,
+} from "../services/comercializadores.service";
+import { getPersonas } from "../../personas/services/personas.service";
+import FeedbackModal from "../../../components/FeedbackModal";
+import ComercializadoresForm from "../components/ComercializadoresForm";
+import { extractErrorMessage } from "../../../utils/errorHandler";
 
 const ComercializadoresRegistroView = () => {
   const [formData, setFormData] = useState({
-    rif: '',
-    razon_social: '',
-    direccion_fiscal: '',
-    telefono: '',
-    email: '',
-    estado: 'activo',
-    representantes: [{ id_persona: '', cargo: '' }],
-  })
+    rif: "",
+    razon_social: "",
+    direccion_fiscal: "",
+    telefono: "",
+    email: "",
+    estado: "activo",
+    representantes: [{ id_persona: "", cargo: "" }],
+  });
 
-  const [personas, setPersonas] = useState([])
-  const [loadingDeps, setLoadingDeps] = useState(true)
-  const [errorDeps, setErrorDeps] = useState(null)
+  const [personas, setPersonas] = useState([]);
+  const [loadingDeps, setLoadingDeps] = useState(true);
+  const [errorDeps, setErrorDeps] = useState(null);
 
   const [modalState, setModalState] = useState({
     visible: false,
-    type: '',
-    message: '',
-  })
+    type: "",
+    message: "",
+  });
 
   useEffect(() => {
     const cargarDependencias = async () => {
-      setLoadingDeps(true)
-      setErrorDeps(null)
+      setLoadingDeps(true);
+      setErrorDeps(null);
       try {
-        const data = await getPersonas()
-        setPersonas(data || [])
+        const data = await getPersonas();
+        setPersonas(data || []);
       } catch {
-        setErrorDeps('No se pudieron cargar los datos necesarios. Verifique la conexión con el servidor.')
+        setErrorDeps(
+          "No se pudieron cargar los datos necesarios. Verifique la conexion con el servidor.",
+        );
       } finally {
-        setLoadingDeps(false)
+        setLoadingDeps(false);
       }
-    }
+    };
 
-    cargarDependencias()
-  }, [])
+    cargarDependencias();
+  }, []);
 
   const handleInputChange = useCallback((e) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
-    }))
-  }, [])
+    }));
+  }, []);
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     setModalState({
       visible: true,
-      type: 'loading',
-      message: 'Registrando comercializador...',
-    })
+      type: "loading",
+      message: "Registrando comercializador...",
+    });
 
     try {
       const payload = {
@@ -70,35 +81,38 @@ const ComercializadoresRegistroView = () => {
         email: formData.email,
         estado: formData.estado,
         representantes: formData.representantes.filter((r) => r.id_persona),
-      }
+      };
 
-      const response = await createComercializador(payload)
+      const response = await createComercializador(payload);
 
       setModalState({
         visible: true,
-        type: 'success',
-        message: response.message || 'Comercializador registrado exitosamente.',
-      })
+        type: "success",
+        message: response.message || "Comercializador registrado exitosamente.",
+      });
 
       setFormData({
-        rif: '',
-        razon_social: '',
-        direccion_fiscal: '',
-        telefono: '',
-        email: '',
-        estado: 'activo',
-        representantes: [{ id_persona: '', cargo: '' }],
-      })
+        rif: "",
+        razon_social: "",
+        direccion_fiscal: "",
+        telefono: "",
+        email: "",
+        estado: "activo",
+        representantes: [{ id_persona: "", cargo: "" }],
+      });
     } catch (err) {
-      const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al registrar el comercializador.')
+      const errorMsg = extractErrorMessage(
+        err,
+        "Ocurrio un error inesperado al registrar el comercializador.",
+      );
 
       setModalState({
         visible: true,
-        type: 'error',
+        type: "error",
         message: errorMsg,
-      })
+      });
     }
-  }
+  };
 
   return (
     <CContainer fluid>
@@ -106,14 +120,17 @@ const ComercializadoresRegistroView = () => {
         visible={modalState.visible}
         type={modalState.type}
         message={modalState.message}
-        onClose={() => setModalState((prev) => ({ ...prev, visible: false }))}
+        onClose={() =>
+          setModalState((prev) => ({ ...prev, visible: false }))
+        }
       />
 
       <CCard className="mb-4 shadow-sm border-top-primary border-top-3">
         <CCardHeader className="bg-white pb-0">
           <h4 className="mb-3 text-primary">Registro de Comercializadores</h4>
           <p className="text-muted small">
-            Ingrese los datos de la empresa comercializadora para registrarla en el sistema.
+            Ingrese los datos de la empresa comercializadora para registrarla
+            en el sistema.
           </p>
         </CCardHeader>
         <CCardBody>
@@ -131,7 +148,7 @@ const ComercializadoresRegistroView = () => {
         </CCardBody>
       </CCard>
     </CContainer>
-  )
-}
+  );
+};
 
-export default ComercializadoresRegistroView
+export default ComercializadoresRegistroView;

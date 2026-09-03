@@ -20,6 +20,11 @@ export const updateComercializador = async (id, updateData) => {
   return data
 }
 
+export const getComercializadorDetalleCompleto = async (id) => {
+  const { data } = await axiosInstance.get(`/comercializadores/${id}/detalle-completo`)
+  return data
+}
+
 export const getComercializadoresActivos = async () => {
   const { data } = await axiosInstance.get('/comercializadores/activos')
   return data

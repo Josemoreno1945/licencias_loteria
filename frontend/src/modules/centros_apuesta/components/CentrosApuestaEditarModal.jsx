@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   CModal,
   CModalHeader,
@@ -8,40 +8,40 @@ import {
   CButton,
   CSpinner,
   CAlert,
-} from '@coreui/react';
-import axiosInstance from '../../../api/axiosInstance';
-import FeedbackModal from '../../../components/FeedbackModal';
-import CentrosApuestaForm from './CentrosApuestaForm';
-import { extractErrorMessage } from '../../../utils/errorHandler';
+} from "@coreui/react";
+import FeedbackModal from "../../../components/FeedbackModal";
+import CentrosApuestaForm from "./CentrosApuestaForm";
+import { extractErrorMessage } from "../../../utils/errorHandler";
+import { getPersonas } from "../../personas/services/personas.service";
+import { getComercializadores } from "../../comercializadores/services/comercializadores.service";
+import {
+  getCentroDetalleCompleto,
+  updateCentroApuesta,
+} from "../services/centros_apuesta.service";
 
 const CentrosApuestaEditarModal = ({ idCentro, onClose, onUpdated }) => {
-  // Estado del formulario
   const [formData, setFormData] = useState({
-    id_comercializador: '',
-    nombre_agencia: '',
-    direccion: '',
-    estado: 'activo',
-    representantes: [{ id_persona: '', cargo: '' }],
+    id_comercializador: "",
+    nombre_agencia: "",
+    direccion: "",
+    estado: "activo",
+    representantes: [{ id_persona: "", cargo: "" }],
   });
 
-  // Datos para los selects dinámicos
   const [comercializadores, setComercializadores] = useState([]);
   const [personas, setPersonas] = useState([]);
   const [loadingDeps, setLoadingDeps] = useState(true);
   const [errorDeps, setErrorDeps] = useState(null);
 
-  // Estado para cargar los datos del registro a editar
   const [loadingData, setLoadingData] = useState(false);
   const [errorData, setErrorData] = useState(null);
 
-  // Estados para los modales de feedback
   const [feedbackModal, setFeedbackModal] = useState({
     visible: false,
-    type: '', // 'loading', 'success', 'error'
-    message: '',
+    type: "",
+    message: "",
   });
 
-  // Cargar comercializadores, personas y los datos del centro en paralelo
   useEffect(() => {
     if (!idCentro) return;
     const cargarDatos = async () => {
@@ -50,35 +50,37 @@ const CentrosApuestaEditarModal = ({ idCentro, onClose, onUpdated }) => {
       setErrorData(null);
       setErrorDeps(null);
       try {
-        const [resCentro, resComercializadores, resPersonas] = await Promise.all([
-          axiosInstance.get(`/centros_apuesta/${idCentro}/detalle-completo`),
-          axiosInstance.get('/comercializadores'),
-          axiosInstance.get('/personas'),
+        const [centro, comercializadoresData, personasData] = await Promise.all([
+          getCentroDetalleCompleto(idCentro),
+          getComercializadores(),
+          getPersonas(),
         ]);
 
-        const centro = resCentro.data;
-
-        // Mapear representantes desde la respuesta del backend
-        let representantesData = [{ id_persona: '', cargo: 'Representante Legal' }];
+        let representantesData = [
+          { id_persona: "", cargo: "Representante Legal" },
+        ];
         if (centro.representantes && centro.representantes.length > 0) {
           representantesData = centro.representantes.map((rep) => ({
-            id_persona: rep.id_persona || '',
-            cargo: rep.cargo || 'Representante Legal',
+            id_persona: rep.id_persona || "",
+            cargo: rep.cargo || "Representante Legal",
           }));
         }
 
         setFormData({
-          id_comercializador: centro.id_comercializador || '',
-          nombre_agencia: centro.nombre_agencia || '',
-          direccion: centro.direccion || '',
-          estado: centro.estado || 'activo',
+          id_comercializador: centro.id_comercializador || "",
+          nombre_agencia: centro.nombre_agencia || "",
+          direccion: centro.direccion || "",
+          estado: centro.estado || "activo",
           representantes: representantesData,
         });
 
-        setComercializadores(resComercializadores.data || []);
-        setPersonas(resPersonas.data || []);
+        setComercializadores(comercializadoresData || []);
+        setPersonas(personasData || []);
       } catch (err) {
-        const msg = err.response?.data?.message || 'Error al cargar los datos del centro de apuesta';
+        const msg = extractErrorMessage(
+          err,
+          "Error al cargar los datos del centro de apuesta",
+        );
         setErrorData(msg);
         setErrorDeps(msg);
       } finally {
@@ -89,7 +91,6 @@ const CentrosApuestaEditarModal = ({ idCentro, onClose, onUpdated }) => {
     cargarDatos();
   }, [idCentro]);
 
-  // Manejador de cambios en los inputs
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
@@ -98,55 +99,54 @@ const CentrosApuestaEditarModal = ({ idCentro, onClose, onUpdated }) => {
     }));
   };
 
-  // Enviar el formulario (actualización parcial)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     setFeedbackModal({
       visible: true,
-      type: 'loading',
-      message: 'Actualizando centro de apuesta...',
+      type: "loading",
+      message: "Actualizando centro de apuesta...",
     });
 
     try {
-      // Construimos el payload solo con campos con valores reales
-      // (evita sobreescribir campos con strings vacíos)
       const payload = {};
       Object.keys(formData).forEach((key) => {
-        if (key === 'representantes') return; // Se procesa aparte
+        if (key === "representantes") return;
         const val = formData[key];
-        if (val !== '' && val !== null && val !== undefined) {
+        if (val !== "" && val !== null && val !== undefined) {
           payload[key] = val;
         }
       });
 
-      // Agregar representantes solo si hay al menos uno con id_persona
       const repsFiltrados = formData.representantes.filter((r) => r.id_persona);
       if (repsFiltrados.length > 0) {
         payload.representantes = repsFiltrados;
       }
 
-      const response = await axiosInstance.put(`/centros_apuesta/${idCentro}`, payload);
+      const response = await updateCentroApuesta(idCentro, payload);
 
       setFeedbackModal({
         visible: true,
-        type: 'success',
-        message: response.data?.message || 'Centro de apuesta actualizado exitosamente.',
+        type: "success",
+        message: response?.message || "Centro de apuesta actualizado exitosamente.",
       });
 
-      // Actualizamos la lista y cerramos el modal de edición
       onUpdated && onUpdated();
       onClose();
     } catch (err) {
-      const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al actualizar el centro de apuesta.');
-
+      const errorMsg = extractErrorMessage(
+        err,
+        "Ocurrio un error inesperado al actualizar el centro de apuesta.",
+      );
       setFeedbackModal({
         visible: true,
-        type: 'error',
+        type: "error",
         message: errorMsg,
       });
     }
   };
+
+  if (!idCentro) return null;
 
   return (
     <React.Fragment>
@@ -172,10 +172,14 @@ const CentrosApuestaEditarModal = ({ idCentro, onClose, onUpdated }) => {
           {loadingData && (
             <div className="d-flex justify-content-center align-items-center py-5">
               <CSpinner color="primary" />
-              <span className="ms-3 text-muted">Cargando centro de apuesta...</span>
+              <span className="ms-3 text-muted">
+                Cargando centro de apuesta...
+              </span>
             </div>
           )}
-          {errorData && !loadingData && <CAlert color="danger">{errorData}</CAlert>}
+          {errorData && !loadingData && (
+            <CAlert color="danger">{errorData}</CAlert>
+          )}
           {!loadingData && !errorData && (
             <CentrosApuestaForm
               formData={formData}

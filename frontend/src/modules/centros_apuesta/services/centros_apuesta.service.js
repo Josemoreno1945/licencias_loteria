@@ -30,6 +30,11 @@ export const getCentrosPorComercializador = async (id_comercializador) => {
   return data
 }
 
+export const getCentroDetalleCompleto = async (id) => {
+  const { data } = await axiosInstance.get(`/centros_apuesta/${id}/detalle-completo`)
+  return data
+}
+
 export const getPermisosJuegosPorComercializador = async (id_comercializador) => {
   const { data } = await axiosInstance.get(`/permisos-juego/por-comercializador/${id_comercializador}`)
   return data
