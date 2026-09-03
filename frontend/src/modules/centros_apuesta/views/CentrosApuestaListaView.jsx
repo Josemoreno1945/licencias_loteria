@@ -22,7 +22,7 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilGamepad, cilMagnifyingGlass, cilPencil } from '@coreui/icons'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import useFetch from '../../../hooks/useFetch'
 import useDebounce from '../../../hooks/useDebounce'
 import { filterBySearch } from '../../../utils/helpers'
@@ -42,6 +42,7 @@ const CENTROS_APOYO_SEARCH_FIELDS = [
 
 const CentrosApuestaListaView = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useAuth()
   const { data: centros, loading, error, refetch } = useFetch('/centros_apuesta')
   const [modalVerId, setModalVerId] = useState(null)
@@ -63,6 +64,13 @@ const CentrosApuestaListaView = () => {
   useEffect(() => {
     setPaginaActual(1)
   }, [debouncedBusqueda])
+
+  useEffect(() => {
+    if (location.state?.openModalId) {
+      setModalVerId(location.state.openModalId)
+      window.history.replaceState({}, '')
+    }
+  }, [location.state])
 
   // --- Estado para el modal de permisos ---
   const [permisosModal, setPermisosModal] = useState({ visible: false, centro: null })

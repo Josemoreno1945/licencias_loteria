@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   CModal,
   CModalHeader,
@@ -23,7 +23,8 @@ import {
   CRow,
   CCol,
 } from '@coreui/react'
-import { useNavigate } from 'react-router-dom'
+import CIcon from '@coreui/icons-react'
+import { cilBuilding, cilLocationPin, cilUser } from '@coreui/icons'
 
 const getEstadoDocColor = (estado) => {
   switch (estado) {
@@ -50,11 +51,13 @@ const BuscadorDetalleModal = ({
   detalle,
   loading,
   error,
-  onOpenPersona,
   onOpenLicencia,
   onOpenSolicitud,
+  onOpenParticipacion,
+  onOpenAutorizacion,
+  onOpenComercializador,
+  onOpenCentro,
 }) => {
-  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('licencias')
 
   useEffect(() => {
@@ -64,6 +67,13 @@ const BuscadorDetalleModal = ({
   if (!visible) return null
 
   const persona = detalle?.persona || null
+  const hasResults = !!detalle && (
+    (detalle.licencias?.length || 0) +
+    (detalle.solicitudes?.length || 0) +
+    (detalle.participaciones?.length || 0) +
+    (detalle.representantes?.length || 0) +
+    (detalle.centros_apuesta?.length || 0) > 0
+  )
 
   return (
     <CModal
@@ -74,201 +84,125 @@ const BuscadorDetalleModal = ({
       alignment="center"
       scrollable
     >
-      <CModalHeader>
-        <CModalTitle>
-          Detalle del Consultado
+      <CModalHeader className="border-bottom-0 pb-0">
+        <CModalTitle className="d-flex flex-column">
+          <span className="text-primary fw-bold">Detalle del Consultado</span>
           {persona && (
-            <span className="text-muted fw-normal fs-6 ms-3">
-              {persona.ci_rif} — {persona.razon_social}
+            <span className="text-muted fw-normal fs-6 mt-1">
+              {persona.ci_rif} · {persona.razon_social}
             </span>
           )}
         </CModalTitle>
       </CModalHeader>
 
-      <CModalBody>
+      <CModalBody className="pt-3">
         {loading && (
           <div className="d-flex justify-content-center align-items-center py-5">
             <CSpinner color="primary" />
-            <span className="ms-3 text-muted">Cargando información...</span>
+            <span className="ms-3 text-muted">Cargando información…</span>
           </div>
         )}
 
-        {error && !loading && (
-          <CAlert color="danger">{error}</CAlert>
-        )}
+        {error && !loading && <CAlert color="danger">{error}</CAlert>}
 
         {!loading && !error && persona && (
           <>
-            {/* ── Bloque de datos de la persona ── */}
             <CRow className="mb-4 p-3 bg-light rounded">
-              <CCol md={6}>
-                <p className="mb-1">
-                  <span className="fw-semibold text-muted small">CI / RIF</span>
-                </p>
-                <div className="d-flex align-items-center gap-2 mb-2">
-                  <span className="fw-bold fs-5">{persona.ci_rif}</span>
-                  {/* Botón de navegación interna: va a la lista de personas */}
-                  <CButton
-                    size="sm"
-                    color="primary"
-                    variant="outline"
-                    onClick={() => onOpenPersona(persona.id_persona)}
-                    title="Ver detalle de persona"
-                  >
-                    Ver Persona
-                  </CButton>
-                </div>
-                <p className="mb-1">
-                  <span className="fw-semibold text-muted small">Nombre / Razón Social</span>
-                </p>
-                <p className="fw-bold mb-2">{persona.razon_social}</p>
-                <p className="mb-1">
-                  <span className="fw-semibold text-muted small">Tipo de Persona</span>
-                </p>
-                <CBadge color={persona.tipo_persona === 'natural' ? 'info' : 'warning'}>
+              <CCol md={6} className="mb-3 mb-md-0">
+                <div className="detail-field-label">CI / RIF</div>
+                <div className="fw-bold fs-5 mb-3">{persona.ci_rif}</div>
+                <div className="detail-field-label">Razón Social</div>
+                <p className="fw-bold mb-3">{persona.razon_social}</p>
+                <div className="detail-field-label">Tipo de Persona</div>
+                <CBadge color={persona.tipo_persona === 'natural' ? 'info' : 'warning'} className="status-badge">
                   {persona.tipo_persona === 'natural' ? 'Natural' : 'Jurídica'}
                 </CBadge>
               </CCol>
               <CCol md={6}>
-                <p className="mb-1">
-                  <span className="fw-semibold text-muted small">Teléfono</span>
-                </p>
-                <p className="mb-2">{persona.telefono || <span className="text-muted">—</span>}</p>
-                <p className="mb-1">
-                  <span className="fw-semibold text-muted small">Email</span>
-                </p>
-                <p className="mb-2">{persona.email || <span className="text-muted">—</span>}</p>
-                <p className="mb-1">
-                  <span className="fw-semibold text-muted small">Dirección Fiscal</span>
-                </p>
+                <div className="detail-field-label">Teléfono</div>
+                <p className="mb-3">{persona.telefono || <span className="text-muted">—</span>}</p>
+                <div className="detail-field-label">Email</div>
+                <p className="mb-3">{persona.email || <span className="text-muted">—</span>}</p>
+                <div className="detail-field-label">Dirección Fiscal</div>
                 <p className="mb-0">{persona.direccion_fiscal || <span className="text-muted">—</span>}</p>
               </CCol>
             </CRow>
 
-            {/* ── Tabs de documentos ── */}
+            <hr className="section-divider" />
+
             <CNav variant="tabs" className="mb-3">
               <CNavItem>
-                <CNavLink
-                  active={activeTab === 'licencias'}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setActiveTab('licencias')}
-                >
+                <CNavLink active={activeTab === 'licencias'} onClick={() => setActiveTab('licencias')} style={{ cursor: 'pointer' }}>
                   Licencias ({detalle.licencias?.length || 0})
                 </CNavLink>
               </CNavItem>
               <CNavItem>
-                <CNavLink
-                  active={activeTab === 'solicitudes'}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setActiveTab('solicitudes')}
-                >
+                <CNavLink active={activeTab === 'solicitudes'} onClick={() => setActiveTab('solicitudes')} style={{ cursor: 'pointer' }}>
                   Solicitudes ({detalle.solicitudes?.length || 0})
                 </CNavLink>
               </CNavItem>
               <CNavItem>
-                <CNavLink
-                  active={activeTab === 'representantes'}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setActiveTab('representantes')}
-                >
-                  Representantes ({detalle.representantes?.length || 0})
-                </CNavLink>
-              </CNavItem>
-              <CNavItem>
-                <CNavLink
-                  active={activeTab === 'centros_apuesta'}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setActiveTab('centros_apuesta')}
-                >
-                  Centros de Apuesta ({detalle.centros_apuesta?.length || 0})
-                </CNavLink>
-              </CNavItem>
-
-              <CNavItem>
-                <CNavLink
-                  active={activeTab === 'participaciones'}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setActiveTab('participaciones')}
-                >
+                <CNavLink active={activeTab === 'participaciones'} onClick={() => setActiveTab('participaciones')} style={{ cursor: 'pointer' }}>
                   Participaciones ({detalle.participaciones?.length || 0})
                 </CNavLink>
               </CNavItem>
-
-              {/* ── Placeholder Autorizaciones Especiales ── */}
-              {/* TODO: activar cuando el módulo esté listo
               <CNavItem>
-                <CNavLink
-                  active={activeTab === 'autorizaciones'}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setActiveTab('autorizaciones')}
-                >
-                  Autorizaciones ({detalle.autorizaciones_especiales?.length || 0})
+                <CNavLink active={activeTab === 'representantes'} onClick={() => setActiveTab('representantes')} style={{ cursor: 'pointer' }}>
+                  Comercializadoras ({detalle.representantes?.length || 0})
                 </CNavLink>
               </CNavItem>
-              */}
+              <CNavItem>
+                <CNavLink active={activeTab === 'centros_apuesta'} onClick={() => setActiveTab('centros_apuesta')} style={{ cursor: 'pointer' }}>
+                  Centros de Apuesta ({detalle.centros_apuesta?.length || 0})
+                </CNavLink>
+              </CNavItem>
             </CNav>
 
             <CTabContent>
-
-              {/* ── TAB: LICENCIAS ── */}
               <CTabPane visible={activeTab === 'licencias'}>
-                {detalle.licencias?.length === 0 ? (
-                  <CAlert color="info">Esta persona no tiene licencias emitidas.</CAlert>
+                {!detalle.licencias?.length ? (
+                  <CAlert color="info" className="text-center mb-0">Sin licencias emitidas.</CAlert>
                 ) : (
-                  <CTable hover responsive striped align="middle" className="mb-0 small">
+                  <CTable hover responsive striped align="middle" className="mb-0 small module-table">
                     <CTableHead>
                       <CTableRow>
-                        <CTableHeaderCell>#</CTableHeaderCell>
                         <CTableHeaderCell>Nº Documento</CTableHeaderCell>
                         <CTableHeaderCell>Categoría</CTableHeaderCell>
                         <CTableHeaderCell>Estado</CTableHeaderCell>
                         <CTableHeaderCell>Expedición</CTableHeaderCell>
                         <CTableHeaderCell>Vencimiento</CTableHeaderCell>
-                        <CTableHeaderCell>Comercializador</CTableHeaderCell>
-                        <CTableHeaderCell>Acciones</CTableHeaderCell>
+                        <CTableHeaderCell>Comercializadora</CTableHeaderCell>
+                        <CTableHeaderCell className="text-end">Acciones</CTableHeaderCell>
                       </CTableRow>
                     </CTableHead>
                     <CTableBody>
-                      {detalle.licencias.map((lic, idx) => (
+                      {detalle.licencias.map((lic) => (
                         <CTableRow key={lic.id_documento}>
-                          <CTableDataCell className="text-muted">{idx + 1}</CTableDataCell>
                           <CTableDataCell className="fw-semibold">{lic.numero_documento}</CTableDataCell>
                           <CTableDataCell>{lic.categoria}</CTableDataCell>
                           <CTableDataCell>
-                            <CBadge color={getEstadoDocColor(lic.estado_documento)}>
+                            <CBadge color={getEstadoDocColor(lic.estado_documento)} className="status-badge">
                               {lic.estado_documento}
                             </CBadge>
                           </CTableDataCell>
-                          <CTableDataCell>{lic.fecha_expedicion?.slice(0, 10)}</CTableDataCell>
-                          <CTableDataCell>{lic.fecha_vencimiento?.slice(0, 10)}</CTableDataCell>
+                          <CTableDataCell>{lic.fecha_expedicion?.slice(0, 10) || '—'}</CTableDataCell>
+                          <CTableDataCell>{lic.fecha_vencimiento?.slice(0, 10) || '—'}</CTableDataCell>
                           <CTableDataCell>
                             {lic.comercializador ? (
-                              <span className="d-flex align-items-center gap-1">
-                                {lic.comercializador}
-                                {/* Botón deep-link: va a la lista de comercializadores */}
-                                <CButton
-                                  size="sm"
-                                  color="secondary"
-                                  variant="ghost"
-                                  className="py-0 px-1"
-                                  title="Ver comercializadores"
-                                  onClick={() => { onClose(); navigate('/comercializadores/lista', { state: { openModalId: lic.id_comercializador } }) }}
-                                >
-                                  ↗
-                                </CButton>
-                              </span>
-                            ) : (
-                              <span className="text-muted">—</span>
-                            )}
+                              <div className="d-flex align-items-center gap-2">
+                                <span className="text-truncate" style={{ maxWidth: 140 }}>{lic.comercializador}</span>
+                                {lic.id_comercializador && (
+                                  <CButton size="sm" color="primary" variant="outline" className="py-0 px-2"
+                                    onClick={() => onOpenComercializador?.(lic.id_comercializador)}>
+                                    <CIcon icon={cilBuilding} size="sm" className="me-1" />Ver
+                                  </CButton>
+                                )}
+                              </div>
+                            ) : <span className="text-muted">—</span>}
                           </CTableDataCell>
-                          <CTableDataCell>
-                            {/* Botón para abrir el modal anidado */}
-                            <CButton
-                              size="sm"
-                              color="primary"
-                              variant="outline"
-                              onClick={() => onOpenLicencia(lic.id_documento)}
-                            >
+                          <CTableDataCell className="text-end">
+                            <CButton size="sm" color="primary" variant="outline"
+                              onClick={() => onOpenLicencia?.(lic.id_documento)}>
                               Ver
                             </CButton>
                           </CTableDataCell>
@@ -279,115 +213,52 @@ const BuscadorDetalleModal = ({
                 )}
               </CTabPane>
 
-              {/* ── TAB: SOLICITUDES ── */}
               <CTabPane visible={activeTab === 'solicitudes'}>
-                {detalle.solicitudes?.length === 0 ? (
-                  <CAlert color="info">Esta persona no tiene solicitudes registradas.</CAlert>
+                {!detalle.solicitudes?.length ? (
+                  <CAlert color="info" className="text-center mb-0">Sin solicitudes registradas.</CAlert>
                 ) : (
-                  <CTable hover responsive striped align="middle" className="mb-0 small">
+                  <CTable hover responsive striped align="middle" className="mb-0 small module-table">
                     <CTableHead>
                       <CTableRow>
-                        <CTableHeaderCell>#</CTableHeaderCell>
                         <CTableHeaderCell>Tipo Trámite</CTableHeaderCell>
                         <CTableHeaderCell>Categoría</CTableHeaderCell>
                         <CTableHeaderCell>Estado</CTableHeaderCell>
-                        <CTableHeaderCell>Comercializador</CTableHeaderCell>
+                        <CTableHeaderCell>Comercializadora</CTableHeaderCell>
                         <CTableHeaderCell>Registrado por</CTableHeaderCell>
                         <CTableHeaderCell>Fecha</CTableHeaderCell>
-                        <CTableHeaderCell>Acciones</CTableHeaderCell>
+                        <CTableHeaderCell className="text-end">Acciones</CTableHeaderCell>
                       </CTableRow>
                     </CTableHead>
                     <CTableBody>
-                      {detalle.solicitudes.map((sol, idx) => (
+                      {detalle.solicitudes.map((sol) => (
                         <CTableRow key={sol.id_solicitudes}>
-                          <CTableDataCell className="text-muted">{idx + 1}</CTableDataCell>
                           <CTableDataCell>{sol.tipo_tramite}</CTableDataCell>
                           <CTableDataCell>{sol.categoria_licencia || <span className="text-muted">—</span>}</CTableDataCell>
                           <CTableDataCell>
-                            <CBadge color={getEstadoSolicitudColor(sol.estado)}>
+                            <CBadge color={getEstadoSolicitudColor(sol.estado)} className="status-badge">
                               {sol.estado}
                             </CBadge>
                           </CTableDataCell>
-                          <CTableDataCell>{sol.comercializador || <span className="text-muted">—</span>}</CTableDataCell>
-                          <CTableDataCell>{sol.registrado_por}</CTableDataCell>
-                          <CTableDataCell>{sol.created_at?.slice(0, 10)}</CTableDataCell>
                           <CTableDataCell>
-                            <CButton
-                              size="sm"
-                              color="primary"
-                              variant="outline"
-                              onClick={() => onOpenSolicitud(sol.id_solicitudes)}
-                            >
+                            {sol.comercializador ? (
+                              <div className="d-flex align-items-center gap-2">
+                                <span className="text-truncate" style={{ maxWidth: 120 }}>{sol.comercializador}</span>
+                                {sol.id_comercializador && (
+                                  <CButton size="sm" color="primary" variant="outline" className="py-0 px-2"
+                                    onClick={() => onOpenComercializador?.(sol.id_comercializador)}>
+                                    <CIcon icon={cilBuilding} size="sm" className="me-1" />Ver
+                                  </CButton>
+                                )}
+                              </div>
+                            ) : <span className="text-muted">—</span>}
+                          </CTableDataCell>
+                          <CTableDataCell>{sol.registrado_por}</CTableDataCell>
+                          <CTableDataCell>{sol.created_at?.slice(0, 10) || '—'}</CTableDataCell>
+                          <CTableDataCell className="text-end">
+                            <CButton size="sm" color="primary" variant="outline"
+                              onClick={() => onOpenSolicitud?.(sol.id_solicitudes)}>
                               Ver
                             </CButton>
-                          </CTableDataCell>
-                        </CTableRow>
-                      ))}
-                    </CTableBody>
-                  </CTable>
-                )}
-              </CTabPane>
-
-              {/* ── TAB: REPRESENTANTES ── */}
-              <CTabPane visible={activeTab === 'representantes'}>
-                {detalle.representantes?.length === 0 ? (
-                  <CAlert color="info">Esta persona no es representante de ningun comercializador.</CAlert>
-                ) : (
-                  <CTable hover responsive striped align="middle" className="mb-0 small">
-                    <CTableHead>
-                      <CTableRow>
-                        <CTableHeaderCell>#</CTableHeaderCell>
-                        <CTableHeaderCell>Comercializador</CTableHeaderCell>
-                        <CTableHeaderCell>RIF</CTableHeaderCell>
-                        <CTableHeaderCell>Cargo</CTableHeaderCell>
-                        <CTableHeaderCell>Estado</CTableHeaderCell>
-                      </CTableRow>
-                    </CTableHead>
-                    <CTableBody>
-                      {detalle.representantes.map((rep, idx) => (
-                        <CTableRow key={idx}>
-                          <CTableDataCell className="text-muted">{idx + 1}</CTableDataCell>
-                          <CTableDataCell className="fw-semibold">{rep.comercializador}</CTableDataCell>
-                          <CTableDataCell>{rep.rif}</CTableDataCell>
-                          <CTableDataCell>{rep.cargo || <span className="text-muted">—</span>}</CTableDataCell>
-                          <CTableDataCell>
-                            <CBadge color={rep.estado === 'activo' ? 'success' : 'secondary'}>
-                              {rep.estado}
-                            </CBadge>
-                          </CTableDataCell>
-                        </CTableRow>
-                      ))}
-                    </CTableBody>
-                  </CTable>
-                )}
-              </CTabPane>
-
-              {/* ── TAB: CENTROS DE APUESTA ── */}
-              <CTabPane visible={activeTab === 'centros_apuesta'}>
-                {detalle.centros_apuesta?.length === 0 ? (
-                  <CAlert color="info">Esta persona no tiene centros de apuesta a su cargo.</CAlert>
-                ) : (
-                  <CTable hover responsive striped align="middle" className="mb-0 small">
-                    <CTableHead>
-                      <CTableRow>
-                        <CTableHeaderCell>#</CTableHeaderCell>
-                        <CTableHeaderCell>Nombre Agencia</CTableHeaderCell>
-                        <CTableHeaderCell>Direccion</CTableHeaderCell>
-                        <CTableHeaderCell>Comercializador</CTableHeaderCell>
-                        <CTableHeaderCell>Estado</CTableHeaderCell>
-                      </CTableRow>
-                    </CTableHead>
-                    <CTableBody>
-                      {detalle.centros_apuesta.map((centro, idx) => (
-                        <CTableRow key={idx}>
-                          <CTableDataCell className="text-muted">{idx + 1}</CTableDataCell>
-                          <CTableDataCell className="fw-semibold">{centro.nombre_agencia}</CTableDataCell>
-                          <CTableDataCell>{centro.direccion || <span className="text-muted">—</span>}</CTableDataCell>
-                          <CTableDataCell>{centro.comercializador || <span className="text-muted">—</span>}</CTableDataCell>
-                          <CTableDataCell>
-                            <CBadge color={centro.estado === 'activo' ? 'success' : 'secondary'}>
-                              {centro.estado}
-                            </CBadge>
                           </CTableDataCell>
                         </CTableRow>
                       ))}
@@ -397,39 +268,49 @@ const BuscadorDetalleModal = ({
               </CTabPane>
 
               <CTabPane visible={activeTab === 'participaciones'}>
-                {detalle.participaciones?.length === 0 ? (
-                  <CAlert color="info">Esta persona no tiene participaciones registradas.</CAlert>
+                {!detalle.participaciones?.length ? (
+                  <CAlert color="info" className="text-center mb-0">Sin participaciones registradas.</CAlert>
                 ) : (
-                  <CTable hover responsive striped align="middle" className="mb-0 small">
+                  <CTable hover responsive striped align="middle" className="mb-0 small module-table">
                     <CTableHead>
                       <CTableRow>
-                        <CTableHeaderCell>#</CTableHeaderCell>
                         <CTableHeaderCell>Nº Archivo</CTableHeaderCell>
                         <CTableHeaderCell>Nº Documento</CTableHeaderCell>
                         <CTableHeaderCell>Tipo</CTableHeaderCell>
                         <CTableHeaderCell>Estado</CTableHeaderCell>
-                        <CTableHeaderCell>Comercializador</CTableHeaderCell>
+                        <CTableHeaderCell>Comercializadora</CTableHeaderCell>
                         <CTableHeaderCell>Expedición</CTableHeaderCell>
-                        <CTableHeaderCell>Acciones</CTableHeaderCell>
+                        <CTableHeaderCell className="text-end">Acciones</CTableHeaderCell>
                       </CTableRow>
                     </CTableHead>
                     <CTableBody>
-                      {detalle.participaciones.map((par, idx) => (
+                      {detalle.participaciones.map((par) => (
                         <CTableRow key={par.id_documento}>
-                          <CTableDataCell className="text-muted">{idx + 1}</CTableDataCell>
                           <CTableDataCell>{par.nro_archivo || '—'}</CTableDataCell>
-                          <CTableDataCell>{par.numero_documento}</CTableDataCell>
+                          <CTableDataCell className="fw-semibold">{par.numero_documento}</CTableDataCell>
                           <CTableDataCell>{par.tipo || '—'}</CTableDataCell>
                           <CTableDataCell>
-                            <CBadge color={getEstadoDocColor(par.estado_documento)}>
+                            <CBadge color={getEstadoDocColor(par.estado_documento)} className="status-badge">
                               {par.estado_documento}
                             </CBadge>
                           </CTableDataCell>
-                          <CTableDataCell>{par.comercializador || '—'}</CTableDataCell>
-                          <CTableDataCell>{par.fecha_expedicion?.slice(0, 10)}</CTableDataCell>
                           <CTableDataCell>
+                            {par.comercializador ? (
+                              <div className="d-flex align-items-center gap-2">
+                                <span className="text-truncate" style={{ maxWidth: 120 }}>{par.comercializador}</span>
+                                {par.id_comercializador && (
+                                  <CButton size="sm" color="primary" variant="outline" className="py-0 px-2"
+                                    onClick={() => onOpenComercializador?.(par.id_comercializador)}>
+                                    <CIcon icon={cilBuilding} size="sm" className="me-1" />Ver
+                                  </CButton>
+                                )}
+                              </div>
+                            ) : <span className="text-muted">—</span>}
+                          </CTableDataCell>
+                          <CTableDataCell>{par.fecha_expedicion?.slice(0, 10) || '—'}</CTableDataCell>
+                          <CTableDataCell className="text-end">
                             <CButton size="sm" color="primary" variant="outline"
-                              onClick={() => { onClose(); navigate('/participaciones/lista', { state: { openModalId: par.id_documento } }) }}>
+                              onClick={() => onOpenParticipacion?.(par.id_documento)}>
                               Ver
                             </CButton>
                           </CTableDataCell>
@@ -440,40 +321,39 @@ const BuscadorDetalleModal = ({
                 )}
               </CTabPane>
 
-              {/* ── TAB PLACEHOLDER: AUTORIZACIONES ESPECIALES ── */}
-              {/* TODO: descomentar y conectar datos cuando el módulo esté listo
-              <CTabPane visible={activeTab === 'autorizaciones'}>
-                {detalle.autorizaciones_especiales?.length === 0 ? (
-                  <CAlert color="info">Esta persona no tiene autorizaciones especiales.</CAlert>
+              <CTabPane visible={activeTab === 'representantes'}>
+                {!detalle.representantes?.length ? (
+                  <CAlert color="info" className="text-center mb-0">No es representante de ninguna comercializadora.</CAlert>
                 ) : (
-                  <CTable hover responsive striped align="middle" className="mb-0 small">
+                  <CTable hover responsive striped align="middle" className="mb-0 small module-table">
                     <CTableHead>
                       <CTableRow>
-                        <CTableHeaderCell>#</CTableHeaderCell>
-                        <CTableHeaderCell>Nº Mesa</CTableHeaderCell>
-                        <CTableHeaderCell>Nº Documento</CTableHeaderCell>
+                        <CTableHeaderCell>Comercializadora</CTableHeaderCell>
+                        <CTableHeaderCell>RIF</CTableHeaderCell>
+                        <CTableHeaderCell>Cargo</CTableHeaderCell>
                         <CTableHeaderCell>Estado</CTableHeaderCell>
-                        <CTableHeaderCell>Expedición</CTableHeaderCell>
-                        <CTableHeaderCell>Acciones</CTableHeaderCell>
+                        <CTableHeaderCell className="text-end">Acciones</CTableHeaderCell>
                       </CTableRow>
                     </CTableHead>
                     <CTableBody>
-                      {detalle.autorizaciones_especiales.map((aut, idx) => (
-                        <CTableRow key={aut.id_documento}>
-                          <CTableDataCell className="text-muted">{idx + 1}</CTableDataCell>
-                          <CTableDataCell>{aut.nro_mesa}</CTableDataCell>
-                          <CTableDataCell>{aut.numero_documento}</CTableDataCell>
+                      {detalle.representantes.map((rep) => (
+                        <CTableRow key={rep.id_c_representantes || `${rep.id_comercializador}-${rep.rif}`}>
+                          <CTableDataCell className="fw-semibold">{rep.comercializador}</CTableDataCell>
+                          <CTableDataCell>{rep.rif}</CTableDataCell>
+                          <CTableDataCell>{rep.cargo || <span className="text-muted">—</span>}</CTableDataCell>
                           <CTableDataCell>
-                            <CBadge color={getEstadoDocColor(aut.estado_documento)}>
-                              {aut.estado_documento}
+                            <CBadge color={rep.estado === 'activo' ? 'success' : 'secondary'} className="status-badge">
+                              {rep.estado}
                             </CBadge>
                           </CTableDataCell>
-                          <CTableDataCell>{aut.fecha_expedicion?.slice(0, 10)}</CTableDataCell>
-                          <CTableDataCell>
-                            <CButton size="sm" color="primary" variant="outline"
-                              onClick={() => { onClose(); navigate('/autorizaciones/lista', { state: { openModalId: aut.id_documento } }) }}>
-                              Ver
-                            </CButton>
+                          <CTableDataCell className="text-end">
+                            {rep.id_comercializador && (
+                              <CButton size="sm" color="primary" variant="outline"
+                                onClick={() => onOpenComercializador?.(rep.id_comercializador)}>
+                                <CIcon icon={cilBuilding} className="me-1" />
+                                Ver Comercializadora
+                              </CButton>
+                            )}
                           </CTableDataCell>
                         </CTableRow>
                       ))}
@@ -481,15 +361,70 @@ const BuscadorDetalleModal = ({
                   </CTable>
                 )}
               </CTabPane>
-              */}
 
+              <CTabPane visible={activeTab === 'centros_apuesta'}>
+                {!detalle.centros_apuesta?.length ? (
+                  <CAlert color="info" className="text-center mb-0">No tiene centros de apuesta a su cargo.</CAlert>
+                ) : (
+                  <CTable hover responsive striped align="middle" className="mb-0 small module-table">
+                    <CTableHead>
+                      <CTableRow>
+                        <CTableHeaderCell>Agencia</CTableHeaderCell>
+                        <CTableHeaderCell>Dirección</CTableHeaderCell>
+                        <CTableHeaderCell>Comercializadora</CTableHeaderCell>
+                        <CTableHeaderCell>Estado</CTableHeaderCell>
+                        <CTableHeaderCell className="text-end">Acciones</CTableHeaderCell>
+                      </CTableRow>
+                    </CTableHead>
+                    <CTableBody>
+                      {detalle.centros_apuesta.map((centro) => (
+                        <CTableRow key={centro.id_centro}>
+                          <CTableDataCell className="fw-semibold">{centro.nombre_agencia}</CTableDataCell>
+                          <CTableDataCell>{centro.direccion || <span className="text-muted">—</span>}</CTableDataCell>
+                          <CTableDataCell>
+                            <div className="d-flex align-items-center gap-2">
+                              <span className="text-truncate" style={{ maxWidth: 120 }}>{centro.comercializador}</span>
+                              {centro.id_comercializador && (
+                                <CButton size="sm" color="primary" variant="outline" className="py-0 px-2"
+                                  onClick={() => onOpenComercializador?.(centro.id_comercializador)}>
+                                  <CIcon icon={cilBuilding} size="sm" className="me-1" />Ver
+                                </CButton>
+                              )}
+                            </div>
+                          </CTableDataCell>
+                          <CTableDataCell>
+                            <CBadge color={centro.estado === 'activo' ? 'success' : 'secondary'} className="status-badge">
+                              {centro.estado}
+                            </CBadge>
+                          </CTableDataCell>
+                          <CTableDataCell className="text-end">
+                            {centro.id_centro && (
+                              <CButton size="sm" color="primary" variant="outline"
+                                onClick={() => onOpenCentro?.(centro.id_centro)}>
+                                <CIcon icon={cilLocationPin} className="me-1" />
+                                Ver Centro
+                              </CButton>
+                            )}
+                          </CTableDataCell>
+                        </CTableRow>
+                      ))}
+                    </CTableBody>
+                  </CTable>
+                )}
+              </CTabPane>
             </CTabContent>
+
+            {!hasResults && (
+              <CAlert color="secondary" className="text-center mt-3 mb-0">
+                Esta persona no tiene documentos, solicitudes ni entidades asociadas.
+              </CAlert>
+            )}
           </>
         )}
       </CModalBody>
 
-      <CModalFooter>
-        <CButton color="secondary" onClick={onClose}>
+      <CModalFooter className="border-top-0">
+        <CButton color="secondary" variant="outline" onClick={onClose}>
           Cerrar
         </CButton>
       </CModalFooter>

@@ -63,7 +63,7 @@ export const actualizar_persona_id = async (id, data) => {
   if (fields.length === 0) return [];
 
   const query = `
-      UPDATE personas SET ${fields.join(", ")}
+      UPDATE personas SET ${fields.join(", ")}, updated_at = NOW()
       WHERE id_persona = $${i} RETURNING *`;
   values.push(id);
   const result = await pool.query(query, values);

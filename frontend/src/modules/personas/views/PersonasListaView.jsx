@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from "react";
 import {
   CContainer,
   CCard,
@@ -13,66 +13,68 @@ import {
   CSpinner,
   CAlert,
   CButton,
-} from '@coreui/react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import CIcon from '@coreui/icons-react'
-import { cilMagnifyingGlass, cilPencil } from '@coreui/icons'
-import useFetch from '../../../hooks/useFetch'
-import useDebounce from '../../../hooks/useDebounce'
-import { filterBySearch } from '../../../utils/helpers'
-import { useAuth } from '../../auth/store/AuthContext'
-import PersonaDetalleModal from '../components/PersonaDetalleModal'
-import PersonasEditarModal from '../components/PersonasEditarModal'
-import Buscador from '../../../components/Buscador'
-import Paginacion from '../../../components/Paginacion'
+} from "@coreui/react";
+import { useNavigate, useLocation } from "react-router-dom";
+import CIcon from "@coreui/icons-react";
+import { cilMagnifyingGlass, cilPlus, cilPencil } from "@coreui/icons";
+import useFetch from "../../../hooks/useFetch";
+import useDebounce from "../../../hooks/useDebounce";
+import { filterBySearch } from "../../../utils/helpers";
+import { useAuth } from "../../auth/store/AuthContext";
+import PersonaDetalleModal from "../components/PersonaDetalleModal";
+import PersonasEditarModal from "../components/PersonasEditarModal";
+import Buscador from "../../../components/Buscador";
+import Paginacion from "../../../components/Paginacion";
 
 const PERSONAS_SEARCH_FIELDS = [
-  'ci_rif',
-  'razon_social',
-  'tipo_persona',
-  'telefono',
-  'email',
-]
+  "ci_rif",
+  "razon_social",
+  "tipo_persona",
+  "telefono",
+  "email",
+];
 
 const PersonasListaView = () => {
-  const navigate = useNavigate()
-  const { user } = useAuth()
-  const { data: personas, loading, error, refetch } = useFetch('/personas')
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { data: personas, loading, error, refetch } = useFetch("/personas");
 
-  const location = useLocation()
-  const [modalDataId, setModalDataId] = useState(null)
-  const [modalEditarPersonaId, setModalEditarPersonaId] = useState(null)
-  const [paginaActual, setPaginaActual] = useState(1)
-  const [busqueda, setBusqueda] = useState('')
-  const debouncedBusqueda = useDebounce(busqueda, 400)
+  const location = useLocation();
+  const [modalDataId, setModalDataId] = useState(null);
+  const [modalEditarPersonaId, setModalEditarPersonaId] = useState(null);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [busqueda, setBusqueda] = useState("");
+  const debouncedBusqueda = useDebounce(busqueda, 400);
 
   const personasFiltradas = useMemo(
     () => filterBySearch(personas, debouncedBusqueda, PERSONAS_SEARCH_FIELDS),
-    [personas, debouncedBusqueda]
-  )
+    [personas, debouncedBusqueda],
+  );
 
-  const PAGE_SIZE = 10
-  const totalPaginas = personasFiltradas ? Math.ceil(personasFiltradas.length / PAGE_SIZE) : 0
-  const startIndex = (paginaActual - 1) * PAGE_SIZE
-  const personasPaginadas = personasFiltradas?.slice(startIndex, startIndex + PAGE_SIZE) || []
+  const PAGE_SIZE = 10;
+  const totalPaginas = personasFiltradas
+    ? Math.ceil(personasFiltradas.length / PAGE_SIZE)
+    : 0;
+  const startIndex = (paginaActual - 1) * PAGE_SIZE;
+  const personasPaginadas =
+    personasFiltradas?.slice(startIndex, startIndex + PAGE_SIZE) || [];
 
   useEffect(() => {
-    setPaginaActual(1)
-  }, [debouncedBusqueda])
+    setPaginaActual(1);
+  }, [debouncedBusqueda]);
 
   useEffect(() => {
     if (location.state?.openModalId) {
-      setModalDataId(location.state.openModalId)
-      // Limpiar el state para que no se reabra al recargar
-      window.history.replaceState({}, '')
+      setModalDataId(location.state.openModalId);
+      window.history.replaceState({}, "");
     }
-  }, [location.state])
+  }, [location.state]);
 
   return (
     <CContainer fluid>
-      <PersonaDetalleModal 
-        idPersona={modalDataId} 
-        onClose={() => setModalDataId(null)} 
+      <PersonaDetalleModal
+        idPersona={modalDataId}
+        onClose={() => setModalDataId(null)}
       />
       <PersonasEditarModal
         idPersona={modalEditarPersonaId}
@@ -87,13 +89,9 @@ const PersonasListaView = () => {
               Personas naturales y juridicas registradas en el sistema.
             </p>
           </div>
-          {user?.rol !== 'supervisor' && (
-            <CButton
-              color="primary"
-              size="sm"
-              onClick={() => navigate('/personas/registro')}
-            >
-              + Nueva Persona
+          {user?.rol !== "supervisor" && (
+            <CButton color="primary" onClick={() => navigate("/personas/registro")}>
+              <CIcon icon={cilPlus} className="me-2" /> Nueva Persona
             </CButton>
           )}
         </CCardHeader>
@@ -103,12 +101,11 @@ const PersonasListaView = () => {
             <Buscador
               value={busqueda}
               onChange={setBusqueda}
-              onClear={() => setBusqueda('')}
+              onClear={() => setBusqueda("")}
               placeholder="Buscar persona..."
             />
           </div>
 
-          {/* Estado de carga */}
           {loading && (
             <div className="d-flex justify-content-center align-items-center py-5">
               <CSpinner color="primary" />
@@ -116,27 +113,36 @@ const PersonasListaView = () => {
             </div>
           )}
 
-          {/* Error */}
           {error && !loading && (
             <CAlert color="danger" className="d-flex align-items-center gap-2">
               <span>{error}</span>
-              <CButton color="danger" variant="outline" size="sm" onClick={refetch}>
+              <CButton
+                color="danger"
+                variant="outline"
+                size="sm"
+                onClick={refetch}
+              >
                 Reintentar
               </CButton>
             </CAlert>
           )}
 
-          {/* Tabla */}
           {!loading && !error && (
             <>
               {personasFiltradas?.length === 0 ? (
                 <CAlert color="info">
                   {personas?.length === 0
-                    ? 'No hay personas registradas aun.'
-                    : 'No se encontraron personas.'}
+                    ? "No hay personas registradas aun."
+                    : "No se encontraron personas."}
                 </CAlert>
               ) : (
-                <CTable hover responsive striped align="middle" className="mb-0">
+                <CTable
+                  hover
+                  responsive
+                  striped
+                  align="middle"
+                  className="mb-0 module-table"
+                >
                   <CTableHead>
                     <CTableRow>
                       <CTableHeaderCell>#</CTableHeaderCell>
@@ -144,16 +150,19 @@ const PersonasListaView = () => {
                       <CTableHeaderCell>Nombre / Razon Social</CTableHeaderCell>
                       <CTableHeaderCell>Tipo</CTableHeaderCell>
                       <CTableHeaderCell>Telefono</CTableHeaderCell>
-                       <CTableHeaderCell>Email</CTableHeaderCell>
-                       
-                       <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
-                       <CTableHeaderCell className="text-center">Editar</CTableHeaderCell>
-                     </CTableRow>
+                      <CTableHeaderCell>Email</CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">
+                        Ver
+                      </CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">
+                        Editar
+                      </CTableHeaderCell>
+                    </CTableRow>
                   </CTableHead>
                   <CTableBody>
                     {personasPaginadas.map((persona, index) => (
-                      <CTableRow key={persona.ci_rif}>
-                        <CTableDataCell className="text-muted small">
+                      <CTableRow key={persona.id_persona}>
+                        <CTableDataCell className="row-number">
                           {startIndex + index + 1}
                         </CTableDataCell>
                         <CTableDataCell className="fw-semibold">
@@ -161,36 +170,46 @@ const PersonasListaView = () => {
                         </CTableDataCell>
                         <CTableDataCell>{persona.razon_social}</CTableDataCell>
                         <CTableDataCell>
-                          {persona.tipo_persona === 'natural' ? 'Natural' : 'Jurídica'}
+                          {persona.tipo_persona === "natural"
+                            ? "Natural"
+                            : "Juridica"}
                         </CTableDataCell>
-                         <CTableDataCell>
-                           {persona.telefono || <span className="text-muted">—</span>}
-                         </CTableDataCell>
-                         <CTableDataCell>
-                           {persona.email || <span className="text-muted">—</span>}
-                         </CTableDataCell>
-                         <CTableDataCell className="text-center">
-                           <CButton
-                             size="sm"
-                             color="primary"
-                             variant="outline"
-                             onClick={() => setModalDataId(persona.id_persona)}
-                           >
-                             <CIcon icon={cilMagnifyingGlass} />
-                           </CButton>
-                         </CTableDataCell>
-                         <CTableDataCell className="text-center">
-                           {user?.rol !== 'supervisor' && (
-                             <CButton
-                               size="sm"
-                               color="warning"
-                               variant="outline"
-                               onClick={() => setModalEditarPersonaId(persona.id_persona)}
-                             >
-                               <CIcon icon={cilPencil} />
-                             </CButton>
-                           )}
-                         </CTableDataCell>
+                        <CTableDataCell>
+                          {persona.telefono || (
+                            <span className="text-muted">—</span>
+                          )}
+                        </CTableDataCell>
+                        <CTableDataCell>
+                          {persona.email || (
+                            <span className="text-muted">—</span>
+                          )}
+                        </CTableDataCell>
+                        <CTableDataCell className="text-center">
+                          <CButton
+                            size="sm"
+                            color="primary"
+                            variant="outline"
+                            className="action-btn"
+                            onClick={() => setModalDataId(persona.id_persona)}
+                          >
+                            <CIcon icon={cilMagnifyingGlass} />
+                          </CButton>
+                        </CTableDataCell>
+                        <CTableDataCell className="text-center">
+                          {user?.rol !== "supervisor" && (
+                            <CButton
+                              size="sm"
+                              color="warning"
+                              variant="outline"
+                              className="action-btn"
+                              onClick={() =>
+                                setModalEditarPersonaId(persona.id_persona)
+                              }
+                            >
+                              <CIcon icon={cilPencil} />
+                            </CButton>
+                          )}
+                        </CTableDataCell>
                       </CTableRow>
                     ))}
                   </CTableBody>
@@ -208,7 +227,7 @@ const PersonasListaView = () => {
         </CCardBody>
       </CCard>
     </CContainer>
-  )
-}
+  );
+};
 
-export default PersonasListaView
+export default PersonasListaView;

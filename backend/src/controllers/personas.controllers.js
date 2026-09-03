@@ -7,7 +7,6 @@ import {
   get_ci_rif,
 } from "../models/personas.models.js";
 
-import bcrypt from "bcryptjs";
 import { errors, throwError, zodValidationError } from "../utils/errors.js";
 import { uuidRegex } from "../utils/validators.js";
 import { persona_schema, actualizar_persona_schema } from "../schemas/personas.schemas.js";
@@ -62,7 +61,7 @@ export const crear_c_personas = async (req, res, next) => {
     }
 
     const rows = await crear_persona(data);
-    return res.json(rows);
+    return res.status(201).json(rows);
   } catch (error) {
     next(error);
   }
@@ -125,7 +124,7 @@ export const actualizar_personas = async (req, res, next) => {
     }
 
     const rows = await actualizar_persona_id(id, data);
-    res.json(rows);
+    return res.json(rows);
   } catch (error) {
     next(error);
   }

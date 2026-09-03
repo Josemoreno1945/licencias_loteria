@@ -9,10 +9,13 @@ import {
   CSpinner,
   CAlert,
 } from '@coreui/react';
-import axiosInstance from '../../../api/axiosInstance';
 import FeedbackModal from '../../../components/FeedbackModal';
 import PersonasForm from './PersonasForm';
 import { extractErrorMessage } from '../../../utils/errorHandler';
+import {
+  getPersonaById,
+  updatePersona,
+} from '../services/personas.service';
 
 const PersonasEditarModal = ({ idPersona, onClose, onUpdated }) => {
   // Estado del formulario
@@ -43,8 +46,7 @@ const PersonasEditarModal = ({ idPersona, onClose, onUpdated }) => {
       setLoadingData(true);
       setErrorData(null);
       try {
-        const res = await axiosInstance.get(`/personas/${idPersona}`);
-        const persona = Array.isArray(res.data) ? res.data[0] : res.data;
+        const persona = await getPersonaById(idPersona);
         setFormData({
           tipo_persona: persona.tipo_persona || '',
           ci_rif: persona.ci_rif || '',
@@ -54,7 +56,8 @@ const PersonasEditarModal = ({ idPersona, onClose, onUpdated }) => {
           email: persona.email || '',
         });
       } catch (err) {
-        setErrorData(err.response?.data?.message || 'Error al cargar la persona');
+        const msg = extractErrorMessage(err, 'Error al cargar la persona');
+        setErrorData(msg);
       } finally {
         setLoadingData(false);
       }
@@ -82,12 +85,12 @@ const PersonasEditarModal = ({ idPersona, onClose, onUpdated }) => {
     });
 
     try {
-      const response = await axiosInstance.put(`/personas/${idPersona}`, formData);
+      const response = await updatePersona(idPersona, formData);
 
       setFeedbackModal({
         visible: true,
         type: 'success',
-        message: response.data?.message || 'Persona actualizada exitosamente.',
+        message: response?.message || 'Persona actualizada exitosamente.',
       });
 
       // Actualizamos la lista y cerramos el modal de edición
