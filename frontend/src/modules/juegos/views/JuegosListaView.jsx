@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from "react";
 import {
   CContainer,
   CCard,
@@ -14,43 +14,44 @@ import {
   CSpinner,
   CAlert,
   CButton,
-} from '@coreui/react';
-import { useNavigate } from 'react-router-dom';
-import CIcon from '@coreui/icons-react';
-import { cilMagnifyingGlass, cilPencil } from '@coreui/icons';
-import useFetch from '../../../hooks/useFetch';
-import useDebounce from '../../../hooks/useDebounce';
-import { filterBySearch } from '../../../utils/helpers';
-import { useAuth } from '../../auth/store/AuthContext';
-import JuegosDetalleModal from '../components/JuegosDetalleModal';
-import JuegosEditarModal from '../components/JuegosEditarModal';
-import Buscador from '../../../components/Buscador';
-import Paginacion from '../../../components/Paginacion';
+} from "@coreui/react";
+import { useNavigate } from "react-router-dom";
+import CIcon from "@coreui/icons-react";
+import { cilPlus, cilMagnifyingGlass, cilPencil } from "@coreui/icons";
+import useFetch from "../../../hooks/useFetch";
+import useDebounce from "../../../hooks/useDebounce";
+import { filterBySearch } from "../../../utils/helpers";
+import { useAuth } from "../../auth/store/AuthContext";
+import JuegosDetalleModal from "../components/JuegosDetalleModal";
+import JuegosEditarModal from "../components/JuegosEditarModal";
+import Buscador from "../../../components/Buscador";
+import Paginacion from "../../../components/Paginacion";
 
-const JUEGOS_SEARCH_FIELDS = [
-  'nombre',
-  'estado',
-];
+const JUEGOS_SEARCH_FIELDS = ["nombre", "estado"];
 
 const JuegosListaView = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { data: juegos, loading, error, refetch } = useFetch('/juegos');
+  const { data: juegos, loading, error, refetch } = useFetch("/juegos");
+
   const [modalVerId, setModalVerId] = useState(null);
   const [modalEditarJuegoId, setModalEditarJuegoId] = useState(null);
   const [paginaActual, setPaginaActual] = useState(1);
-  const [busqueda, setBusqueda] = useState('');
+  const [busqueda, setBusqueda] = useState("");
   const debouncedBusqueda = useDebounce(busqueda, 400);
 
   const juegosFiltrados = useMemo(
     () => filterBySearch(juegos, debouncedBusqueda, JUEGOS_SEARCH_FIELDS),
-    [juegos, debouncedBusqueda]
+    [juegos, debouncedBusqueda],
   );
 
   const PAGE_SIZE = 10;
-  const totalPaginas = juegosFiltrados ? Math.ceil(juegosFiltrados.length / PAGE_SIZE) : 0;
+  const totalPaginas = juegosFiltrados
+    ? Math.ceil(juegosFiltrados.length / PAGE_SIZE)
+    : 0;
   const startIndex = (paginaActual - 1) * PAGE_SIZE;
-  const juegosPaginados = juegosFiltrados?.slice(startIndex, startIndex + PAGE_SIZE) || [];
+  const juegosPaginados =
+    juegosFiltrados?.slice(startIndex, startIndex + PAGE_SIZE) || [];
 
   useEffect(() => {
     setPaginaActual(1);
@@ -72,16 +73,15 @@ const JuegosListaView = () => {
           <div>
             <h4 className="mb-1 text-primary">Lista de Juegos</h4>
             <p className="text-muted small mb-3">
-              Catálogo de juegos de azar.
+              Catalogo de juegos de azar.
             </p>
           </div>
-          {user?.rol !== 'supervisor' && (
+          {user?.rol !== "supervisor" && (
             <CButton
               color="primary"
-              size="sm"
-              onClick={() => navigate('/juegos/registro')}
+              onClick={() => navigate("/juegos/registro")}
             >
-              + Nuevo Juego
+              <CIcon icon={cilPlus} className="me-2" /> Nuevo Juego
             </CButton>
           )}
         </CCardHeader>
@@ -91,7 +91,7 @@ const JuegosListaView = () => {
             <Buscador
               value={busqueda}
               onChange={setBusqueda}
-              onClear={() => setBusqueda('')}
+              onClear={() => setBusqueda("")}
               placeholder="Buscar juego..."
             />
           </div>
@@ -106,7 +106,12 @@ const JuegosListaView = () => {
           {error && !loading && (
             <CAlert color="danger" className="d-flex align-items-center gap-2">
               <span>{error}</span>
-              <CButton color="danger" variant="outline" size="sm" onClick={refetch}>
+              <CButton
+                color="danger"
+                variant="outline"
+                size="sm"
+                onClick={refetch}
+              >
                 Reintentar
               </CButton>
             </CAlert>
@@ -117,67 +122,87 @@ const JuegosListaView = () => {
               {juegosFiltrados?.length === 0 ? (
                 <CAlert color="info">
                   {juegos?.length === 0
-                    ? 'No hay juegos registrados aún.'
-                    : 'No se encontraron juegos.'}
+                    ? "No hay juegos registrados aun."
+                    : "No se encontraron juegos."}
                 </CAlert>
               ) : (
-                <>
-                  <CTable hover responsive striped align="middle" className="mb-0">
-                    <CTableHead>
-                      <CTableRow>
-                        <CTableHeaderCell>#</CTableHeaderCell>
-                        <CTableHeaderCell>Nombre del Juego</CTableHeaderCell>
-                         <CTableHeaderCell>Estado</CTableHeaderCell>
-                         <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
-                         <CTableHeaderCell className="text-center">Editar</CTableHeaderCell>
-                       </CTableRow>
-                    </CTableHead>
-                    <CTableBody>
-                      {juegosPaginados.map((juego, index) => (
-                        <CTableRow key={juego.id_juego}>
-                          <CTableDataCell className="text-muted small">
-                            {startIndex + index + 1}
-                          </CTableDataCell>
-                          <CTableDataCell className="fw-semibold">
-                            {juego.nombre}
-                          </CTableDataCell>
-                           <CTableDataCell>
-                             <CBadge color={juego.estado === 'activo' ? 'success' : 'secondary'}>
-                               {juego.estado === 'activo' ? 'Activo' : 'Inactivo'}
-                             </CBadge>
-                           </CTableDataCell>
-                           <CTableDataCell className="text-center">
-                             <CButton
-                               size="sm"
-                               color="primary"
-                               variant="outline"
-                               onClick={() => setModalVerId(juego.id_juego)}
-                             >
-                               <CIcon icon={cilMagnifyingGlass} />
-                             </CButton>
-                           </CTableDataCell>
-                           <CTableDataCell className="text-center">
-                             {user?.rol !== 'supervisor' && (
-                               <CButton
-                                 size="sm"
-                                 color="warning"
-                                 variant="outline"
-                                 onClick={() => setModalEditarJuegoId(juego.id_juego)}
-                               >
-                                 <CIcon icon={cilPencil} />
-                               </CButton>
-                             )}
-                           </CTableDataCell>
-                        </CTableRow>
-                      ))}
-                    </CTableBody>
-                  </CTable>
-                  <Paginacion
-                    currentPage={paginaActual}
-                    totalPages={totalPaginas}
-                    onPageChange={setPaginaActual}
-                  />
-                </>
+                <CTable
+                  hover
+                  responsive
+                  striped
+                  align="middle"
+                  className="mb-0 module-table"
+                >
+                  <CTableHead>
+                    <CTableRow>
+                      <CTableHeaderCell>#</CTableHeaderCell>
+                      <CTableHeaderCell>Nombre del Juego</CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">
+                        Estado
+                      </CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">
+                        Ver
+                      </CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">
+                        Editar
+                      </CTableHeaderCell>
+                    </CTableRow>
+                  </CTableHead>
+                  <CTableBody>
+                    {juegosPaginados.map((juego, index) => (
+                      <CTableRow key={juego.id_juego}>
+                        <CTableDataCell className="row-number">
+                          {startIndex + index + 1}
+                        </CTableDataCell>
+                        <CTableDataCell className="fw-semibold">
+                          {juego.nombre}
+                        </CTableDataCell>
+                        <CTableDataCell className="text-center">
+                          <CBadge
+                            color={juego.estado === "activo" ? "success" : "secondary"}
+                            shape="rounded-pill"
+                            className="status-badge"
+                          >
+                            {juego.estado === "activo" ? "Activo" : "Inactivo"}
+                          </CBadge>
+                        </CTableDataCell>
+                        <CTableDataCell className="text-center">
+                          <CButton
+                            size="sm"
+                            color="primary"
+                            variant="outline"
+                            className="action-btn"
+                            onClick={() => setModalVerId(juego.id_juego)}
+                          >
+                            <CIcon icon={cilMagnifyingGlass} />
+                          </CButton>
+                        </CTableDataCell>
+                        <CTableDataCell className="text-center">
+                          {user?.rol !== "supervisor" && (
+                            <CButton
+                              size="sm"
+                              color="warning"
+                              variant="outline"
+                              className="action-btn"
+                              onClick={() =>
+                                setModalEditarJuegoId(juego.id_juego)
+                              }
+                            >
+                              <CIcon icon={cilPencil} />
+                            </CButton>
+                          )}
+                        </CTableDataCell>
+                      </CTableRow>
+                    ))}
+                  </CTableBody>
+                </CTable>
+              )}
+              {totalPaginas > 1 && (
+                <Paginacion
+                  currentPage={paginaActual}
+                  totalPages={totalPaginas}
+                  onPageChange={setPaginaActual}
+                />
               )}
             </>
           )}

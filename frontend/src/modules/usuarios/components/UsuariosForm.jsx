@@ -69,7 +69,7 @@ const UsuariosForm = ({ formData, handleInputChange, onSubmit, isEditMode }) => 
             <CFormInput
               type="password"
               name="password"
-              placeholder="Minimo 8 caracteres"
+              placeholder="Minimo 6 caracteres"
               value={formData.password}
               onChange={handleInputChange}
               required={!isEditMode}

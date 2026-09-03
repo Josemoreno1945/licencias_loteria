@@ -67,7 +67,10 @@ export const crear_c_bancos = async (req, res, next) => {
     }
 
     const rows = await crear_banco(data);
-    return res.json(rows);
+    return res.status(201).json({
+      message: "Banco registrado exitosamente",
+      banco: rows,
+    });
   } catch (error) {
     next(error);
   }
@@ -125,7 +128,10 @@ export const actualizar_banco = async (req, res, next) => {
     }
 
     const rows = await actualizar_banco_id(id, data);
-    res.json(rows);
+    return res.json({
+      message: "Banco actualizado exitosamente",
+      banco: rows[0],
+    });
   } catch (error) {
     next(error);
   }

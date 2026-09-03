@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   CModal,
   CModalHeader,
@@ -8,47 +8,46 @@ import {
   CButton,
   CSpinner,
   CAlert,
-} from '@coreui/react';
-import axiosInstance from '../../../api/axiosInstance';
-import FeedbackModal from '../../../components/FeedbackModal';
-import BancosForm from './BancosForm';
-import { extractErrorMessage } from '../../../utils/errorHandler';
+} from "@coreui/react";
+import FeedbackModal from "../../../components/FeedbackModal";
+import BancosForm from "./BancosForm";
+import { extractErrorMessage } from "../../../utils/errorHandler";
+import {
+  getBancoById,
+  updateBanco,
+} from "../services/bancos.service";
 
 const BancosEditarModal = ({ idBanco, onClose, onUpdated }) => {
-  // Estado del formulario
   const [formData, setFormData] = useState({
-    nombre: '',
-    codigo: '',
-    estado: 'activo',
+    nombre: "",
+    codigo: "",
+    estado: "activo",
   });
 
-  // Estado para cargar los datos del registro a editar
   const [loadingData, setLoadingData] = useState(false);
   const [errorData, setErrorData] = useState(null);
 
-  // Estados para los modales de feedback
   const [feedbackModal, setFeedbackModal] = useState({
     visible: false,
-    type: '', // 'loading', 'success', 'error'
-    message: '',
+    type: "",
+    message: "",
   });
 
-  // Precargamos los datos actuales del banco
   useEffect(() => {
     if (!idBanco) return;
     const fetchData = async () => {
       setLoadingData(true);
       setErrorData(null);
       try {
-        const res = await axiosInstance.get(`/bancos/${idBanco}`);
-        const banco = Array.isArray(res.data) ? res.data[0] : res.data;
+        const banco = await getBancoById(idBanco);
         setFormData({
-          nombre: banco.nombre || '',
-          codigo: banco.codigo || '',
-          estado: banco.estado || 'activo',
+          nombre: banco.nombre || "",
+          codigo: banco.codigo || "",
+          estado: banco.estado || "activo",
         });
       } catch (err) {
-        setErrorData(err.response?.data?.message || 'Error al cargar el banco');
+        const msg = extractErrorMessage(err, "Error al cargar el banco");
+        setErrorData(msg);
       } finally {
         setLoadingData(false);
       }
@@ -56,7 +55,6 @@ const BancosEditarModal = ({ idBanco, onClose, onUpdated }) => {
     fetchData();
   }, [idBanco]);
 
-  // Manejador de cambios en los inputs
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
@@ -65,48 +63,48 @@ const BancosEditarModal = ({ idBanco, onClose, onUpdated }) => {
     }));
   };
 
-  // Enviar el formulario (actualización parcial)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     setFeedbackModal({
       visible: true,
-      type: 'loading',
-      message: 'Actualizando banco...',
+      type: "loading",
+      message: "Actualizando banco...",
     });
 
     try {
-      // Construimos el payload solo con campos con valores reales
-      // (evita sobreescribir campos con strings vacíos)
       const payload = {};
       Object.keys(formData).forEach((key) => {
         const val = formData[key];
-        if (val !== '' && val !== null && val !== undefined) {
+        if (val !== "" && val !== null && val !== undefined) {
           payload[key] = val;
         }
       });
 
-      const response = await axiosInstance.put(`/bancos/${idBanco}`, payload);
+      const response = await updateBanco(idBanco, payload);
 
       setFeedbackModal({
         visible: true,
-        type: 'success',
-        message: response.data?.message || 'Banco actualizado exitosamente.',
+        type: "success",
+        message: response?.message || "Banco actualizado exitosamente.",
       });
 
-      // Actualizamos la lista y cerramos el modal de edición
       onUpdated && onUpdated();
       onClose();
     } catch (err) {
-      const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al actualizar el banco.');
-
+      const errorMsg = extractErrorMessage(
+        err,
+        "Ocurrio un error inesperado al actualizar el banco.",
+      );
       setFeedbackModal({
         visible: true,
-        type: 'error',
+        type: "error",
         message: errorMsg,
       });
     }
   };
+
+  if (!idBanco) return null;
 
   return (
     <React.Fragment>
@@ -135,7 +133,9 @@ const BancosEditarModal = ({ idBanco, onClose, onUpdated }) => {
               <span className="ms-3 text-muted">Cargando banco...</span>
             </div>
           )}
-          {errorData && !loadingData && <CAlert color="danger">{errorData}</CAlert>}
+          {errorData && !loadingData && (
+            <CAlert color="danger">{errorData}</CAlert>
+          )}
           {!loadingData && !errorData && (
             <BancosForm
               formData={formData}

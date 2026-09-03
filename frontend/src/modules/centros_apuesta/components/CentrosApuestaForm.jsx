@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   CForm,
   CFormInput,
@@ -10,9 +10,34 @@ import {
   CRow,
   CCol,
   CSpinner,
+  CCard,
+  CCardBody,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilBuilding, cilHome, cilUser, cilPlus, cilTrash } from '@coreui/icons'
+import axiosInstance from '../../../api/axiosInstance'
+
+// ── Tarjeta de información de entidad (solo lectura) ────────────────────────
+const InfoCard = ({ titulo, campos }) => (
+  <CCard className="border-start border-start-3 border-start-info mb-3">
+    <CCardBody className="py-2 px-3">
+      <p
+        className="text-info fw-semibold small mb-2"
+        style={{ letterSpacing: '0.05em' }}
+      >
+        {titulo}
+      </p>
+      <CRow className="gy-1">
+        {campos.map(({ label, value }) => (
+          <CCol key={label} md={6}>
+            <span className="text-muted small">{label}: </span>
+            <span className="small fw-semibold">{value || '—'}</span>
+          </CCol>
+        ))}
+      </CRow>
+    </CCardBody>
+  </CCard>
+)
 
 const CentrosApuestaForm = ({
   formData,
@@ -23,11 +48,39 @@ const CentrosApuestaForm = ({
   personas,
   loadingDeps,
 }) => {
+  // ── Datos autocompletados del comercializador seleccionado ──
+  const [detalleComercializador, setDetalleComercializador] = useState(null)
+  const [loadingDetalleC, setLoadingDetalleC] = useState(false)
+
   const [representantes, setRepresentantes] = useState(
     formData.representantes?.length > 0
       ? formData.representantes
       : [{ id_persona: '', cargo: '' }]
   )
+
+  // Cuando cambia el comercializador → autocompletar su detalle
+  useEffect(() => {
+    if (!formData.id_comercializador) {
+      setDetalleComercializador(null)
+      return
+    }
+
+    const fetchDetalle = async () => {
+      setLoadingDetalleC(true)
+      try {
+        const res = await axiosInstance.get(
+          `/comercializadores/${formData.id_comercializador}/detalle-completo`,
+        )
+        setDetalleComercializador(res.data)
+      } catch (err) {
+        console.error('Error al cargar detalle del comercializador:', err)
+        setDetalleComercializador(null)
+      } finally {
+        setLoadingDetalleC(false)
+      }
+    }
+    fetchDetalle()
+  }, [formData.id_comercializador])
 
   const handleRepresentanteChange = (index, field, value) => {
     const nuevos = representantes.map((rep, i) =>
@@ -105,6 +158,31 @@ const CentrosApuestaForm = ({
               </CInputGroup>
             </CCol>
           </CRow>
+
+          {/* Panel de autocompletado del Comercializador */}
+          {loadingDetalleC && (
+            <div className="d-flex align-items-center gap-2 text-muted small mb-3">
+              <CSpinner size="sm" /> Cargando datos del comercializador...
+            </div>
+          )}
+          {!loadingDetalleC && detalleComercializador && (
+            <InfoCard
+              titulo="📋 Datos del Comercializador"
+              campos={[
+                { label: 'RIF', value: detalleComercializador.rif },
+                {
+                  label: 'Razón Social',
+                  value: detalleComercializador.razon_social,
+                },
+                {
+                  label: 'Dirección Fiscal',
+                  value: detalleComercializador.direccion_fiscal,
+                },
+                { label: 'Teléfono', value: detalleComercializador.telefono },
+                { label: 'Email', value: detalleComercializador.email },
+              ]}
+            />
+          )}
 
           <CRow className="mb-4">
             <CCol md={12}>

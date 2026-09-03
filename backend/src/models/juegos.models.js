@@ -63,7 +63,7 @@ export const actualizar_juegos_id = async (id, data) => {
   if (fields.length === 0) return [];
 
   const query = `
-    UPDATE juegos SET ${fields.join(", ")}
+    UPDATE juegos SET ${fields.join(", ")}, updated_at = NOW()
     WHERE id_juego = $${i} RETURNING *`;
   values.push(id);
   const result = await pool.query(query, values);

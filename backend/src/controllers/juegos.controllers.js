@@ -76,7 +76,10 @@ export const crear_c_juegos = async (req, res, next) => {
       throwError(errors.juegos_nombre_duplicado);
     }
     const rows = await crear_juegos(parsedData);
-    return res.json(rows);
+    return res.status(201).json({
+      message: "Juego registrado exitosamente",
+      juego: rows,
+    });
   } catch (error) {
     next(error);
   }
@@ -134,7 +137,10 @@ export const actualizar_juegos = async (req, res, next) => {
     }
 
     const rows = await actualizar_juegos_id(id, data);
-    res.json(rows);
+    return res.json({
+      message: "Juego actualizado exitosamente",
+      juego: rows[0],
+    });
   } catch (error) {
     next(error);
   }

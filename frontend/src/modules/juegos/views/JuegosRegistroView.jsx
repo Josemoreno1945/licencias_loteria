@@ -1,60 +1,63 @@
-import { useState, useCallback } from 'react'
-import { CCard, CCardBody, CCardHeader, CContainer } from '@coreui/react'
-import { createJuego } from '../services/juegos.service'
-import FeedbackModal from '../../../components/FeedbackModal'
-import JuegosForm from '../components/JuegosForm'
-import { extractErrorMessage } from '../../../utils/errorHandler'
+import { useState, useCallback } from "react";
+import { CCard, CCardBody, CCardHeader, CContainer } from "@coreui/react";
+import { createJuego } from "../services/juegos.service";
+import FeedbackModal from "../../../components/FeedbackModal";
+import JuegosForm from "../components/JuegosForm";
+import { extractErrorMessage } from "../../../utils/errorHandler";
 
 const JuegosRegistroView = () => {
   const [formData, setFormData] = useState({
-    nombre: '',
-  })
+    nombre: "",
+  });
 
   const [modalState, setModalState] = useState({
     visible: false,
-    type: '',
-    message: '',
-  })
+    type: "",
+    message: "",
+  });
 
   const handleInputChange = useCallback((e) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
-    }))
-  }, [])
+    }));
+  }, []);
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     setModalState({
       visible: true,
-      type: 'loading',
-      message: 'Registrando juego...',
-    })
+      type: "loading",
+      message: "Registrando juego...",
+    });
 
     try {
-      const response = await createJuego(formData)
+      const response = await createJuego(formData);
 
       setModalState({
         visible: true,
-        type: 'success',
-        message: response.message || 'Juego registrado exitosamente.',
-      })
+        type: "success",
+        message: response.message || "Juego registrado exitosamente.",
+      });
 
       setFormData({
-        nombre: '',
-      })
+        nombre: "",
+      });
     } catch (err) {
-      const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al registrar el juego.')
+      const errorMsg = extractErrorMessage(
+        err,
+        "Ocurrio un error inesperado al registrar el juego.",
+      );
 
       setModalState({
         visible: true,
-        type: 'error',
+        type: "error",
         message: errorMsg,
-      })
+      });
     }
-  }
+  };
 
   return (
     <CContainer fluid>
@@ -81,7 +84,7 @@ const JuegosRegistroView = () => {
         </CCardBody>
       </CCard>
     </CContainer>
-  )
-}
+  );
+};
 
-export default JuegosRegistroView
+export default JuegosRegistroView;

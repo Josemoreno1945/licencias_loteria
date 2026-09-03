@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from "react";
 import {
   CModal,
   CModalHeader,
@@ -13,35 +13,66 @@ import {
   CCol,
   CFormInput,
   CFormLabel,
-} from '@coreui/react'
-import axiosInstance from '../../../api/axiosInstance'
+} from "@coreui/react";
+import { getJuegoById } from "../services/juegos.service";
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const Campo = ({ label, value, md = 6, bold = false }) => (
+  <CCol md={md}>
+    <CFormLabel className="detail-field-label">{label}</CFormLabel>
+    <CFormInput
+      type="text"
+      value={value || "—"}
+      readOnly
+      className={`detail-field-value${bold ? " fw-semibold" : ""}`}
+    />
+  </CCol>
+);
+
+const Seccion = ({ titulo }) => (
+  <>
+    <hr className="section-divider" />
+    <h5 className="section-title">{titulo}</h5>
+  </>
+);
+
+// ── Componente principal ──────────────────────────────────────────────────────
 const JuegosDetalleModal = ({ idJuego, onClose }) => {
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!idJuego) return
+    if (!idJuego) return;
+    setData(null);
     const fetchData = async () => {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
       try {
-        const res = await axiosInstance.get(`/juegos/${idJuego}`)
-        setData(Array.isArray(res.data) ? res.data[0] : res.data)
+        const juego = await getJuegoById(idJuego);
+        setData(juego);
       } catch (err) {
-        setError(err.response?.data?.message || 'Error al cargar el detalle del juego')
+        setError(
+          err.response?.data?.message ||
+            "Error al cargar el detalle del juego",
+        );
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    fetchData()
-  }, [idJuego])
+    };
+    fetchData();
+  }, [idJuego]);
 
-  if (!idJuego) return null
+  if (!idJuego) return null;
 
   return (
-    <CModal visible={!!idJuego} onClose={onClose} alignment="center" size="lg" backdrop="static">
+    <CModal
+      visible={!!idJuego}
+      onClose={onClose}
+      alignment="center"
+      size="lg"
+      backdrop="static"
+    >
       <CModalHeader>
         <CModalTitle>Detalle del Juego</CModalTitle>
       </CModalHeader>
@@ -54,17 +85,23 @@ const JuegosDetalleModal = ({ idJuego, onClose }) => {
         {error && !loading && <CAlert color="danger">{error}</CAlert>}
         {!loading && !error && data && (
           <div className="px-2">
-            <h5 className="text-primary fw-semibold mb-3">Información del Juego</h5>
-            <CRow className="gy-3 mb-4">
+            <h5 className="section-title">Información del Juego</h5>
+            <CRow className="gy-3 mb-2">
+              <Campo
+                label="Nombre del Juego"
+                value={data.nombre}
+                bold
+                md={6}
+              />
               <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Nombre del Juego</CFormLabel>
-                <CFormInput type="text" value={data.nombre || ''} readOnly className="bg-light fw-semibold" />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Estado</CFormLabel>
-                <div>
-                  <CBadge color={data.estado === 'activo' ? 'success' : 'secondary'} className="fs-6 px-3 py-2">
-                    {data.estado === 'activo' ? 'Activo' : 'Inactivo'}
+                <CFormLabel className="detail-field-label">Estado</CFormLabel>
+                <div className="pt-1">
+                  <CBadge
+                    color={data.estado === "activo" ? "success" : "secondary"}
+                    shape="rounded-pill"
+                    className="status-badge fs-6 px-3 py-2"
+                  >
+                    {data.estado === "activo" ? "Activo" : "Inactivo"}
                   </CBadge>
                 </div>
               </CCol>
@@ -73,10 +110,12 @@ const JuegosDetalleModal = ({ idJuego, onClose }) => {
         )}
       </CModalBody>
       <CModalFooter>
-        <CButton color="secondary" onClick={onClose}>Cerrar</CButton>
+        <CButton color="secondary" onClick={onClose}>
+          Cerrar
+        </CButton>
       </CModalFooter>
     </CModal>
-  )
-}
+  );
+};
 
-export default JuegosDetalleModal
+export default JuegosDetalleModal;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from "react";
 import {
   CModal,
   CModalHeader,
@@ -13,42 +13,79 @@ import {
   CCol,
   CFormInput,
   CFormLabel,
-} from '@coreui/react'
-import axiosInstance from '../../../api/axiosInstance'
+} from "@coreui/react";
+import { getUsuarioById } from "../services/usuarios.service";
 
 const ROLE_LABELS = {
-  superAdmin: 'Super Administrador',
-  gerente: 'Gerente',
-  gestor_de_tramites: 'Gestor de Trámites',
-  supervisor: 'Supervisor',
-}
+  superAdmin: "Super Administrador",
+  gerente: "Gerente",
+  gestor_de_tramites: "Gestor de Tramites",
+  supervisor: "Supervisor",
+};
 
+const rolBadgeColor = (rol) => {
+  if (rol === "superAdmin" || rol === "gerente") return "danger";
+  if (rol === "supervisor") return "warning";
+  return "info";
+};
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const Campo = ({ label, value, md = 6, bold = false }) => (
+  <CCol md={md}>
+    <CFormLabel className="detail-field-label">{label}</CFormLabel>
+    <CFormInput
+      type="text"
+      value={value || "—"}
+      readOnly
+      className={`detail-field-value${bold ? " fw-semibold" : ""}`}
+    />
+  </CCol>
+);
+
+const Seccion = ({ titulo }) => (
+  <>
+    <hr className="section-divider" />
+    <h5 className="section-title">{titulo}</h5>
+  </>
+);
+
+// ── Componente principal ──────────────────────────────────────────────────────
 const UsuarioDetalleModal = ({ idUsuario, onClose }) => {
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!idUsuario) return
+    if (!idUsuario) return;
+    setData(null);
     const fetchData = async () => {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
       try {
-        const res = await axiosInstance.get(`/usuarios/${idUsuario}`)
-        setData(Array.isArray(res.data) ? res.data[0] : res.data)
+        const usuario = await getUsuarioById(idUsuario);
+        setData(usuario);
       } catch (err) {
-        setError(err.response?.data?.message || 'Error al cargar el detalle del usuario')
+        setError(
+          err.response?.data?.message ||
+            "Error al cargar el detalle del usuario",
+        );
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    fetchData()
-  }, [idUsuario])
+    };
+    fetchData();
+  }, [idUsuario]);
 
-  if (!idUsuario) return null
+  if (!idUsuario) return null;
 
   return (
-    <CModal visible={!!idUsuario} onClose={onClose} alignment="center" size="lg" backdrop="static">
+    <CModal
+      visible={!!idUsuario}
+      onClose={onClose}
+      alignment="center"
+      size="lg"
+      backdrop="static"
+    >
       <CModalHeader>
         <CModalTitle>Detalle del Usuario</CModalTitle>
       </CModalHeader>
@@ -61,29 +98,41 @@ const UsuarioDetalleModal = ({ idUsuario, onClose }) => {
         {error && !loading && <CAlert color="danger">{error}</CAlert>}
         {!loading && !error && data && (
           <div className="px-2">
-            <h5 className="text-primary fw-semibold mb-3">Información del Usuario</h5>
-            <CRow className="gy-3 mb-4">
+            <h5 className="section-title">Información del Usuario</h5>
+            <CRow className="gy-3 mb-2">
+              <Campo
+                label="Nombre de Usuario"
+                value={data.nombre_usuario}
+                bold
+                md={6}
+              />
+              <Campo
+                label="Correo Electronico"
+                value={data.email}
+                bold
+                md={6}
+              />
               <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Nombre de Usuario</CFormLabel>
-                <CFormInput type="text" value={data.nombre_usuario || ''} readOnly className="bg-light" />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Correo Electrónico</CFormLabel>
-                <CFormInput type="text" value={data.email || ''} readOnly className="bg-light fw-semibold" />
-              </CCol>
-              <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Rol</CFormLabel>
-                <div>
-                  <CBadge color={['superAdmin', 'gerente'].includes(data.rol) ? 'danger' : 'info'} className="fs-6 px-3 py-2">
+                <CFormLabel className="detail-field-label">Rol</CFormLabel>
+                <div className="pt-1">
+                  <CBadge
+                    color={rolBadgeColor(data.rol)}
+                    shape="rounded-pill"
+                    className="status-badge fs-6 px-3 py-2"
+                  >
                     {ROLE_LABELS[data.rol] || data.rol}
                   </CBadge>
                 </div>
               </CCol>
               <CCol md={6}>
-                <CFormLabel className="text-muted small fw-semibold mb-1">Estado</CFormLabel>
-                <div>
-                  <CBadge color={data.estado === 'activo' ? 'success' : 'secondary'} className="fs-6 px-3 py-2">
-                    {data.estado === 'activo' ? 'Activo' : 'Inactivo'}
+                <CFormLabel className="detail-field-label">Estado</CFormLabel>
+                <div className="pt-1">
+                  <CBadge
+                    color={data.estado === "activo" ? "success" : "secondary"}
+                    shape="rounded-pill"
+                    className="status-badge fs-6 px-3 py-2"
+                  >
+                    {data.estado === "activo" ? "Activo" : "Inactivo"}
                   </CBadge>
                 </div>
               </CCol>
@@ -92,10 +141,12 @@ const UsuarioDetalleModal = ({ idUsuario, onClose }) => {
         )}
       </CModalBody>
       <CModalFooter>
-        <CButton color="secondary" onClick={onClose}>Cerrar</CButton>
+        <CButton color="secondary" onClick={onClose}>
+          Cerrar
+        </CButton>
       </CModalFooter>
     </CModal>
-  )
-}
+  );
+};
 
-export default UsuarioDetalleModal
+export default UsuarioDetalleModal;

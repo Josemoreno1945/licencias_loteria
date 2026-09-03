@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-const uuidSchema = z.string().uuid("Debe ser un UUID válido");
-
 export const juegos_schema = z.object({
   nombre: z
     .string({ required_error: "El nombre es requerido" })

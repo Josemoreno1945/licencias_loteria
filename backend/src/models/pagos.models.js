@@ -33,6 +33,7 @@ export const get_pagos_id = async (id) => {
   const query = `
   SELECT
     p.id_pago,
+    p.id_banco,
     b.nombre            AS banco,
     p.num_referencia,
     p.fecha_pago,
@@ -98,7 +99,8 @@ export const actualizar_pago_id = async (id, data) => {
       id_licencia       = $7,
       id_autorizacion   = $8,
       id_participacion  = $9,
-      observaciones     = $10
+      observaciones     = $10,
+      updated_at        = NOW()
     WHERE id_pago = $11 RETURNING *`;
   const values = [
     data.id_banco,

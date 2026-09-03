@@ -40,7 +40,9 @@ export const get_c_usuarios_id = async (req, res, next) => {
     if (!rows || rows.length == 0) {
       throwError(errors.usuario_no_encontrado);
     }
-    res.json(rows);
+    // Defensivo: nunca devolver el hash de la contraseña
+    const { password_hash, ...safe } = rows[0];
+    return res.json(safe);
   } catch (error) {
     next(error);
   }
@@ -69,7 +71,11 @@ export const crear_c_usuario = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(parseU.data.password, 8);
     const userData = { ...parseU.data, password_hash: hashedPassword };
     const rows = await crear_usuario(userData);
-    return res.status(201).json(rows);
+    const { password_hash, ...safe } = rows[0];
+    return res.status(201).json({
+      message: "Usuario registrado exitosamente",
+      user: safe,
+    });
   } catch (error) {
     next(error);
   }
@@ -140,7 +146,11 @@ export const actualizar_usuario = async (req, res, next) => {
     }
 
     const rows = await actualizar_usuario_id(id, userData);
-    res.json(rows);
+    const { password_hash, ...safe } = rows[0] || {};
+    return res.json({
+      message: "Usuario actualizado exitosamente",
+      user: safe,
+    });
   } catch (error) {
     next(error);
   }

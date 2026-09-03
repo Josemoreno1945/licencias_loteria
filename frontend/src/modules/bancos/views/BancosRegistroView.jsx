@@ -1,64 +1,67 @@
-import { useState, useCallback } from 'react'
-import { CCard, CCardBody, CCardHeader, CContainer } from '@coreui/react'
-import { createBanco } from '../services/bancos.service'
-import FeedbackModal from '../../../components/FeedbackModal'
-import BancosForm from '../components/BancosForm'
-import { extractErrorMessage } from '../../../utils/errorHandler'
+import { useState, useCallback } from "react";
+import { CCard, CCardBody, CCardHeader, CContainer } from "@coreui/react";
+import { createBanco } from "../services/bancos.service";
+import FeedbackModal from "../../../components/FeedbackModal";
+import BancosForm from "../components/BancosForm";
+import { extractErrorMessage } from "../../../utils/errorHandler";
 
 const BancosRegistroView = () => {
   const [formData, setFormData] = useState({
-    nombre: '',
-    codigo: '',
-    estado: 'activo',
-  })
+    nombre: "",
+    codigo: "",
+    estado: "activo",
+  });
 
   const [modalState, setModalState] = useState({
     visible: false,
-    type: '',
-    message: '',
-  })
+    type: "",
+    message: "",
+  });
 
   const handleInputChange = useCallback((e) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
-    }))
-  }, [])
+    }));
+  }, []);
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     setModalState({
       visible: true,
-      type: 'loading',
-      message: 'Registrando banco...',
-    })
+      type: "loading",
+      message: "Registrando banco...",
+    });
 
     try {
-      const response = await createBanco(formData)
+      const response = await createBanco(formData);
 
       setModalState({
         visible: true,
-        type: 'success',
-        message: response.message || 'Banco registrado exitosamente.',
-      })
+        type: "success",
+        message: response.message || "Banco registrado exitosamente.",
+      });
 
       setFormData({
-        nombre: '',
-        codigo: '',
-        estado: 'activo',
-      })
+        nombre: "",
+        codigo: "",
+        estado: "activo",
+      });
     } catch (err) {
-      const errorMsg = extractErrorMessage(err, 'Ocurrió un error inesperado al registrar el banco.')
+      const errorMsg = extractErrorMessage(
+        err,
+        "Ocurrio un error inesperado al registrar el banco.",
+      );
 
       setModalState({
         visible: true,
-        type: 'error',
+        type: "error",
         message: errorMsg,
-      })
+      });
     }
-  }
+  };
 
   return (
     <CContainer fluid>
@@ -73,7 +76,8 @@ const BancosRegistroView = () => {
         <CCardHeader className="bg-white pb-0">
           <h4 className="mb-3 text-primary">Registro de Bancos</h4>
           <p className="text-muted small">
-            Ingrese los datos del banco para registrarlo en el catalogo del sistema.
+            Ingrese los datos del banco para registrarlo en el catalogo del
+            sistema.
           </p>
         </CCardHeader>
         <CCardBody>
@@ -85,7 +89,7 @@ const BancosRegistroView = () => {
         </CCardBody>
       </CCard>
     </CContainer>
-  )
-}
+  );
+};
 
-export default BancosRegistroView
+export default BancosRegistroView;

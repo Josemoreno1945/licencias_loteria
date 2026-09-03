@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from "react";
 import {
   CContainer,
   CCard,
@@ -14,56 +14,69 @@ import {
   CSpinner,
   CAlert,
   CButton,
-} from '@coreui/react'
-import { useNavigate } from 'react-router-dom'
-import CIcon from '@coreui/icons-react'
-import { cilMagnifyingGlass, cilPencil } from '@coreui/icons'
-import useFetch from '../../../hooks/useFetch'
-import useDebounce from '../../../hooks/useDebounce'
-import { filterBySearch } from '../../../utils/helpers'
-import { useAuth } from '../../auth/store/AuthContext'
-import UsuarioDetalleModal from '../components/UsuarioDetalleModal'
-import UsuariosEditarModal from '../components/UsuariosEditarModal'
-import Buscador from '../../../components/Buscador'
-import Paginacion from '../../../components/Paginacion'
+} from "@coreui/react";
+import { useNavigate } from "react-router-dom";
+import CIcon from "@coreui/icons-react";
+import { cilPlus, cilMagnifyingGlass, cilPencil } from "@coreui/icons";
+import useFetch from "../../../hooks/useFetch";
+import useDebounce from "../../../hooks/useDebounce";
+import { filterBySearch } from "../../../utils/helpers";
+import { useAuth } from "../../auth/store/AuthContext";
+import UsuarioDetalleModal from "../components/UsuarioDetalleModal";
+import UsuariosEditarModal from "../components/UsuariosEditarModal";
+import Buscador from "../../../components/Buscador";
+import Paginacion from "../../../components/Paginacion";
 
 const USUARIOS_SEARCH_FIELDS = [
-  'nombre_usuario',
-  'email',
-  'rol',
-  'estado',
-]
+  "nombre_usuario",
+  "email",
+  "rol",
+  "estado",
+];
 
 const ROLE_LABELS = {
-  superAdmin: 'Super Administrador',
-  gerente: 'Gerente',
-  gestor_de_tramites: 'Gestor de Trámites',
-  supervisor: 'Supervisor',
-}
+  superAdmin: "Super Administrador",
+  gerente: "Gerente",
+  gestor_de_tramites: "Gestor de Tramites",
+  supervisor: "Supervisor",
+};
+
+const rolBadgeColor = (rol) => {
+  if (rol === "superAdmin" || rol === "gerente") return "danger";
+  if (rol === "supervisor") return "warning";
+  return "info";
+};
 
 const UsuariosListaView = () => {
-  const navigate = useNavigate()
-  const { user } = useAuth()
-  const { data: usuarios, loading, error, refetch } = useFetch('/usuarios')
-  const [modalVerId, setModalVerId] = useState(null)
-  const [modalEditarUsuarioId, setModalEditarUsuarioId] = useState(null)
-  const [paginaActual, setPaginaActual] = useState(1)
-  const [busqueda, setBusqueda] = useState('')
-  const debouncedBusqueda = useDebounce(busqueda, 400)
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { data: usuarios, loading, error, refetch } = useFetch("/usuarios");
+
+  const [modalVerId, setModalVerId] = useState(null);
+  const [modalEditarUsuarioId, setModalEditarUsuarioId] = useState(null);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [busqueda, setBusqueda] = useState("");
+  const debouncedBusqueda = useDebounce(busqueda, 400);
 
   const usuariosFiltrados = useMemo(
-    () => filterBySearch(usuarios, debouncedBusqueda, USUARIOS_SEARCH_FIELDS),
-    [usuarios, debouncedBusqueda]
-  )
+    () =>
+      filterBySearch(usuarios, debouncedBusqueda, USUARIOS_SEARCH_FIELDS),
+    [usuarios, debouncedBusqueda],
+  );
 
-  const PAGE_SIZE = 10
-  const totalPaginas = usuariosFiltrados ? Math.ceil(usuariosFiltrados.length / PAGE_SIZE) : 0
-  const startIndex = (paginaActual - 1) * PAGE_SIZE
-  const usuariosPaginados = usuariosFiltrados?.slice(startIndex, startIndex + PAGE_SIZE) || []
+  const PAGE_SIZE = 10;
+  const totalPaginas = usuariosFiltrados
+    ? Math.ceil(usuariosFiltrados.length / PAGE_SIZE)
+    : 0;
+  const startIndex = (paginaActual - 1) * PAGE_SIZE;
+  const usuariosPaginados =
+    usuariosFiltrados?.slice(startIndex, startIndex + PAGE_SIZE) || [];
 
   useEffect(() => {
-    setPaginaActual(1)
-  }, [debouncedBusqueda])
+    setPaginaActual(1);
+  }, [debouncedBusqueda]);
+
+  const puedeEditar = user?.rol !== "supervisor";
 
   return (
     <CContainer fluid>
@@ -84,13 +97,12 @@ const UsuariosListaView = () => {
               Usuarios registrados en el sistema con sus roles y estados.
             </p>
           </div>
-          {(user?.rol === 'superAdmin' || user?.rol === 'gerente') && (
+          {(user?.rol === "superAdmin" || user?.rol === "gerente") && (
             <CButton
               color="primary"
-              size="sm"
-              onClick={() => navigate('/usuarios/registro')}
+              onClick={() => navigate("/usuarios/registro")}
             >
-              + Nuevo Usuario
+              <CIcon icon={cilPlus} className="me-2" /> Nuevo Usuario
             </CButton>
           )}
         </CCardHeader>
@@ -100,12 +112,11 @@ const UsuariosListaView = () => {
             <Buscador
               value={busqueda}
               onChange={setBusqueda}
-              onClear={() => setBusqueda('')}
+              onClear={() => setBusqueda("")}
               placeholder="Buscar usuario..."
             />
           </div>
 
-          {/* Estado de carga */}
           {loading && (
             <div className="d-flex justify-content-center align-items-center py-5">
               <CSpinner color="primary" />
@@ -113,79 +124,114 @@ const UsuariosListaView = () => {
             </div>
           )}
 
-          {/* Error */}
           {error && !loading && (
             <CAlert color="danger" className="d-flex align-items-center gap-2">
               <span>{error}</span>
-              <CButton color="danger" variant="outline" size="sm" onClick={refetch}>
+              <CButton
+                color="danger"
+                variant="outline"
+                size="sm"
+                onClick={refetch}
+              >
                 Reintentar
               </CButton>
             </CAlert>
           )}
 
-          {/* Tabla */}
           {!loading && !error && (
             <>
               {usuariosFiltrados?.length === 0 ? (
                 <CAlert color="info">
                   {usuarios?.length === 0
-                    ? 'No hay usuarios registrados aun.'
-                    : 'No se encontraron usuarios.'}
+                    ? "No hay usuarios registrados aun."
+                    : "No se encontraron usuarios."}
                 </CAlert>
               ) : (
-                <CTable hover responsive striped className="mb-0">
+                <CTable
+                  hover
+                  responsive
+                  striped
+                  align="middle"
+                  className="mb-0 module-table"
+                >
                   <CTableHead>
-                     <CTableRow>
-                       <CTableHeaderCell>#</CTableHeaderCell>
-                       <CTableHeaderCell>Nombre de Usuario</CTableHeaderCell>
-                       <CTableHeaderCell>Email</CTableHeaderCell>
-                       <CTableHeaderCell>Rol</CTableHeaderCell>
-                        <CTableHeaderCell>Estado</CTableHeaderCell>
-                        <CTableHeaderCell className="text-center">Ver</CTableHeaderCell>
-                        <CTableHeaderCell className="text-center">Editar</CTableHeaderCell>
-                      </CTableRow>
+                    <CTableRow>
+                      <CTableHeaderCell>#</CTableHeaderCell>
+                      <CTableHeaderCell>Nombre de Usuario</CTableHeaderCell>
+                      <CTableHeaderCell>Email</CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">
+                        Rol
+                      </CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">
+                        Estado
+                      </CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">
+                        Ver
+                      </CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">
+                        Editar
+                      </CTableHeaderCell>
+                    </CTableRow>
                   </CTableHead>
                   <CTableBody>
                     {usuariosPaginados.map((usuario, index) => (
                       <CTableRow key={usuario.id_usuario}>
-                        <CTableDataCell className="text-muted small">
+                        <CTableDataCell className="row-number">
                           {startIndex + index + 1}
                         </CTableDataCell>
                         <CTableDataCell className="fw-semibold">
                           {usuario.nombre_usuario}
                         </CTableDataCell>
                         <CTableDataCell>{usuario.email}</CTableDataCell>
-                        <CTableDataCell>
-                          <CBadge color={['superAdmin', 'gerente'].includes(usuario.rol) ? 'danger' : 'info'}>
+                        <CTableDataCell className="text-center">
+                          <CBadge
+                            color={rolBadgeColor(usuario.rol)}
+                            shape="rounded-pill"
+                            className="status-badge"
+                          >
                             {ROLE_LABELS[usuario.rol] || usuario.rol}
                           </CBadge>
                         </CTableDataCell>
-                         <CTableDataCell>
-                           <CBadge color={usuario.estado === 'activo' ? 'success' : 'secondary'}>
-                             {usuario.estado === 'activo' ? 'Activo' : 'Inactivo'}
-                           </CBadge>
-                          </CTableDataCell>
-                          <CTableDataCell className="text-center">
-                            <CButton
-                              size="sm"
-                              color="primary"
-                              variant="outline"
-                              onClick={() => setModalVerId(usuario.id_usuario)}
-                            >
-                              <CIcon icon={cilMagnifyingGlass} />
-                            </CButton>
-                          </CTableDataCell>
-                          <CTableDataCell className="text-center">
+                        <CTableDataCell className="text-center">
+                          <CBadge
+                            color={
+                              usuario.estado === "activo" ? "success" : "secondary"
+                            }
+                            shape="rounded-pill"
+                            className="status-badge"
+                          >
+                            {usuario.estado === "activo" ? "Activo" : "Inactivo"}
+                          </CBadge>
+                        </CTableDataCell>
+                        <CTableDataCell className="text-center">
+                          <CButton
+                            size="sm"
+                            color="primary"
+                            variant="outline"
+                            className="action-btn"
+                            onClick={() =>
+                              setModalVerId(usuario.id_usuario)
+                            }
+                          >
+                            <CIcon icon={cilMagnifyingGlass} />
+                          </CButton>
+                        </CTableDataCell>
+                        <CTableDataCell className="text-center">
+                          {puedeEditar && (
                             <CButton
                               size="sm"
                               color="warning"
                               variant="outline"
-                              onClick={() => setModalEditarUsuarioId(usuario.id_usuario)}
+                              className="action-btn"
+                              onClick={() =>
+                                setModalEditarUsuarioId(usuario.id_usuario)
+                              }
                             >
                               <CIcon icon={cilPencil} />
                             </CButton>
-                          </CTableDataCell>
-                       </CTableRow>
+                          )}
+                        </CTableDataCell>
+                      </CTableRow>
                     ))}
                   </CTableBody>
                 </CTable>
@@ -202,7 +248,7 @@ const UsuariosListaView = () => {
         </CCardBody>
       </CCard>
     </CContainer>
-  )
-}
+  );
+};
 
-export default UsuariosListaView
+export default UsuariosListaView;
