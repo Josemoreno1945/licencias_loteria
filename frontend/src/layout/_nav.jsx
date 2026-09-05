@@ -14,6 +14,7 @@ import {
   cilUser,
   cilCreditCard,
   cilMagnifyingGlass,
+  cilHistory,
 } from '@coreui/icons'
 
 // ─── Grupos de roles (nombres exactos de la tabla `rol` en bdd.sql) ──────────
@@ -159,6 +160,13 @@ const _navBase = [
       { component: CNavItem, name: 'Lista',    to: '/usuarios/lista',    indent: true, roles: ADMINS },
       { component: CNavItem, name: 'Registro', to: '/usuarios/registro', indent: true, roles: ADMINS },
     ],
+  },
+  {
+    component: CNavItem,
+    name: 'Auditoría',
+    to: '/auditoria',
+    icon: <CIcon icon={cilHistory} customClassName="nav-icon" />,
+    roles: ADMINS,
   },
 
   // ── HISTORIAL DE PAGOS (solo consulta) ────────────────────────────────────

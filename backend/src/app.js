@@ -22,6 +22,7 @@ import participaciones_rutas from "./routes/participaciones.routes.js";
 import pagos_rutas from "./routes/pagos.routes.js";
 import buscador_rutas from "./routes/buscador.routes.js";
 import dashboard_rutas from "./routes/dashboard.routes.js";
+import auditoria_rutas from "./routes/auditoria.routes.js";
 
 import { errorHandler } from "./middlewares/errorHandler.js";
 
@@ -53,6 +54,7 @@ app.use(participaciones_rutas);
 app.use(pagos_rutas);
 app.use(buscador_rutas);
 app.use(dashboard_rutas);
+app.use(auditoria_rutas);
 
 // Manejador de errores
 app.use(errorHandler);

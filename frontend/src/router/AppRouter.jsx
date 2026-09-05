@@ -54,6 +54,9 @@ import AutorizacionesRegistroView from '../modules/autorizaciones_especiales/vie
 // Buscador
 import BuscadorView from '../modules/buscador/views/BuscadorView'
 
+// Auditoría
+import DashboardAuditoria from '../modules/auditoria/views/DashboardAuditoria'
+
 import RoleRoute from './RoleRoute'
 
 const ADMINS = ['superAdmin', 'gerente']
@@ -137,6 +140,9 @@ const AppRouter = () => {
 
           {/* Buscador / Consultor */}
           <Route path="buscador" element={<RoleRoute allowedRoles={TODOS}><BuscadorView /></RoleRoute>} />
+
+          {/* Auditoría — SOLO superAdmin y gerente */}
+          <Route path="auditoria" element={<RoleRoute allowedRoles={ADMINS}><DashboardAuditoria /></RoleRoute>} />
         </Route>
 
         {/* Fallback */}
