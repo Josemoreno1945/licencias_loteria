@@ -122,7 +122,7 @@ const SolicitudesRegistroView = () => {
   };
 
   return (
-    <CContainer fluid>
+    <CContainer fluid className="py-4 px-3 px-md-4">
       <FeedbackModal
         visible={modalState.visible}
         type={modalState.type}

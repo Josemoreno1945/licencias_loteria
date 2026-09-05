@@ -105,6 +105,17 @@
   letter-spacing: 0.01em;
 }
 
+/* ====== SectionTitle (encabezados de sección en modales) ====== */
+
+.section-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--lot-azul, #0a2463);
+  margin-bottom: 0.75rem;
+}
+
 /* ====== SectionCard (distribuciones) ====== */
 
 .section-card {
@@ -118,6 +129,53 @@
   font-style: italic;
 }
 
+/* ====== Tablas de módulo (module-table) ====== */
+
+.module-table th,
+.module-table td {
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+}
+
+/* Columna # / fila */
+.row-number {
+  width: 40px;
+  min-width: 40px;
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* ====== Badges de estado ====== */
+
+.status-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 0.25em 0.65em;
+  text-transform: capitalize;
+}
+
+/* ====== Detalle de campos (BuscadorDetalleModal) ====== */
+
+.detail-field-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--bs-secondary-color, #6c757d);
+  margin-bottom: 0.2rem;
+}
+
+.section-divider {
+  border: 0;
+  border-top: 1px solid var(--bs-border-color-translucent, rgba(0,0,0,0.08));
+  margin: 1rem 0 1.25rem;
+}
+
 /* ====== Mobile ====== */
 @media (max-width: 576px) {
   .stat-card__value { font-size: 1.1rem; }
@@ -125,4 +183,5 @@
   .product-summary__value { font-size: 1.4rem; }
   .section-card { min-height: 200px; }
   .product-block { padding: 1rem; margin-bottom: 1.25rem; }
+  .module-table th, .module-table td { max-width: 140px; }
 }

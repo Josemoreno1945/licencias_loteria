@@ -125,7 +125,7 @@ const SolicitudesListaView = () => {
   };
 
   return (
-    <CContainer fluid>
+    <CContainer fluid className="py-4 px-3 px-md-4">
       <SolicitudDetalleModal
         idSolicitud={modalDataId}
         onClose={() => setModalDataId(null)}
@@ -274,7 +274,9 @@ const SolicitudesListaView = () => {
                           )}
                         </CTableDataCell>
                         <CTableDataCell>
-                          {new Date(sol.created_at).toLocaleDateString()}
+                          {sol.created_at
+                            ? new Date(sol.created_at).toLocaleDateString('es-VE')
+                            : '—'}
                         </CTableDataCell>
                         <CTableDataCell className="text-center">
                           <CBadge

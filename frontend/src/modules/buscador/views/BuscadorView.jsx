@@ -278,7 +278,7 @@ const BuscadorView = () => {
   }
 
   return (
-    <CContainer fluid>
+    <CContainer fluid className="py-4 px-3 px-md-4">
       {/* Modal principal: detalle de la persona consultada */}
       <BuscadorDetalleModal
         visible={personaModalVisible && !subModal.type}
@@ -334,7 +334,7 @@ const BuscadorView = () => {
                 boxShadow: '0 6px 20px rgba(99, 132, 255, 0.18)',
               }}
             >
-              <CIcon icon={cilSearch} size="3xl" className="text-primary" style={{ width: 48, height: 48 }} />
+              <CIcon icon={cilSearch} className="text-primary" style={{ width: 48, height: 48 }} />
             </div>
             <h1 className="text-primary fw-bold mb-2" style={{ letterSpacing: '-0.02em' }}>
               Buscador
@@ -519,7 +519,7 @@ const BuscadorView = () => {
                         <CTableDataCell>{persona.email || <span className="text-muted">—</span>}</CTableDataCell>
                         <CTableDataCell>
                           <div className="d-flex flex-wrap gap-1 align-items-center">
-                            {persona.documentos && persona.documentos.length > 0 ? (
+                            {Array.isArray(persona.documentos) && persona.documentos.length > 0 ? (
                               persona.documentos.map((doc, idx) => {
                                 let badgeColor = 'secondary'
                                 let badgeText = doc

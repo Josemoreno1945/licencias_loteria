@@ -504,7 +504,8 @@ CREATE TABLE documentos_emitidos (
         REFERENCES usuarios (id_usuario)
         ON DELETE RESTRICT ON UPDATE CASCADE,
 
-    CONSTRAINT uq_doc_solicitud         UNIQUE (id_solicitud),
+    -- uq_doc_solicitud eliminado: una misma solicitud puede generar varios
+    -- documentos en caso de renovaciones sucesivas.
     CONSTRAINT uq_doc_numero_documento  UNIQUE (numero_documento),
     CONSTRAINT uq_doc_papel_seguridad   UNIQUE (papel_seguridad),
 
@@ -925,30 +926,52 @@ CREATE TRIGGER trg_pagos_updated_at
 
 
 -- ============================================================
--- TRIGGER: Validacion de pago para licencias vigentes
+-- NOTA: fn_validar_pago_licencia eliminado.
+-- Motivo: genera un deadlock circular en la inserción.
+-- La FK pagos.id_licencia es DEFERRABLE INITIALLY DEFERRED,
+-- lo que permite insertar el documento y el pago dentro de la
+-- misma transacción, pero el trigger se ejecuta en el INSERT
+-- de documentos_emitidos, antes de que el pago pueda existir.
+-- La validación de pago se realiza en la capa de aplicación
+-- (backend/src/services) antes de emitir el documento.
 -- ============================================================
 
-CREATE OR REPLACE FUNCTION fn_validar_pago_licencia()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
-BEGIN
-    IF NEW.estado_documento = 'vigente'
-       AND NEW.tipo = 'Licencia' THEN
-        IF NOT EXISTS (
-            SELECT 1
-            FROM pagos p
-            WHERE p.id_licencia = NEW.id_documento
-        ) THEN
-            RAISE EXCEPTION 'No se puede emitir una licencia vigente sin pago registrado (documento: %)',
-                NEW.numero_documento;
-        END IF;
-    END IF;
-    RETURN NEW;
-END;
-$$;
 
-CREATE TRIGGER trg_validar_pago_licencia
-    BEFORE INSERT OR UPDATE ON documentos_emitidos
-    FOR EACH ROW EXECUTE FUNCTION fn_validar_pago_licencia();
+-- ============================================================
+-- BITÁCORA DE AUDITORÍA (integrada)
+-- Tabla de logs para auditoría de eventos del sistema.
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS bitacora_auditoria (
+    id_log           UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+    id_usuario       UUID,
+    rol              VARCHAR(50),
+    modulo           VARCHAR(100) NOT NULL,
+    accion           VARCHAR(50)  NOT NULL,
+    entidad          VARCHAR(100),
+    id_registro      UUID,
+    descripcion      TEXT,
+    datos_anteriores JSONB,
+    datos_nuevos     JSONB,
+    ip_origen        INET,
+    created_at       TIMESTAMP    NOT NULL DEFAULT now(),
+
+    CONSTRAINT fk_bitacora_usuario
+        FOREIGN KEY (id_usuario)
+        REFERENCES usuarios (id_usuario)
+        ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+COMMENT ON TABLE  bitacora_auditoria            IS 'Bitácora global de eventos del sistema (auditoría de seguridad).';
+COMMENT ON COLUMN bitacora_auditoria.accion     IS 'Tipo de acción: INSERT, UPDATE, DELETE, LOGIN, etc.';
+COMMENT ON COLUMN bitacora_auditoria.entidad    IS 'Nombre de la tabla afectada por la acción.';
+COMMENT ON COLUMN bitacora_auditoria.id_registro IS 'UUID de la fila afectada en la tabla original.';
+
+CREATE INDEX IF NOT EXISTS idx_bitacora_fecha       ON bitacora_auditoria (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_bitacora_usuario     ON bitacora_auditoria (id_usuario);
+CREATE INDEX IF NOT EXISTS idx_bitacora_modulo      ON bitacora_auditoria (modulo);
+CREATE INDEX IF NOT EXISTS idx_bitacora_accion      ON bitacora_auditoria (accion);
+CREATE INDEX IF NOT EXISTS idx_bitacora_entidad     ON bitacora_auditoria (entidad, id_registro);
 
 
 -- ============================================================

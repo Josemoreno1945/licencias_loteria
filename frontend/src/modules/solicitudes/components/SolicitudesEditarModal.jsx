@@ -21,7 +21,7 @@ import {
 const SolicitudesEditarModal = ({ idSolicitud, onClose, onUpdated }) => {
   const [formData, setFormData] = useState(null);
   const [loadingData, setLoadingData] = useState(false);
-  const [loadingDeps, setLoadingDeps] = useState(true);
+  const [loadingDeps, setLoadingDeps] = useState(false);
   const [errorData, setErrorData] = useState(null);
 
   const [feedbackModal, setFeedbackModal] = useState({

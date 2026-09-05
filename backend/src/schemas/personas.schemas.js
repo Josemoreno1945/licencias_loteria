@@ -16,18 +16,26 @@ export const persona_schema = z.object({
 
   tipo_persona: z.enum(["natural", "juridica"]),
 
+  // Opcional: no todos los registros tienen dirección fiscal en la primera carga
   direccion_fiscal: z
     .string()
-    .min(1, "La direccion no puede estar vacia")
-    .max(100, "La direccion no puede exceder los 100 caracteres"),
+    .max(200, "La direccion no puede exceder los 200 caracteres")
+    .optional()
+    .nullable(),
 
+  // Acepta formatos venezolanos: 04141234567, 0414-123-4567, +58 414 1234567
   telefono: z
     .string()
-    .regex(/^\d+$/, "El numero de telefono solo debe contener digitos")
-    .min(11, "El numero de telefono solo puede tener minimo 11 caracteres")
-    .max(15, "El numero de telefono solo puede tener maximo 15 caracteres"),
+    .regex(
+      /^[\d\s\-\+\(\)]+$/,
+      "El teléfono solo puede contener dígitos, espacios, guiones y el signo +",
+    )
+    .min(7, "El teléfono debe tener al menos 7 caracteres")
+    .max(20, "El teléfono no puede exceder los 20 caracteres")
+    .optional()
+    .nullable(),
 
-  email: z.string().email("Solo email valido"),
+  email: z.string().email("Solo email valido").optional().nullable(),
 });
 
 // 2. Esquema para ACTUALIZAR (todos los campos opcionales -> actualización parcial)

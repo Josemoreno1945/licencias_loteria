@@ -72,7 +72,8 @@ const BuscadorDetalleModal = ({
     (detalle.solicitudes?.length || 0) +
     (detalle.participaciones?.length || 0) +
     (detalle.representantes?.length || 0) +
-    (detalle.centros_apuesta?.length || 0) > 0
+    (detalle.centros_apuesta?.length || 0) +
+    (detalle.autorizaciones?.length || 0) > 0
   )
 
   return (
@@ -185,8 +186,8 @@ const BuscadorDetalleModal = ({
                               {lic.estado_documento}
                             </CBadge>
                           </CTableDataCell>
-                          <CTableDataCell>{lic.fecha_expedicion?.slice(0, 10) || '—'}</CTableDataCell>
-                          <CTableDataCell>{lic.fecha_vencimiento?.slice(0, 10) || '—'}</CTableDataCell>
+                          <CTableDataCell>{lic.fecha_expedicion ? lic.fecha_expedicion.slice(0, 10) : '—'}</CTableDataCell>
+                          <CTableDataCell>{lic.fecha_vencimiento ? lic.fecha_vencimiento.slice(0, 10) : '—'}</CTableDataCell>
                           <CTableDataCell>
                             {lic.comercializador ? (
                               <div className="d-flex align-items-center gap-2">
@@ -252,8 +253,8 @@ const BuscadorDetalleModal = ({
                               </div>
                             ) : <span className="text-muted">—</span>}
                           </CTableDataCell>
-                          <CTableDataCell>{sol.registrado_por}</CTableDataCell>
-                          <CTableDataCell>{sol.created_at?.slice(0, 10) || '—'}</CTableDataCell>
+                          <CTableDataCell>{sol.registrado_por ?? <span className="text-muted">—</span>}</CTableDataCell>
+                          <CTableDataCell>{sol.created_at ? sol.created_at.slice(0, 10) : '—'}</CTableDataCell>
                           <CTableDataCell className="text-end">
                             <CButton size="sm" color="primary" variant="outline"
                               onClick={() => onOpenSolicitud?.(sol.id_solicitudes)}>
@@ -336,8 +337,8 @@ const BuscadorDetalleModal = ({
                       </CTableRow>
                     </CTableHead>
                     <CTableBody>
-                      {detalle.representantes.map((rep) => (
-                        <CTableRow key={rep.id_c_representantes || `${rep.id_comercializador}-${rep.rif}`}>
+                      {detalle.representantes.map((rep, idx) => (
+                        <CTableRow key={rep.id_c_representantes ?? `rep-${rep.id_comercializador ?? idx}-${rep.rif ?? idx}`}>
                           <CTableDataCell className="fw-semibold">{rep.comercializador}</CTableDataCell>
                           <CTableDataCell>{rep.rif}</CTableDataCell>
                           <CTableDataCell>{rep.cargo || <span className="text-muted">—</span>}</CTableDataCell>

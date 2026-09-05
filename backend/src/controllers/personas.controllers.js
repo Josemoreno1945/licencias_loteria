@@ -50,14 +50,19 @@ export const crear_c_personas = async (req, res, next) => {
       return next(zodValidationError(parseP.error));
     }
 
-    const emailExiste = await get_persona_email(data.email);
-    if (emailExiste) {
-      throwError(errors.persona_email_duplicado);
+    // Solo verificar duplicados si los campos opcionales vienen informados
+    if (data.email) {
+      const emailExiste = await get_persona_email(data.email);
+      if (emailExiste) {
+        throwError(errors.persona_email_duplicado);
+      }
     }
 
-    const ci_rifExiste = await get_ci_rif(data.ci_rif);
-    if (ci_rifExiste) {
-      throwError(errors.persona_cedula_rif_duplicado);
+    if (data.ci_rif) {
+      const ci_rifExiste = await get_ci_rif(data.ci_rif);
+      if (ci_rifExiste) {
+        throwError(errors.persona_cedula_rif_duplicado);
+      }
     }
 
     const rows = await crear_persona(data);
@@ -112,7 +117,6 @@ export const actualizar_personas = async (req, res, next) => {
     }
     const personaActual = personaActualArray[0];
 
-    // VERIFICAMOS DUPLICADOS SOLO SI EL CAMPO CAMBIÓ Y SE ENVÍA
     if (data.email && data.email !== personaActual.email) {
       const emailExiste = await get_persona_email(data.email);
       if (emailExiste) throwError(errors.persona_email_duplicado);

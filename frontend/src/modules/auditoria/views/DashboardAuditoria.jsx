@@ -34,6 +34,7 @@ import useFetch from "../../../hooks/useFetch";
 import useDebounce from "../../../hooks/useDebounce";
 import { filterBySearch } from "../../../utils/helpers";
 import StatCard from "../../dashboard/components/StatCard";
+import { useAuth } from "../../auth/store/AuthContext";
 import "../../dashboard/views/DashboardView.css";
 
 const fmtInt = (value) => Number(value ?? 0).toLocaleString("es-VE");
@@ -152,6 +153,19 @@ const DashboardAuditoria = () => {
 
   const r = resumen || {};
 
+  const { user } = useAuth();
+  const ALLOWED = ['superAdmin', 'gerente'];
+
+  if (!ALLOWED.includes(user?.rol)) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
+        <CAlert color="danger" className="text-center">
+          No tiene permisos para acceder a este módulo.
+        </CAlert>
+      </div>
+    );
+  }
+
   return (
     <CContainer fluid className="px-3 px-md-4 pb-4">
       {/* Encabezado */}
@@ -237,7 +251,7 @@ const DashboardAuditoria = () => {
       </CRow>
 
       {/* ====== Totales por Módulo ====== */}
-      <p className="section-label">Totales por Módulo</p>
+      <p className="section-label mt-1">Totales por Módulo</p>
       <CRow className="g-3 mb-4">
         <CCol xs={12} sm={6} xl={3}>
           <ProductSummary
@@ -351,7 +365,7 @@ const DashboardAuditoria = () => {
                   style={{ width: 18, height: 18, color: "#0a2463" }}
                 />
                 Registro de Actividades
-                {actividades && actividades.length > 0 && (
+                {Array.isArray(actividades) && actividades.length > 0 && (
                   <CBadge color="primary" className="ms-2">
                     {fmtInt(actividades.length)}
                   </CBadge>

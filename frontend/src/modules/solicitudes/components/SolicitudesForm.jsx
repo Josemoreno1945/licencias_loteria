@@ -103,7 +103,6 @@ const SelectorJuegos = ({ juegos, seleccionados, onChange, loading }) => {
               className={checked ? "text-primary" : "text-secondary"}
             />
             <span className="small fw-semibold">{j.nombre}</span>
-            <span className="text-muted small ms-auto">{j.nombre}</span>
             {checked && (
               <CBadge
                 color="primary"
@@ -487,7 +486,7 @@ const SolicitudesForm = ({
               label: "Representantes",
               value: detalleCentro.representantes?.length
                 ? detalleCentro.representantes
-                    .map((r) => `${r.razon_social} (${r.cargo || "Rep."}`)
+                    .map((r) => `${r.razon_social} (${r.cargo || 'Rep.'})`)
                     .join(", ")
                 : "Sin representantes activos",
             },
